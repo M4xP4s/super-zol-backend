@@ -32,6 +32,7 @@
 
 - Conventional Commits enforced by Husky: `type(scope): subject` (e.g., `feat(api): add auth endpoint`).
 - **Commit after completing each task**: Create atomic commits as you finish logical units of work. This creates checkpoints, makes progress tracking easier, and provides rollback points.
+- Maintain a `CHANGELOG.md`: On every meaningful change, update `CHANGELOG.md` (create if missing) with a concise entry; prefer Keep a Changelog + SemVer style.
 - Before pushing, ensure `just check` (or `pnpm lint && pnpm test && pnpm nx build <affected>`) passes; pre-push hook runs typecheck, tests, and builds for affected projects.
 - PRs: include problem statement, summary of changes, linked issues, test notes/coverage, and docs updates if applicable. For API changes, add example request/response.
 
@@ -39,3 +40,7 @@
 
 - Use `.env` (template: `.env.example`); never commit secrets. Start local infra with `docker compose up -d`.
 - Honor versions in `.nvmrc`/`.node-version` and `package.json.engines`.
+
+## Documentation
+
+- Architecture overview: `ARCHITECTURE.md`
