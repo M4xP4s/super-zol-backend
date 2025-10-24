@@ -234,22 +234,6 @@ Both files specify Node.js version (e.g., `22`):
 22
 ```
 
-**Why both files exist**:
-
-| File            | Tool Support             |
-| --------------- | ------------------------ |
-| `.nvmrc`        | nvm (most common)        |
-| `.node-version` | fnm, asdf, nodenv, volta |
-
-Having both ensures all developers use the correct Node.js version regardless of their version manager choice.
-
-### `.node-version` vs `.nvmrc`
-
-- `.nvmrc` is the original standard (nvm)
-- `.node-version` is a universal standard adopted by newer tools
-- Both contain the same version number
-- No conflicts between them
-
 ## Git Hooks and Linting
 
 This monorepo uses **three git hooks** to enforce code quality at different stages:
@@ -432,6 +416,18 @@ git push --no-verify
 - **pre-commit**: Fast style checks on what you changed
 - **commit-msg**: Ensure commit history is readable
 - **pre-push**: Comprehensive checks before code reaches others
+
+## Pull Request Checks
+
+Two repository-level checks enforce PR hygiene:
+
+- Semantic PR title: GitHub Action validates that the PR title follows Conventional Commits (e.g., `feat(api): add auth`).
+- Template sections: GitHub Action ensures required sections exist in the PR body.
+
+Files:
+
+- `.github/PULL_REQUEST_TEMPLATE.md` — Standard template with required sections
+- `.github/workflows/semantic-pr.yml` — CI workflow validating title and required sections
 
 ## File Organization Summary
 

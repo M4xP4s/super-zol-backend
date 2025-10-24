@@ -1,0 +1,51 @@
+name: semantic-pr
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  semantic:
+    name: Validate PR title (Conventional Commits)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            test
+            chore
+            ci
+            build
+            perf
+          requireScope: false
+          subjectPattern: '.{3,}'
+
+  pr-template:
+    name: Validate PR body has required sections
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR body
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request && context.payload.pull_request.body || ''
+            const required = [
+              '## Problem Statement',
+              '## Summary of Changes',
+              '## Tests + Coverage',
+              '## Docs Updates'
+            ]
+            const missing = required.filter(h => !body.includes(h))
+            if (missing.length) {
+              core.setFailed(`PR body is missing required sections: ${missing.join(', ')}`)
+            }

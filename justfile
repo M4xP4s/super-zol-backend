@@ -141,3 +141,7 @@ audit:
 # Fix audit issues
 audit-fix:
     pnpm audit --fix
+
+# Create a tar.gz suitable for LLMs (excludes .gitignored files)
+pack-for-llm:
+    @./scripts/pack-for-llm.sh

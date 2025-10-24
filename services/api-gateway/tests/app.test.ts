@@ -20,7 +20,7 @@ describe('API Gateway', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toHaveProperty('root');
+    expect(response.json()).toEqual({ message: 'Hello API' });
   });
 
   it('should have sensible plugin registered', async () => {
