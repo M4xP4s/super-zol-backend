@@ -19,7 +19,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Time-saving patterns and optimization tips
    - Solo development strategies and batching techniques
 
-3. **After Completing Each Task** - Create a commit immediately:
+3. **Review Past Phase Implementations** - Check `reviews/` directory for reference:
+   - Read review documents from completed phases (e.g., `PHASE-2-REVIEW.md`)
+   - Understand quality standards, patterns, and best practices
+   - Learn from previous implementations and avoid repeated issues
+   - Reference implementation on corresponding branch (e.g., `codex-p2` for Phase 2)
+
+4. **After Completing Each Task** - Create a commit immediately:
    - Use Conventional Commits format: `type(scope): subject`
    - Keep commits atomic and focused on one logical change
    - **ALWAYS update TODO.md** when task state changes:
@@ -331,6 +337,68 @@ import { myUtil } from 'shared-util'; // If alias configured
 
 - **Architecture deep-dive**: `ARCHITECTURE.md` - explains tsconfig layers, why separate tests/, git hooks philosophy
 - **README**: `README.md` - full project documentation with all commands
+
+## Code Reviews & Reference Implementations
+
+### Review Process
+
+Each completed phase should have a comprehensive code review document in the `reviews/` directory:
+
+**Review Document Template:** `reviews/PHASE-{N}-REVIEW.md`
+
+**Contents:**
+
+- Executive summary with merge verdict
+- Quality metrics (coverage, test results, build status)
+- Detailed analysis of all modules/changes
+- Test quality assessment
+- Security and performance analysis
+- Definition of Done verification
+- Issue classification (critical/minor)
+- Recommendations for future phases
+
+**When to Create Reviews:**
+
+- After completing each major phase
+- Before merging phase branch to main
+- When establishing new patterns or standards
+- For complex implementations that serve as references
+
+### Reference Implementations
+
+**Phase 2 (Utility Functions) - Branch: `codex-p2`**
+
+- **Review**: [reviews/PHASE-2-REVIEW.md](reviews/PHASE-2-REVIEW.md)
+- **Branch**: `codex-p2` (reference implementation)
+- **Demonstrates**:
+  - TDD methodology (RED-GREEN-REFACTOR)
+  - 100% statement coverage, >90% branch coverage
+  - Comprehensive test suites with edge cases
+  - Proper TypeScript strict mode usage
+  - Atomic commits with Conventional Commits format
+  - Streaming implementations for large files
+  - Proper async/await patterns
+  - Mock strategies for testing (console output capture)
+  - Temporary file handling in tests with cleanup
+
+**How to Use Reference Implementations:**
+
+1. Check out the reference branch: `git checkout codex-p2`
+2. Review the code structure and patterns
+3. Read test files to understand testing approach
+4. Note commit history for workflow examples
+5. Return to your working branch: `git checkout <your-branch>`
+
+**Quality Standards from Phase 2:**
+
+- ✅ 100% statement coverage
+- ✅ ≥90% branch coverage
+- ✅ Zero `any` types in implementation code
+- ✅ All edge cases tested (empty, missing, malformed, large files)
+- ✅ Proper error handling (try-catch or null returns)
+- ✅ Streaming for large file operations
+- ✅ Atomic commits with clear messages
+- ✅ All DoD criteria verified before merge
 
 ## CI/CD
 
