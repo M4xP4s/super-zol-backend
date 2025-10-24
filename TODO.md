@@ -575,7 +575,7 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
 ### 4.1 Download - Dataset Fetcher
 
-- [ ] **Test**: Write tests for dataset download
+- [x] **Test**: Write tests for dataset download
   - **File**: `tests/unit/download/fetch.test.ts`
   - **Tests**:
 
@@ -600,7 +600,7 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
   - **DoD**: Tests written
 
-- [ ] **Implement**: Dataset downloader
+- [x] **Implement**: Dataset downloader
   - **File**: `src/lib/download/fetch.ts`
   - **Function**:
     ```typescript
@@ -615,7 +615,7 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
 ### 4.2 Download - File Processing
 
-- [ ] **Test**: Write tests for file processing
+- [x] **Test**: Write tests for file processing
   - **File**: `tests/unit/download/process.test.ts`
   - **Tests**:
 
@@ -645,7 +645,7 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
   - **DoD**: Tests written
 
-- [ ] **Implement**: File processor
+- [x] **Implement**: File processor
   - **File**: `src/lib/download/process.ts`
   - **Function**:
 
@@ -666,7 +666,7 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
 ### 4.3 Download - Manifest Creation
 
-- [ ] **Test**: Write tests for manifest generation
+- [x] **Test**: Write tests for manifest generation
   - **File**: `tests/unit/download/manifest.test.ts`
   - **Tests**:
 
@@ -689,7 +689,7 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
   - **DoD**: Tests written
 
-- [ ] **Implement**: Manifest creator
+- [x] **Implement**: Manifest creator
   - **File**: `src/lib/download/manifest.ts`
   - **Function**:
     ```typescript
@@ -704,7 +704,7 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
 ### 4.4 Download - Validation
 
-- [ ] **Test**: Write tests for completion validation
+- [x] **Test**: Write tests for completion validation
   - **File**: `tests/unit/download/validate.test.ts`
   - **Tests**:
 
@@ -729,7 +729,7 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
   - **DoD**: Tests written
 
-- [ ] **Implement**: Validation logic
+- [x] **Implement**: Validation logic
   - **File**: `src/lib/download/validate.ts`
   - **Function**:
 
@@ -746,12 +746,12 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
 ### 4.5 Download - Main Orchestrator
 
-- [ ] **Test**: Write integration test for download flow
+- [x] **Test**: Write integration test for download flow
   - **File**: `tests/integration/download-flow.test.ts`
   - **Tests**: End-to-end download workflow
   - **DoD**: Tests written
 
-- [ ] **Implement**: Download orchestrator
+- [x] **Implement**: Download orchestrator
   - **File**: `src/lib/download/index.ts`
   - **Function**:
     ```typescript
@@ -766,21 +766,21 @@ node dist/jobs/fetch-kaggle/src/lib/auth/setup.js
 
 **Phase 4 is complete when ALL of the following criteria are met:**
 
-- [ ] All download modules exist: `fetch.ts`, `process.ts`, `manifest.ts`, `validate.ts`, `index.ts`
-- [ ] All download test files exist: `fetch.test.ts`, `process.test.ts`, `manifest.test.ts`, `validate.test.ts`, `download-flow.test.ts`
-- [ ] **All tests pass**: `pnpm nx test fetch-kaggle --testPathPattern=download` shows 100% pass rate
-- [ ] Test coverage for download ≥ 85%
-- [ ] `downloadDataset()` successfully downloads and unzips a test dataset
-- [ ] `processFiles()` correctly calculates SHA256 checksums for all CSV files
-- [ ] `processFiles()` accurately counts rows in all CSV files
-- [ ] `createManifest()` generates valid `download_manifest.json` that validates against Zod schema
-- [ ] `validateCompletion()` correctly checks all completion criteria
-- [ ] `runDownload()` orchestrates full workflow: download → process → manifest → validate
-- [ ] Manifest includes: dataset info, download timestamp, file metadata, checksums, row counts
-- [ ] Integration test passes: Full download workflow from start to manifest creation
-- [ ] Can handle download timeout (10 minutes)
-- [ ] Can handle missing Kaggle CLI gracefully
-- [ ] ESLint passes: `pnpm nx lint fetch-kaggle`
+- [x] All download modules exist: `fetch.ts`, `process.ts`, `manifest.ts`, `validate.ts`, `index.ts`
+- [x] All download test files exist: `fetch.test.ts`, `process.test.ts`, `manifest.test.ts`, `validate.test.ts`, `download-flow.test.ts`
+- [x] **All tests pass**: `pnpm nx test fetch-kaggle --testPathPattern=download` shows 100% pass rate
+- [x] Test coverage for download ≥ 85%
+- [x] `downloadDataset()` successfully downloads and unzips a test dataset
+- [x] `processFiles()` correctly calculates SHA256 checksums for all CSV files
+- [x] `processFiles()` accurately counts rows in all CSV files
+- [x] `createManifest()` generates valid `download_manifest.json` that validates against Zod schema
+- [x] `validateCompletion()` correctly checks all completion criteria
+- [x] `runDownload()` orchestrates full workflow: download → process → manifest → validate
+- [x] Manifest includes: dataset info, download timestamp, file metadata, checksums, row counts
+- [x] Integration test passes: Full download workflow from start to manifest creation
+- [x] Can handle download timeout (10 minutes)
+- [x] Can handle missing Kaggle CLI gracefully
+- [x] ESLint passes: `pnpm nx lint fetch-kaggle`
 
 **Verification Command**:
 

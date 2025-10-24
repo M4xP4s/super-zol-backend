@@ -36,6 +36,16 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Verified Kaggle CLI via `execa` with timeout handling and CLI-missing resilience
   - Achieved 82.69% branch coverage (adjusted threshold from 85% to 82% - remaining uncovered branches are defensive catch blocks for OS-level errors)
 
+- **fetch-kaggle job – Phase 4 (Download workflow, TDD) complete**
+  - Implemented download modules under `src/lib/download`: `fetch.ts`, `process.ts`, `manifest.ts`, `validate.ts`, `index.ts`
+  - Added unit + integration tests: `fetch.test.ts`, `process.test.ts`, `manifest.test.ts`, `validate.test.ts`, `download-flow.test.ts`
+  - `downloadDataset()` wraps Kaggle CLI via `execa` with `--unzip` and timeout handling
+  - `processFiles()` computes SHA256 and row counts for CSVs, aggregates totals
+  - `createManifest()` writes validated `download_manifest.json` (Zod) in dated directory
+  - `validateCompletion()` checks manifest presence and checksums
+  - `runDownload()` orchestrates end-to-end with `--dry-run` support for tests
+  - Extended coverage include to `src/lib/download/**`; phase tests pass with thresholds
+
 ### Changed
 
 - **Removed all Jest references** from monorepo (switched to Vitest consistently)
