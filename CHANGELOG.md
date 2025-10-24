@@ -17,6 +17,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - Configured Vitest for testing (90% coverage threshold)
   - Added dependencies: zod, execa, csv-parse, date-fns, chalk, commander
   - Comprehensive README documenting Hexagonal Architecture patterns
+- **fetch-kaggle job – Phase 2 (Utilities, TDD) complete**
+  - Implemented utility modules: `console.ts`, `fs.ts`, `hash.ts`, `csv.ts`
+  - Added unit tests: `console.test.ts`, `fs.test.ts`, `hash.test.ts`, `csv.test.ts`
+  - Achieved ≥90% coverage for utils with Vitest v8 coverage provider
+  - Added dev dependency `@vitest/coverage-v8` and scoped coverage include to `src/lib/utils/**`
 - CHANGELOG maintenance guidance in `CLAUDE.md` and `AGENTS.md`.
 - TODO.md maintenance guidance alongside CHANGELOG.md in `CLAUDE.md`
 - Reference to `ARCHITECTURE.md` in `AGENTS.md`.

@@ -19,86 +19,18 @@
 ### 0.1 Create Job Structure ✅
 
 - [x] **Task**: Generate `fetch-kaggle` job using Nx generators
-  - **Command**: `pnpm nx g @nx/node:application fetch-kaggle --directory=jobs/fetch-kaggle`
-  - **Verify**: Job structure created with `src/`, `tests/`, and config files
-  - **DoD**: Can run `nx test fetch-kaggle` and `nx build fetch-kaggle`
-  - **Note**: Used Hexagonal Architecture (Ports & Adapters) instead of traditional layered structure
 
 ### 0.2 Setup Dependencies ✅
 
 - [x] **Task**: Add required npm packages
-  - **Packages**:
-    - `zod` - Runtime type validation for data schemas
-    - `csv-parse` - CSV parsing (replacement for pandas CSV reading)
-    - `date-fns` - Date manipulation
-    - `execa` - Subprocess execution (for Kaggle CLI)
-    - `chalk` - Terminal colors/formatting
-    - `commander` or `yargs` - CLI argument parsing
-    - `@types/node` - Node.js types
-  - **Dev Packages**:
-    - `vitest` - Testing (already in monorepo)
-    - `@vitest/coverage-v8` - Coverage reporting
-  - **DoD**: All packages installed, types available
 
 ### 0.3 Create Directory Structure ✅
 
 - [x] **Task**: Setup data directories in job root
-  - **Note**: Implemented Hexagonal Architecture structure (see below)
-
-  **Actual structure (Hexagonal Architecture)**:
-
-  ```
-  jobs/fetch-kaggle/
-  ├── data/
-  │   ├── kaggle_raw/      # Downloaded datasets by date (YYYYMMDD/)
-  │   ├── metadata/        # Profiles, manifests
-  │   └── reports/         # Generated Markdown reports
-  ├── src/
-  │   ├── core/            # APPLICATION CORE (The Hexagon)
-  │   │   ├── domain/      # Entities & value objects
-  │   │   │   ├── entities/
-  │   │   │   └── value-objects/
-  │   │   ├── ports/       # Interfaces (contracts)
-  │   │   │   ├── inbound/  # PRIMARY PORTS (what app does)
-  │   │   │   └── outbound/ # SECONDARY PORTS (what app needs)
-  │   │   └── services/    # Business logic
-  │   ├── adapters/        # ADAPTERS (Infrastructure)
-  │   │   ├── primary/     # CLI, tests (who calls us)
-  │   │   └── secondary/   # Kaggle API, FS (what we call)
-  │   └── infrastructure/  # Config, schemas
-  └── tests/
-      ├── unit/            # Unit tests
-      ├── integration/     # Integration tests
-      ├── e2e/             # End-to-end tests
-      └── fixtures/        # Test data
-  ```
-
-  - **DoD**: Directories created with Hexagonal Architecture structure
 
 ### 0.4 Setup Configuration Files ✅
 
 - [x] **Task**: Create configuration constants
-  - **File**: `src/lib/config.ts`
-  - **Content**:
-
-    ```typescript
-    export const KAGGLE_CONFIG = {
-      datasetId: 'erlichsefi/israeli-supermarkets-2024',
-      datasetUrl: 'https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024',
-      dataRoot: './data/kaggle_raw',
-      reportsDir: './data/reports',
-      metadataDir: './data/metadata',
-    } as const;
-
-    export const KAGGLE_PATHS = {
-      kaggleJson: `${process.env.HOME}/.kaggle/kaggle.json`,
-      kaggleDir: `${process.env.HOME}/.kaggle`,
-      apiTokenUrl: 'https://www.kaggle.com/settings/account',
-    } as const;
-    ```
-
-  - **Actual file**: `src/infrastructure/config.ts` (Hexagonal Architecture)
-  - **DoD**: Configuration exported, properly typed
 
 ### ✅ Phase 0 - Definition of Done
 
@@ -140,143 +72,18 @@ node -e "require('./dist/jobs/fetch-kaggle/src/lib/config.js')"
 ### 1.1 Define Core Types ✅
 
 - [x] **Task**: Create TypeScript interfaces for manifest data
-  - **Actual file**: `src/core/domain/entities/manifest.ts` (Hexagonal Architecture)
-  - **Types**:
-
-    ```typescript
-    export interface FileMetadata {
-      filename: string;
-      path: string;
-      size_bytes: number;
-      size_mb: number;
-      sha256: string;
-      row_count: number | null;
-    }
-
-    export interface DownloadManifest {
-      dataset: {
-        name: string;
-        kaggle_id: string;
-        url: string;
-        download_timestamp: string;
-      };
-      download_info: {
-        date: string;
-        directory: string;
-        total_files: number;
-        total_size_mb: number;
-        total_rows: number;
-      };
-      files: FileMetadata[];
-    }
-    ```
-
-  - **DoD**: Types exported, compile with `--strict` mode ✅
 
 ### 1.2 Define Profile Types ✅
 
 - [x] **Task**: Create schema profiling types
-  - **Actual file**: `src/core/domain/entities/profile.ts` (Hexagonal Architecture)
-  - **Types**:
-
-    ```typescript
-    export interface ColumnSummary {
-      name: string;
-      dtype: string;
-      null_count: number;
-      null_rate: number;
-      unique_count: number;
-      sample_values: unknown[];
-      min?: number | string;
-      max?: number | string;
-    }
-
-    export interface FileProfile {
-      family: string;
-      chain: string;
-      filename: string;
-      row_count: number;
-      source_path: string;
-      columns: ColumnSummary[];
-    }
-
-    export interface DataProfile {
-      generated_at: string;
-      source_directory: string;
-      dataset_date: string;
-      total_patterns: number;
-      profiles: FileProfile[];
-    }
-    ```
-
-  - **DoD**: Types exported, strict mode compliant ✅
 
 ### 1.3 Define Inventory Types ✅
 
 - [x] **Task**: Create inventory analysis types
-  - **Actual file**: `src/core/domain/entities/inventory.ts` (Hexagonal Architecture)
-  - **Types**:
-
-    ```typescript
-    export interface PatternInfo {
-      chain: string;
-      fileType: string;
-      pattern: string;
-    }
-
-    export interface InventoryAnalysis {
-      files: FileMetadata[];
-      patterns: Record<string, FileMetadata[]>;
-      chains: Record<string, number>;
-      fileTypes: Record<string, number>;
-      summary: {
-        total_files: number;
-        total_size_mb: number;
-        total_rows: number;
-      };
-    }
-    ```
-
-  - **DoD**: Types exported and documented ✅
 
 ### 1.4 Create Zod Schemas for Runtime Validation ✅
 
 - [x] **Task**: Create Zod schemas for JSON validation
-  - **Actual file**: `src/infrastructure/zod-schemas.ts` (Hexagonal Architecture)
-  - **Content**: Zod equivalents of TypeScript types
-  - **Example**:
-
-    ```typescript
-    import { z } from 'zod';
-
-    export const FileMetadataSchema = z.object({
-      filename: z.string(),
-      path: z.string(),
-      size_bytes: z.number(),
-      size_mb: z.number(),
-      sha256: z.string().length(64),
-      row_count: z.number().nullable(),
-    });
-
-    export const DownloadManifestSchema = z.object({
-      dataset: z.object({
-        name: z.string(),
-        kaggle_id: z.string(),
-        url: z.string().url(),
-        download_timestamp: z.string().datetime(),
-      }),
-      download_info: z.object({
-        date: z.string(),
-        directory: z.string(),
-        total_files: z.number(),
-        total_size_mb: z.number(),
-        total_rows: z.number(),
-      }),
-      files: z.array(FileMetadataSchema),
-    });
-    ```
-
-  - **DoD**: All schemas created, can parse and validate JSON ✅
 
 ### ✅ Phase 1 - Definition of Done
 
@@ -324,7 +131,7 @@ process.exit(result.success ? 0 : 1);
 
 ### 2.1 Console Utilities
 
-- [ ] **Test**: Write tests for console formatting
+- [x] **Test**: Write tests for console formatting
   - **File**: `tests/unit/utils/console.test.ts`
   - **Tests**:
 
@@ -357,7 +164,7 @@ process.exit(result.success ? 0 : 1);
 
   - **DoD**: Tests written, RED state (failing)
 
-- [ ] **Implement**: Console utility functions
+- [x] **Implement**: Console utility functions
   - **File**: `src/lib/utils/console.ts`
   - **Functions**:
 
@@ -371,7 +178,7 @@ process.exit(result.success ? 0 : 1);
 
 ### 2.2 File System Utilities
 
-- [ ] **Test**: Write tests for file operations
+- [x] **Test**: Write tests for file operations
   - **File**: `tests/unit/utils/fs.test.ts`
   - **Tests**:
 
@@ -400,7 +207,7 @@ process.exit(result.success ? 0 : 1);
 
   - **DoD**: Tests written, failing
 
-- [ ] **Implement**: File system utilities
+- [x] **Implement**: File system utilities
   - **File**: `src/lib/utils/fs.ts`
   - **Functions**:
     ```typescript
@@ -412,7 +219,7 @@ process.exit(result.success ? 0 : 1);
 
 ### 2.3 Hash Utilities
 
-- [ ] **Test**: Write tests for SHA256 calculation
+- [x] **Test**: Write tests for SHA256 calculation
   - **File**: `tests/unit/utils/hash.test.ts`
   - **Tests**:
 
@@ -435,7 +242,7 @@ process.exit(result.success ? 0 : 1);
 
   - **DoD**: Tests written
 
-- [ ] **Implement**: SHA256 calculation
+- [x] **Implement**: SHA256 calculation
   - **File**: `src/lib/utils/hash.ts`
   - **Function**:
     ```typescript
@@ -449,7 +256,7 @@ process.exit(result.success ? 0 : 1);
 
 ### 2.4 CSV Utilities
 
-- [ ] **Test**: Write tests for CSV row counting
+- [x] **Test**: Write tests for CSV row counting
   - **File**: `tests/unit/utils/csv.test.ts`
   - **Tests**:
 
@@ -472,7 +279,7 @@ process.exit(result.success ? 0 : 1);
 
   - **DoD**: Tests written
 
-- [ ] **Implement**: CSV utilities
+- [x] **Implement**: CSV utilities
   - **File**: `src/lib/utils/csv.ts`
   - **Function**:
     ```typescript
@@ -485,25 +292,25 @@ process.exit(result.success ? 0 : 1);
 
 **Phase 2 is complete when ALL of the following criteria are met:**
 
-- [ ] All utility modules exist: `console.ts`, `fs.ts`, `hash.ts`, `csv.ts`
-- [ ] All utility test files exist: `console.test.ts`, `fs.test.ts`, `hash.test.ts`, `csv.test.ts`
-- [ ] **All tests pass**: `pnpm nx test fetch-kaggle --testPathPattern=utils` shows 100% pass rate
-- [ ] Test coverage for utils ≥ 90%: `pnpm nx test fetch-kaggle --coverage --testPathPattern=utils`
-- [ ] All functions are exported and typed correctly
-- [ ] Can import and use all utilities without errors:
+- [x] All utility modules exist: `console.ts`, `fs.ts`, `hash.ts`, `csv.ts`
+- [x] All utility test files exist: `console.test.ts`, `fs.test.ts`, `hash.test.ts`, `csv.test.ts`
+- [x] **All tests pass**: `pnpm nx test fetch-kaggle --testPathPattern=utils` shows 100% pass rate
+- [x] Test coverage for utils ≥ 90%: `pnpm nx test fetch-kaggle --coverage --testPathPattern=utils`
+- [x] All functions are exported and typed correctly
+- [x] Can import and use all utilities without errors:
   ```typescript
   import { printSection, printBanner } from './lib/utils/console';
   import { ensureDir, findLatestDirectory, fileExists } from './lib/utils/fs';
   import { calculateSHA256 } from './lib/utils/hash';
   import { countCSVRows } from './lib/utils/csv';
   ```
-- [ ] `calculateSHA256` correctly calculates SHA256 for a known test file
-- [ ] `countCSVRows` accurately counts rows (excluding header) in test CSV
-- [ ] `ensureDir` creates directories idempotently (no error if exists)
-- [ ] `findLatestDirectory` returns correct directory by date pattern
-- [ ] All edge cases are tested (empty files, missing files, permission errors)
-- [ ] ESLint passes: `pnpm nx lint fetch-kaggle`
-- [ ] No `any` types in utility functions
+- [x] `calculateSHA256` correctly calculates SHA256 for a known test file
+- [x] `countCSVRows` accurately counts rows (excluding header) in test CSV
+- [x] `ensureDir` creates directories idempotently (no error if exists)
+- [x] `findLatestDirectory` returns correct directory by date pattern
+- [x] All edge cases are tested (empty files, missing files, permission errors)
+- [x] ESLint passes: `pnpm nx lint fetch-kaggle`
+- [x] No `any` types in utility functions
 
 **Verification Command**:
 
