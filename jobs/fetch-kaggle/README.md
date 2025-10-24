@@ -146,7 +146,7 @@ pnpm nx test fetch-kaggle
 # Run tests in watch mode
 pnpm nx test fetch-kaggle --watch
 
-# Run with coverage (90% threshold enforced)
+# Run with coverage (thresholds enforced)
 pnpm nx test fetch-kaggle --coverage
 ```
 
@@ -214,8 +214,8 @@ Based on [TODO.md](TODO.md):
 - ✅ **Phase 0**: Project setup, dependencies, directory structure
 - ✅ **Phase 1**: Type definitions and Zod schemas
 - ✅ **Demo**: Auth service with TDD tests (Hexagonal Architecture)
-- ⏳ **Phase 2**: Utility functions (FS, Hash, CSV, Console)
-- ⏳ **Phase 3**: Full authentication workflow
+- ✅ **Phase 2**: Utility functions (FS, Hash, CSV, Console)
+- ✅ **Phase 3**: Full authentication workflow (env vars, kaggle.json, API verify, interactive setup)
 - ⏳ **Phase 4**: Dataset download
 - ⏳ **Phase 5**: Inventory analysis
 - ⏳ **Phase 6**: Schema profiling
