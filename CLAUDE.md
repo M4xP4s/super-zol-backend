@@ -22,7 +22,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. **After Completing Each Task** - Create a commit immediately:
    - Use Conventional Commits format: `type(scope): subject`
    - Keep commits atomic and focused on one logical change
-   - Include TODO.md updates in the commit if task state changed
+   - **ALWAYS update TODO.md** when task state changes:
+     - Mark tasks as completed ([x]) when done
+     - Update phase completion status (add ✅ to phase titles)
+     - Add notes about deviations from original plan
+     - Keep TODO.md in sync with actual progress
+   - **ALWAYS update CHANGELOG.md** with a concise entry for the change:
+     - If `CHANGELOG.md` does not exist, create it
+     - Prefer Keep a Changelog + SemVer style
+     - Add entries under appropriate section (Added/Changed/Fixed/Security)
+     - Be specific about what changed and why it matters
    - Push regularly to create backup points
    - Example: `feat(api): add user authentication endpoint`
 
@@ -320,7 +329,7 @@ import { myUtil } from 'shared-util'; // If alias configured
 
 ## Documentation
 
-- **Architecture deep-dive**: `docs/architecture.md` - explains tsconfig layers, why separate tests/, git hooks philosophy
+- **Architecture deep-dive**: `ARCHITECTURE.md` - explains tsconfig layers, why separate tests/, git hooks philosophy
 - **README**: `README.md` - full project documentation with all commands
 
 ## CI/CD

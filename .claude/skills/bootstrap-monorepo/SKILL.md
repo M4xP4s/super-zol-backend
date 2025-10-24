@@ -140,7 +140,7 @@ Implement the production-ready backend monorepo baseline:
 1. Update or create sections in `docs/monorepo/overview.md`, `docs/monorepo/mcp-integrations.md`, and `docs/monorepo/plugins.md` describing the structure, tooling, and any platform integrations.
 2. Capture developer workflow (install, lint, test, build, serve, migrate) in `README.md` and `docs/usage.md`. Include `justfile` usage with examples like `just check`, `just dev-setup`, `just serve-api`.
 3. Add a "Task Runner" section in `README.md` explaining Just installation and common commands.
-4. Document Git Hooks in `README.md` and `docs/architecture.md`:
+4. Document Git Hooks in `README.md` and `ARCHITECTURE.md`:
    - Explain three hooks: pre-commit (lint), pre-push (test+build), commit-msg (format)
    - Show how to skip hooks when needed (emergency situations): `git commit --no-verify`
    - Explain why each hook exists and what it prevents

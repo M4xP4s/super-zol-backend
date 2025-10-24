@@ -2,7 +2,7 @@
 
 A production-ready TypeScript/Node.js monorepo using Nx, pnpm, and Vitest.
 
-> 📖 **New to this monorepo?** Read [docs/architecture.md](docs/architecture.md) to understand the file structure, why we have multiple tsconfig files, and how everything fits together.
+> 📖 **New to this monorepo?** Read [ARCHITECTURE.md](ARCHITECTURE.md) to understand the file structure, why we have multiple tsconfig files, and how everything fits together.
 
 ## Stack
 
@@ -163,6 +163,7 @@ This monorepo enforces code quality through automated checks:
 - **ESLint**: Strict TypeScript rules with Nx module boundaries
 - **Prettier**: Consistent code formatting
 - **Git Hooks**: Automated quality checks at different stages (see below)
+- **PR Checks**: Semantic PR title + required PR template sections
 
 ### Git Hooks (Enforced Quality)
 
@@ -196,7 +197,15 @@ git commit --no-verify  # Skip pre-commit + commit-msg
 git push --no-verify    # Skip pre-push
 ```
 
-> 📖 **Full details**: See [docs/architecture.md#git-hooks-and-linting](docs/architecture.md#git-hooks-and-linting) for complete explanation of all hooks, why they exist, and best practices.
+> 📖 **Full details**: See [ARCHITECTURE.md#git-hooks-and-linting](ARCHITECTURE.md#git-hooks-and-linting) for complete explanation of all hooks, why they exist, and best practices.
+
+### Pull Requests
+
+- Use the default template: `.github/PULL_REQUEST_TEMPLATE.md`
+- PR title must follow Conventional Commits (e.g., `feat(api): add auth`)
+- CI validates:
+  - Semantic PR title
+  - Presence of required sections: Problem Statement, Summary of Changes, Tests + Coverage, Docs Updates
 
 ### Component Structure
 
@@ -208,7 +217,7 @@ Each component (service/lib/job) follows a deterministic structure:
 - `tsconfig.json` + `tsconfig.app.json`/`tsconfig.lib.json` - TypeScript configs
 - `project.json` - Nx project configuration
 
-See [docs/architecture.md](docs/architecture.md) for detailed explanation.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed explanation.
 
 ## Adding New Projects
 
