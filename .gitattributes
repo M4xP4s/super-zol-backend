@@ -1,0 +1,2 @@
+# Justfile is not TypeScript
+justfile linguist-language=Just

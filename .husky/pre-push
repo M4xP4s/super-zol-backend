@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-push checks..."
+
+# Type checking
+echo "📝 Type checking..."
+pnpm exec tsc --noEmit || {
+  echo "❌ Type check failed. Fix type errors before pushing."
+  exit 1
+}
+
+# Run affected tests
+echo "🧪 Running tests on affected projects..."
+pnpm nx affected -t test --base=origin/main --parallel=3 || {
+  echo "❌ Tests failed. Fix failing tests before pushing."
+  exit 1
+}
+
+# Build affected projects
+echo "🏗️  Building affected projects..."
+pnpm nx affected -t build --base=origin/main --parallel=3 || {
+  echo "❌ Build failed. Fix build errors before pushing."
+  exit 1
+}
+
+echo "✅ All pre-push checks passed!"

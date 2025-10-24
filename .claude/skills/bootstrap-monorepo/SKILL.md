@@ -2,8 +2,8 @@ name: bootstrap-monorepo
 allowed-tools: Read, Write, Edit, Bash
 argument-hint: "[profile] | --with-python | --minimal"
 description: Bootstrap a backend-focused monorepo (Node 22 + pnpm 10) with Nx, using services/libs/jobs layout and shared quality gates; optional Python (uv)
----
 
+---
 
 # Bootstrap Backend Monorepo
 
@@ -49,9 +49,25 @@ Implement the production-ready backend monorepo baseline:
    - `pnpm nx g @nx/node:application services/api-gateway` (Fastify/Express skeleton; prefer Fastify)
    - `pnpm nx g @nx/node:application services/worker` (queue/cron worker)
    - `pnpm nx g @nx/node:library libs/shared-util`
-3. TypeScript: update `tsconfig.base.json` path aliases (e.g., `@services/*`, `@libs/*`), enable `strict`, `noUncheckedIndexedAccess`, and Node-targeted module resolution (`moduleResolution: "bundler"` or `"node16"`).
-4. Linting: configure `eslint.config.mjs` with flat config, Nx module-boundary rules, and Node-specific rules; align with `node22-nx-pnpm-vitest-monorepo/docs/engineering-standards.md`.
-5. Testing: add Vitest per service/lib (`coverageProvider: "v8"`) enforcing ≥90% lines/statements/functions/branches.
+3. **Component Structure**: Each component (service/lib/job) must have:
+   - `src/` - Source code
+   - `tests/` - Test files with at least one example test
+   - `vitest.config.ts` - Component-specific Vitest config extending root config
+   - `project.json` - Nx project configuration with test target
+   - `tsconfig.json` - Extends base, references lib/app configs
+   - `tsconfig.lib.json` (for libs) or `tsconfig.app.json` (for services/jobs)
+   - `eslint.config.js` - ESLint configuration
+   - `README.md` - Component documentation
+4. TypeScript Configuration:
+   - `tsconfig.base.json` - Shared config for entire monorepo with path aliases (`@services/*`, `@libs/*`, `@packages/*`), strict mode, `noUncheckedIndexedAccess`
+   - Each component has layered configs: `tsconfig.json` (root) → `tsconfig.lib.json`/`tsconfig.app.json` (specific)
+   - `.nvmrc` and `.node-version` files ensure version manager compatibility (nvm, fnm, asdf, nodenv)
+5. Linting: configure `eslint.config.mjs` with flat config, Nx module-boundary rules, and Node-specific rules; align with `node22-nx-pnpm-vitest-monorepo/docs/engineering-standards.md`.
+6. Testing:
+   - Root `vitest.config.ts` with shared defaults (90% coverage thresholds, v8 provider)
+   - Each component has its own `vitest.config.ts` extending root config
+   - `tests/` folder in each component with at least one example test (`*.test.ts` or `*.spec.ts`)
+   - `.lintstagedrc.json` to run linters only on staged files (performance optimization for pre-commit hooks)
 
 ### 3. Backend Essentials (Node)
 
@@ -88,17 +104,48 @@ Implement the production-ready backend monorepo baseline:
 
 ### 6. Automation & CI/CD
 
-1. Install Husky + lint-staged (`pnpm dlx husky-init && pnpm install lint-staged -D`) unless `--minimal`; ensure pre-commit runs `pnpm lint`, `pnpm test`, and optionally Python hooks.
-2. Add CI workflow steps: `pnpm install --frozen-lockfile`, spin up services via `docker compose up -d` when needed (db, broker), then `pnpm nx run-many -t lint test build`. For Python, add `uv sync` + `uv run pytest --cov`.
-3. Wire Nx `affected` commands for incremental builds; include `pnpm nx graph --focus` for debugging dependency issues.
-4. Surface coverage artifacts and docs in pipeline outputs per `docs/monorepo/roadmap.md` goals. Optionally publish `packages/*` artifacts from release branches.
+1. **Task Runner (Justfile)**: Create a `justfile` with essential commands for developer workflow:
+   - Core commands: `install`, `check`, `lint`, `typecheck`, `test`, `test-coverage`, `build`, `build-prod`, `format`, `clean`, `clean-all`
+   - Service commands: `serve-api`, `serve-worker`, `serve-all`
+   - CI commands: `affected-test`, `affected-build`, `affected-lint`, `ci`
+   - Infrastructure: `infra-up`, `infra-down`, `infra-logs`
+   - **Deterministic Generators**: `gen-service <name>`, `gen-lib <name>`, `gen-job <name>` - Must create complete component structure:
+     - Run Nx generator to scaffold base structure
+     - Create `tests/` directory with example test file (`<name>.test.ts`)
+     - Create component-specific `vitest.config.ts` extending root config
+     - Add test target to `project.json` if missing
+     - Create `README.md` with component description and usage
+     - Generators must be idempotent and create consistent structure every time
+   - Utilities: `graph`, `show <project>`, `bundle <service>`, `dev-setup`, `update-deps`, `audit`
+   - Python commands when `--with-python`: `py:lint`, `py:test`, `py:typecheck`
+   - Include helpful comments and installation instructions at the top
+2. **Git Hooks (Husky)**: Install Husky + lint-staged (`pnpm dlx husky-init && pnpm install lint-staged -D`) unless `--minimal`. Configure three essential hooks:
+   - **`.husky/pre-commit`**: Run `pnpm exec lint-staged` to enforce code style on staged files only (ESLint + Prettier)
+   - **`.husky/pre-push`**: Run comprehensive checks before pushing:
+     - Type checking: `pnpm exec tsc --noEmit`
+     - Affected tests: `pnpm nx affected -t test --base=origin/main --parallel=3`
+     - Affected builds: `pnpm nx affected -t build --base=origin/main --parallel=3`
+     - Exit with clear error messages if any check fails
+   - **`.husky/commit-msg`**: Enforce Conventional Commits format (type(scope?): subject)
+     - Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `build`, `perf`
+     - Example: `feat(api): add user authentication endpoint`
+     - Reject commits that don't follow format with helpful error message
+3. Configure `.lintstagedrc.json` to run ESLint and Prettier on staged TypeScript/JavaScript files, and Prettier on JSON/Markdown/YAML files.
+4. Add CI workflow steps: `pnpm install --frozen-lockfile`, spin up services via `docker compose up -d` when needed (db, broker), then `pnpm nx run-many -t lint test build`. For Python, add `uv sync` + `uv run pytest --cov`.
+5. Wire Nx `affected` commands for incremental builds; include `pnpm nx graph --focus` for debugging dependency issues.
+6. Surface coverage artifacts and docs in pipeline outputs per `docs/monorepo/roadmap.md` goals. Optionally publish `packages/*` artifacts from release branches.
 
 ### 7. Documentation
 
 1. Update or create sections in `docs/monorepo/overview.md`, `docs/monorepo/mcp-integrations.md`, and `docs/monorepo/plugins.md` describing the structure, tooling, and any platform integrations.
-2. Capture developer workflow (install, lint, test, build, serve, migrate) in `README.md` and `docs/usage.md`.
-3. Note optional add-ons (observability, DB tooling, MCP integrations) only when explicitly installed; keep defaults lean.
-4. Record follow-up tasks or decisions in `monorepo-alignment-notes.md`.
+2. Capture developer workflow (install, lint, test, build, serve, migrate) in `README.md` and `docs/usage.md`. Include `justfile` usage with examples like `just check`, `just dev-setup`, `just serve-api`.
+3. Add a "Task Runner" section in `README.md` explaining Just installation and common commands.
+4. Document Git Hooks in `README.md` and `docs/architecture.md`:
+   - Explain three hooks: pre-commit (lint), pre-push (test+build), commit-msg (format)
+   - Show how to skip hooks when needed (emergency situations): `git commit --no-verify`
+   - Explain why each hook exists and what it prevents
+5. Note optional add-ons (observability, DB tooling, MCP integrations) only when explicitly installed; keep defaults lean.
+6. Record follow-up tasks or decisions in `monorepo-alignment-notes.md`.
 
 ## Output
 
