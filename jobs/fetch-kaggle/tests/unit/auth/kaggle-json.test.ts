@@ -69,7 +69,53 @@ describe('kaggle.json validation', () => {
     expect(creds).toBeNull();
   });
 
-  // (additional branch/catch coverage intentionally limited due to OS differences)
+  it('should handle numeric values in JSON', async () => {
+    const kaggleDir = path.join(tmpHome, '.kaggle');
+    await fs.mkdir(kaggleDir, { recursive: true });
+    const file = path.join(kaggleDir, 'kaggle.json');
+    // Test with non-string values (should be rejected)
+    await fs.writeFile(file, JSON.stringify({ username: 123, key: 'validkey123' }), 'utf8');
+    await fs.chmod(file, 0o600);
 
-  // Note: permission behavior may vary by OS; covered by other tests.
+    const creds = await mod.checkKaggleJson();
+    // Should return null because username is not a string
+    expect(creds).toBeNull();
+  });
+
+  it('should return null if kaggle.json is a directory', async () => {
+    const kaggleDir = path.join(tmpHome, '.kaggle');
+    await fs.mkdir(kaggleDir, { recursive: true });
+    const file = path.join(kaggleDir, 'kaggle.json');
+    await fs.mkdir(file); // Create as directory instead of file
+
+    const creds = await mod.checkKaggleJson();
+    expect(creds).toBeNull();
+  });
+
+  it('should return null if JSON missing required fields', async () => {
+    const kaggleDir = path.join(tmpHome, '.kaggle');
+    await fs.mkdir(kaggleDir, { recursive: true });
+    const file = path.join(kaggleDir, 'kaggle.json');
+
+    // Missing 'key' field
+    await fs.writeFile(file, JSON.stringify({ username: 'dave' }), 'utf8');
+    await fs.chmod(file, 0o600);
+
+    const creds = await mod.checkKaggleJson();
+    expect(creds).toBeNull();
+  });
+
+  it('should handle chmod errors gracefully in fixKaggleJsonPermissions', async () => {
+    // Call fixKaggleJsonPermissions when file doesn't exist
+    // Should not throw, just resolve
+    await expect(mod.fixKaggleJsonPermissions()).resolves.toBeUndefined();
+  });
+
+  it('should handle mkdir errors gracefully in fixKaggleJsonPermissions', async () => {
+    // Create a file where the .kaggle directory should be
+    await fs.writeFile(path.join(tmpHome, '.kaggle'), 'blocking file', 'utf8');
+
+    // This should not throw even though mkdir will fail
+    await expect(mod.fixKaggleJsonPermissions()).resolves.toBeUndefined();
+  });
 });

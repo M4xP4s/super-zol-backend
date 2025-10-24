@@ -11,6 +11,7 @@ vi.mock('../../../src/lib/auth/setup', () => ({ setupKaggleJson: vi.fn() }));
 describe('ensureKaggleAuth orchestrator', () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.clearAllMocks();
   });
 
   it('returns true when env creds present and verify succeeds', async () => {
@@ -63,5 +64,36 @@ describe('ensureKaggleAuth orchestrator', () => {
     const { ensureKaggleAuth } = await import('../../../src/lib/auth/index');
     await expect(ensureKaggleAuth()).resolves.toBe(true);
     expect(setup.setupKaggleJson).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns false when setup fails', async () => {
+    const env = await import('../../../src/lib/auth/env-check');
+    const file = await import('../../../src/lib/auth/kaggle-json');
+    const api = await import('../../../src/lib/auth/verify-api');
+    const setup = await import('../../../src/lib/auth/setup');
+
+    (env.checkEnvVars as unknown as MockedFn).mockReturnValue(null);
+    (file.checkKaggleJson as unknown as MockedFn).mockResolvedValue(null);
+    (api.verifyKaggleAPI as unknown as MockedFn).mockResolvedValue(false);
+    (setup.setupKaggleJson as unknown as MockedFn).mockResolvedValue(false); // setup fails
+
+    const { ensureKaggleAuth } = await import('../../../src/lib/auth/index');
+    await expect(ensureKaggleAuth()).resolves.toBe(false);
+    expect(setup.setupKaggleJson).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns false when setup succeeds but verify fails', async () => {
+    const env = await import('../../../src/lib/auth/env-check');
+    const file = await import('../../../src/lib/auth/kaggle-json');
+    const api = await import('../../../src/lib/auth/verify-api');
+    const setup = await import('../../../src/lib/auth/setup');
+
+    (env.checkEnvVars as unknown as MockedFn).mockReturnValue(null);
+    (file.checkKaggleJson as unknown as MockedFn).mockResolvedValue(null);
+    (setup.setupKaggleJson as unknown as MockedFn).mockResolvedValue(true); // setup succeeds
+    (api.verifyKaggleAPI as unknown as MockedFn).mockResolvedValue(false); // but verify fails
+
+    const { ensureKaggleAuth } = await import('../../../src/lib/auth/index');
+    await expect(ensureKaggleAuth()).resolves.toBe(false);
   });
 });

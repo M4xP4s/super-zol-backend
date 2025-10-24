@@ -14,6 +14,11 @@ vi.mock('node:readline/promises', () => ({
   }),
 }));
 
+// Mock execa to prevent actual browser opening
+vi.mock('execa', () => ({
+  execa: vi.fn().mockResolvedValue({ stdout: '', stderr: '' }),
+}));
+
 describe('interactive setup', () => {
   let tmpHome: string;
 
@@ -90,5 +95,82 @@ describe('interactive setup', () => {
     await expect(fs.stat(src)).rejects.toThrow();
   });
 
-  // additional edge-case tests omitted for portability
+  it('should return false when custom path is not a file', async () => {
+    const notAFile = path.join(tmpHome, 'not-a-file-but-a-dir');
+    await fs.mkdir(notAFile, { recursive: true });
+
+    // User provides directory path instead of file
+    hoisted.answers.push(notAFile);
+
+    const setup = await import('../../../src/lib/auth/setup');
+    const ok = await setup.setupKaggleJson();
+    expect(ok).toBe(false);
+  });
+
+  it('should return false when custom path does not exist', async () => {
+    const nonExistent = path.join(tmpHome, 'does-not-exist.json');
+
+    // User provides non-existent path
+    hoisted.answers.push(nonExistent);
+
+    const setup = await import('../../../src/lib/auth/setup');
+    const ok = await setup.setupKaggleJson();
+    expect(ok).toBe(false);
+  });
+
+  it('should handle readline errors gracefully during removal prompt', async () => {
+    const src = path.join(tmpHome, 'Downloads', 'kaggle.json');
+    await fs.writeFile(src, JSON.stringify({ username: 'grace', key: 'q'.repeat(40) }), 'utf8');
+
+    // Simulate readline error by making the answer undefined (simulates closed stdin)
+    hoisted.answers.push(undefined as unknown as string);
+
+    const setup = await import('../../../src/lib/auth/setup');
+    const ok = await setup.setupKaggleJson();
+    // Should still succeed (error is caught and ignored)
+    expect(ok).toBe(true);
+    // Original file should still exist (removal failed silently)
+    await expect(fs.stat(src)).resolves.toBeTruthy();
+  });
+
+  it('should test openBrowserToKaggle on different platforms', async () => {
+    const setup = await import('../../../src/lib/auth/setup');
+
+    // Save original platform
+    const originalPlatform = process.platform;
+
+    try {
+      // Test darwin (already covered in main tests, but explicit)
+      Object.defineProperty(process, 'platform', { value: 'darwin' });
+      await expect(setup.openBrowserToKaggle()).resolves.toBeUndefined();
+
+      // Test win32
+      Object.defineProperty(process, 'platform', { value: 'win32' });
+      await expect(setup.openBrowserToKaggle()).resolves.toBeUndefined();
+
+      // Test linux
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+      await expect(setup.openBrowserToKaggle()).resolves.toBeUndefined();
+    } finally {
+      // Restore original platform
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    }
+  });
+
+  it('should handle unlink failure silently during cleanup', async () => {
+    const src = path.join(tmpHome, 'Downloads', 'kaggle.json');
+    await fs.writeFile(src, JSON.stringify({ username: 'hal', key: 'h'.repeat(40) }), 'utf8');
+
+    // Make the file read-only to cause unlink to potentially fail
+    await fs.chmod(src, 0o444);
+
+    // Answer 'yes' to removal
+    hoisted.answers.push('yes');
+
+    const setup = await import('../../../src/lib/auth/setup');
+    const ok = await setup.setupKaggleJson();
+
+    // Should still succeed even if unlink has issues
+    expect(ok).toBe(true);
+  });
 });
