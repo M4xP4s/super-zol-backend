@@ -26,6 +26,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 - TODO.md maintenance guidance alongside CHANGELOG.md in `CLAUDE.md`
 - Reference to `ARCHITECTURE.md` in `AGENTS.md`.
 - Kaggle environment variable placeholders (`KAGGLE_USERNAME`, `KAGGLE_KEY`) in `.env.example`.
+- GitHub Actions CI workflow (`ci`) running `lint`, `test`, and `build` on PRs targeting `main` and on pushes to `main`.
 
 ### Changed
 
