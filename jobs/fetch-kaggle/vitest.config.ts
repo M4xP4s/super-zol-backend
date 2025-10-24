@@ -14,6 +14,7 @@ export default defineConfig({
       reportsDirectory: '../../coverage/jobs/fetch-kaggle',
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
+      include: ['src/lib/utils/**/*.ts'],
       thresholds: {
         lines: 90,
         functions: 90,
