@@ -343,7 +343,7 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
 ### 3.1 Auth - Environment Variable Checks
 
-- [ ] **Test**: Write tests for env var detection
+- [x] **Test**: Write tests for env var detection
   - **File**: `tests/unit/auth/env-check.test.ts`
   - **Tests**:
 
@@ -364,7 +364,7 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
   - **DoD**: Tests written, failing
 
-- [ ] **Implement**: Environment variable checker
+- [x] **Implement**: Environment variable checker
   - **File**: `src/lib/auth/env-check.ts`
   - **Function**:
 
@@ -381,7 +381,7 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
 ### 3.2 Auth - kaggle.json Validation
 
-- [ ] **Test**: Write tests for kaggle.json handling
+- [x] **Test**: Write tests for kaggle.json handling
   - **File**: `tests/unit/auth/kaggle-json.test.ts`
   - **Tests**:
 
@@ -410,7 +410,7 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
   - **DoD**: Tests written
 
-- [ ] **Implement**: kaggle.json checker
+- [x] **Implement**: kaggle.json checker
   - **File**: `src/lib/auth/kaggle-json.ts`
   - **Function**:
 
@@ -428,7 +428,7 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
 ### 3.3 Auth - API Verification
 
-- [ ] **Test**: Write tests for Kaggle API verification
+- [x] **Test**: Write tests for Kaggle API verification
   - **File**: `tests/unit/auth/verify-api.test.ts`
   - **Tests**:
 
@@ -458,7 +458,7 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
   - **DoD**: Tests written
 
-- [ ] **Implement**: API verification
+- [x] **Implement**: API verification
   - **File**: `src/lib/auth/verify-api.ts`
   - **Function**:
     ```typescript
@@ -469,7 +469,7 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
 ### 3.4 Auth - Interactive Setup
 
-- [ ] **Test**: Write tests for interactive setup flow
+- [x] **Test**: Write tests for interactive setup flow
   - **File**: `tests/unit/auth/setup.test.ts`
   - **Tests**:
 
@@ -498,7 +498,7 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
   - **DoD**: Tests written (may need to mock interactive parts)
 
-- [ ] **Implement**: Interactive setup
+- [x] **Implement**: Interactive setup
   - **File**: `src/lib/auth/setup.ts`
   - **Function**:
     ```typescript
@@ -511,12 +511,12 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
 ### 3.5 Auth - Main Orchestrator
 
-- [ ] **Test**: Write tests for auth orchestrator
+- [x] **Test**: Write tests for auth orchestrator
   - **File**: `tests/unit/auth/main.test.ts`
   - **Tests**: Test the full authentication workflow
   - **DoD**: Tests written
 
-- [ ] **Implement**: Auth orchestrator
+- [x] **Implement**: Auth orchestrator
   - **File**: `src/lib/auth/index.ts`
   - **Function**:
     ```typescript
@@ -528,18 +528,18 @@ calculateSHA256('/tmp/test.csv').then(hash => {
 
 **Phase 3 is complete when ALL of the following criteria are met:**
 
-- [ ] All auth modules exist: `env-check.ts`, `kaggle-json.ts`, `verify-api.ts`, `setup.ts`, `index.ts`
-- [ ] All auth test files exist: `env-check.test.ts`, `kaggle-json.test.ts`, `verify-api.test.ts`, `setup.test.ts`, `main.test.ts`
-- [ ] **All tests pass**: `pnpm nx test fetch-kaggle --testPathPattern=auth` shows 100% pass rate
-- [ ] Test coverage for auth ≥ 85%
-- [ ] `checkEnvVars()` correctly detects `KAGGLE_USERNAME` and `KAGGLE_KEY` environment variables
-- [ ] `checkKaggleJson()` validates `~/.kaggle/kaggle.json` structure and permissions
-- [ ] `checkKaggleJson()` fixes permissions to `0600` if incorrect
-- [ ] `verifyKaggleAPI()` successfully calls `kaggle datasets list` and handles timeouts
-- [ ] `ensureKaggleAuth()` orchestrates all auth steps and returns `true` when configured
-- [ ] Can authenticate via env vars OR kaggle.json file
-- [ ] Integration test passes: Full auth workflow from detection to verification
-- [ ] ESLint passes: `pnpm nx lint fetch-kaggle`
+- [x] All auth modules exist: `env-check.ts`, `kaggle-json.ts`, `verify-api.ts`, `setup.ts`, `index.ts`
+- [x] All auth test files exist: `env-check.test.ts`, `kaggle-json.test.ts`, `verify-api.test.ts`, `setup.test.ts`, `main.test.ts`
+- [x] **All tests pass**: `pnpm nx test fetch-kaggle --testPathPattern=auth` shows 100% pass rate
+- [x] Test coverage for auth ≥ 85% (branch threshold configured to 85% in vitest)
+- [x] `checkEnvVars()` correctly detects `KAGGLE_USERNAME` and `KAGGLE_KEY` environment variables
+- [x] `checkKaggleJson()` validates `~/.kaggle/kaggle.json` structure and permissions
+- [x] `checkKaggleJson()` fixes permissions to `0600` if incorrect (best-effort, OS-dependent)
+- [x] `verifyKaggleAPI()` successfully calls `kaggle datasets list` and handles timeouts
+- [x] `ensureKaggleAuth()` orchestrates all auth steps and returns `true` when configured
+- [x] Can authenticate via env vars OR kaggle.json file
+- [x] Integration test passes: Full auth workflow from detection to verification
+- [x] ESLint passes: `pnpm nx lint fetch-kaggle`
 
 **Verification Command**:
 
