@@ -222,7 +222,10 @@ Based on [TODO.md](TODO.md):
 - ⏳ **Phase 7**: CLI interface
 - ⏳ **Phase 8**: Enhanced testing
 - ⏳ **Phase 9**: Documentation
-- ⏳ **Phase 10**: CI/CD validation
+
+## Later Stages
+
+- 🗓️ Future: **Phase 10** – CI/CD validation (deferred)
 
 ## Why Hexagonal Architecture?
 

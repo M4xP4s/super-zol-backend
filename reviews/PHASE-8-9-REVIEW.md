@@ -620,7 +620,7 @@ vi.spyOn(console, 'log').mockImplementation((...args) => {
    - Test mixed numeric/string columns more thoroughly
    - Estimated effort: 2-3 tests
 
-2. **Add CLI Integration Test** (Planned for Phase 10?)
+2. **Add CLI Integration Test** (Deferred to later stage)
    - Test full workflow via CLI: `fetch-kaggle all`
    - Verify exit codes and output
    - Mock network/auth dependencies
@@ -800,7 +800,7 @@ The 4% uncertainty accounts for:
 1. Merge `claude-p8` → `main`
 2. Begin Phase 9: Add JSDoc comments to all public APIs
 3. Create test documentation for future developers
-4. Consider Phase 10 CLI integration tests
+4. Consider future CLI integration tests (later stage)
 
 ---
 
@@ -880,7 +880,7 @@ Phase 6: Schema Profiling                 ✅
 Phase 7: CLI Interface                    ✅
 Phase 8: Enhanced Testing                 ✅ (CURRENT)
 Phase 9: Documentation & Polish           [NEXT]
-Phase 10: CI/CD & Validation              [PLANNED]
+Later Stage: CI/CD & Validation            [DEFERRED]
 ```
 
 ---

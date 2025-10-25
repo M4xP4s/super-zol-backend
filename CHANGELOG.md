@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Compact `TODO.md` to a concise overview; removed detailed task descriptions and verification commands.
+- Move Phase 10 (CI/CD validation) to later stage; updated references in job README and review docs.
 
 ### Added - Phase 8: Enhanced Testing (Completed)
 
