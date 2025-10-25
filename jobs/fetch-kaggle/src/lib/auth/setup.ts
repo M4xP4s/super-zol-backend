@@ -1,8 +1,8 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { createInterface } from 'node:readline/promises';
-import { KAGGLE_PATHS } from '../../infrastructure/config';
-import { fixKaggleJsonPermissions, checkKaggleJson } from './kaggle-json';
+import { KAGGLE_PATHS } from '../../infrastructure/config.js';
+import { fixKaggleJsonPermissions, checkKaggleJson } from './kaggle-json.js';
 
 export async function openBrowserToKaggle(): Promise<void> {
   try {

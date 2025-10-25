@@ -3,7 +3,7 @@
  * Based on TODO.md Phase 1.3
  */
 
-import { FileMetadata } from './manifest';
+import { FileMetadata } from './manifest.js';
 
 export interface PatternInfo {
   chain: string;

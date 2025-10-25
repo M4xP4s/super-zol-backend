@@ -1,9 +1,12 @@
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import Fastify, { FastifyInstance } from 'fastify';
 import AutoLoad from '@fastify/autoload';
 
 /* eslint-disable-next-line */
 export interface AppOptions {}
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export async function app(fastify: FastifyInstance, opts: AppOptions) {
   // Place here your custom code!
@@ -36,11 +39,11 @@ export async function build(opts: AppOptions = {}) {
   });
 
   // Manually register sensible plugin
-  const sensiblePlugin = await import('./plugins/sensible');
+  const sensiblePlugin = await import('./plugins/sensible.js');
   await fastify.register(sensiblePlugin.default, opts);
 
   // Manually register root route
-  const rootRoute = await import('./routes/root');
+  const rootRoute = await import('./routes/root.js');
   await fastify.register(rootRoute.default, opts);
 
   await fastify.ready();

@@ -4,8 +4,8 @@
  */
 
 import { execa } from 'execa';
-import { IKaggleAPI } from '../../core/ports/outbound/kaggle-api.port';
-import { KaggleCredentials } from '../../core/domain/value-objects/kaggle-credentials';
+import { IKaggleAPI } from '../../core/ports/outbound/kaggle-api.port.js';
+import { KaggleCredentials } from '../../core/domain/value-objects/kaggle-credentials.js';
 
 export class KaggleCLIAdapter implements IKaggleAPI {
   async verify(credentials: KaggleCredentials): Promise<boolean> {

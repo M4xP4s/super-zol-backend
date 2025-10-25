@@ -3,7 +3,7 @@
  * These are implemented by secondary adapters
  */
 
-import { KaggleCredentials } from '../../domain/value-objects/kaggle-credentials';
+import { KaggleCredentials } from '../../domain/value-objects/kaggle-credentials.js';
 
 /**
  * Port for Kaggle API operations

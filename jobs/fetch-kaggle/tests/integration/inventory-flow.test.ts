@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { writeFile, mkdir, rm, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { runInventory } from '../../src/lib/inventory/index';
-import type { DownloadManifest } from '../../src/core/domain/entities/manifest';
-import { KAGGLE_CONFIG } from '../../src/infrastructure/config';
+import { runInventory } from '../../src/lib/inventory/index.js';
+import type { DownloadManifest } from '../../src/core/domain/entities/manifest.js';
+import { KAGGLE_CONFIG } from '../../src/infrastructure/config.js';
 
 describe('Inventory Flow Integration', () => {
   const testDir = '/tmp/test-inventory-flow';

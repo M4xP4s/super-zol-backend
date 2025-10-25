@@ -8,9 +8,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AuthService } from '../../../src/core/services/auth.service';
-import { KaggleCredentials } from '../../../src/core/domain/value-objects/kaggle-credentials';
-import { IKaggleAPI, ICredentialStore } from '../../../src/core/ports/outbound/kaggle-api.port';
+import { AuthService } from '../../../src/core/services/auth.service.js';
+import { KaggleCredentials } from '../../../src/core/domain/value-objects/kaggle-credentials.js';
+import { IKaggleAPI, ICredentialStore } from '../../../src/core/ports/outbound/kaggle-api.port.js';
 
 // Mock implementations of ports
 class MockKaggleAPI implements IKaggleAPI {

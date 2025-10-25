@@ -1,8 +1,8 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { calculateSHA256 } from '../utils/hash';
-import { countCSVRows } from '../utils/csv';
-import type { FileMetadata } from '../../core/domain/entities/manifest';
+import { calculateSHA256 } from '../utils/hash.js';
+import { countCSVRows } from '../utils/csv.js';
+import type { FileMetadata } from '../../core/domain/entities/manifest.js';
 
 export interface ProcessedFilesResult {
   totalFiles: number;

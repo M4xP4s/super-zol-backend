@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { runDownload } from '../../src/lib/download';
-import { KAGGLE_CONFIG } from '../../src/infrastructure/config';
+import { runDownload } from '../../src/lib/download/index.js';
+import { KAGGLE_CONFIG } from '../../src/infrastructure/config.js';
 
 describe('download flow (integration)', () => {
   it('should complete full flow in dry-run mode', async () => {

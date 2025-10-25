@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sharedUtil } from '../src/lib/shared-util';
+import { sharedUtil } from '../src/lib/shared-util.js';
 
 describe('shared-util', () => {
   it('should be defined', () => {

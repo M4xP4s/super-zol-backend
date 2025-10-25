@@ -1,8 +1,8 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { KAGGLE_CONFIG } from '../../infrastructure/config';
-import type { DownloadManifest } from '../../core/domain/entities/manifest';
-import type { ProcessedFilesResult } from './process';
+import { KAGGLE_CONFIG } from '../../infrastructure/config.js';
+import type { DownloadManifest } from '../../core/domain/entities/manifest.js';
+import type { ProcessedFilesResult } from './process.js';
 
 export async function createManifest(
   targetDir: string,

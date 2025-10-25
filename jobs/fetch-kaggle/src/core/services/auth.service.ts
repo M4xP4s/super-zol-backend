@@ -7,8 +7,8 @@ import {
   IAuthenticateKaggle,
   AuthenticateKaggleRequest,
   AuthenticateKaggleResponse,
-} from '../ports/inbound/authenticate-kaggle.port';
-import { IKaggleAPI, ICredentialStore } from '../ports/outbound/kaggle-api.port';
+} from '../ports/inbound/authenticate-kaggle.port.js';
+import { IKaggleAPI, ICredentialStore } from '../ports/outbound/kaggle-api.port.js';
 
 export class AuthService implements IAuthenticateKaggle {
   constructor(

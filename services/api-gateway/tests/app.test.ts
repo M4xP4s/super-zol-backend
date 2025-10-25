@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { build } from '../src/app/app';
+import { build } from '../src/app/app.js';
 import { FastifyInstance } from 'fastify';
 
 describe('API Gateway', () => {

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { processFiles } from '../../../src/lib/download/process';
+import { processFiles } from '../../../src/lib/download/process.js';
 
 const tmpRoot = path.join(process.cwd(), 'jobs/fetch-kaggle/data/tests/tmp-process');
 

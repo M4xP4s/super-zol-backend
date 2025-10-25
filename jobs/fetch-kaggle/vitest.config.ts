@@ -1,5 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { getDirname } from '../../libs/shared-util/src/lib/esm-utils.js';
+
+const __dirname = getDirname(import.meta.url);
 
 export default defineConfig({
   root: __dirname,

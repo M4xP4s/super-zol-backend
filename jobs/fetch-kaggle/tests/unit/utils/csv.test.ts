@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { countCSVRows } from '../../../src/lib/utils/csv';
+import { countCSVRows } from '../../../src/lib/utils/csv.js';
 
 describe('csv utils', () => {
   it('should count rows excluding header', async () => {

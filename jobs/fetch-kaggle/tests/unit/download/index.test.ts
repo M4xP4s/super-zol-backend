@@ -4,8 +4,8 @@ vi.mock('../../../src/lib/download/fetch', () => ({
   downloadDataset: vi.fn(async () => false),
 }));
 
-import { runDownload } from '../../../src/lib/download';
-import { downloadDataset } from '../../../src/lib/download/fetch';
+import { runDownload } from '../../../src/lib/download/index.js';
+import { downloadDataset } from '../../../src/lib/download/fetch.js';
 
 describe('runDownload (unit)', () => {
   it('should return 1 when non-dry-run download fails', async () => {

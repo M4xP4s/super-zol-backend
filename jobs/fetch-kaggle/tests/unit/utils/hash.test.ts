@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { calculateSHA256 } from '../../../src/lib/utils/hash';
+import { calculateSHA256 } from '../../../src/lib/utils/hash.js';
 
 describe('hash utils', () => {
   it('should calculate correct SHA256 for file', async () => {

@@ -1,7 +1,7 @@
-import { checkEnvVars } from './env-check';
-import { checkKaggleJson } from './kaggle-json';
-import { verifyKaggleAPI } from './verify-api';
-import { setupKaggleJson } from './setup';
+import { checkEnvVars } from './env-check.js';
+import { checkKaggleJson } from './kaggle-json.js';
+import { verifyKaggleAPI } from './verify-api.js';
+import { setupKaggleJson } from './setup.js';
 
 /**
  * Ensure Kaggle auth is properly configured.
