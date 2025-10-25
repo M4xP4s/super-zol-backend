@@ -85,6 +85,24 @@ just serve-api      # Start API gateway service
 just serve-worker   # Start worker service
 ```
 
+### Automated PR Workflow
+
+```bash
+# Automated workflow: push, create PR, wait for CI, auto-merge, cleanup
+just merge-to-main                    # Use current branch
+just merge-to-main <branch-name>      # Specify branch
+just merge-to-main-with squash <branch>  # Custom merge method
+just merge-to-main-keep <branch>      # Keep local branch after merge
+
+# What it does:
+# 1. Pushes branch upstream (with -u if needed)
+# 2. Creates PR with proper Conventional Commits format
+# 3. Waits for CI checks to pass (polls every 10s, max 10min)
+# 4. Auto-merges when all checks are green
+# 5. Switches to main, pulls latest, deletes feature branch
+# 6. Cleans up stale remote tracking branches
+```
+
 ## Architecture Overview
 
 This is an **Nx-powered TypeScript monorepo** with strict typing, comprehensive testing, and deterministic structure.

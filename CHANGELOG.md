@@ -8,6 +8,12 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ### Added
 
+- **Automated PR workflow** (`just merge-to-main`): One-command automation for pushing, creating PR, waiting for CI, and auto-merging
+  - Script: `scripts/merge-to-main.sh` - Full PR lifecycle automation with GitHub CLI integration
+  - Commands: `just merge-to-main`, `just merge-to-main-with <method>`, `just merge-to-main-keep`
+  - Features: Auto-detects branch, generates Conventional Commits PR title, polls CI status, auto-merges on green, cleans up branches
+  - Requirements: GitHub CLI (`gh`) installed and authenticated
+  - Documented in README.md, CLAUDE.md, and TIME_SAVE.md
 - `just pack-for-llm` command and `scripts/pack-for-llm.sh` to create a tar.gz of the repo excluding `.gitignore`d files for easy LLM context sharing.
 - **fetch-kaggle job** (Phase 0 & 1 complete): Hexagonal Architecture implementation for Kaggle dataset operations
   - Created complete Hexagonal Architecture structure (core/domain/ports/adapters)

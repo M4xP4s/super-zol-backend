@@ -757,33 +757,77 @@ export async function calculateSHA256(
 
 ---
 
+## Automated PR Workflow ⚡ NEW!
+
+**One command to rule them all:**
+
+```bash
+just merge-to-main [branch-name]
+```
+
+This command automates the entire PR workflow:
+
+1. ✅ Pushes branch upstream (with `-u` if needed)
+2. ✅ Creates PR with proper Conventional Commits title and required sections
+3. ✅ Waits for CI checks to pass (polls every 10s, max 10min)
+4. ✅ Auto-merges when all checks are green
+5. ✅ Switches to main, pulls latest changes
+6. ✅ Deletes feature branch locally
+7. ✅ Cleans up stale remote tracking branches
+
+**Options:**
+
+- `just merge-to-main` - Use current branch
+- `just merge-to-main feature/my-branch` - Specify branch
+- `just merge-to-main-with merge feature/my-branch` - Use merge instead of squash
+- `just merge-to-main-keep feature/my-branch` - Keep local branch after merge
+
+**Example workflow:**
+
+```bash
+# Work on your feature
+git checkout -b feat/new-feature
+# ... make changes, commit ...
+
+# One command to merge to main
+just merge-to-main
+
+# Done! You're back on main with the latest changes
+```
+
+See `scripts/merge-to-main.sh` for implementation details.
+
+---
+
 ## MCP Command Snippets
 
+For manual PR operations (when not using `just merge-to-main`):
+
 - Create branch
-  - “Create branch feature/phase-2-csv-utils from main.”
+  - "Create branch feature/phase-2-csv-utils from main."
 
 - Push files to a branch (single commit)
-  - “Push files to feature/phase-2-csv-utils with message 'feat(csv): add csv utils':
+  - "Push files to feature/phase-2-csv-utils with message 'feat(csv): add csv utils':
     - path: libs/csv-utils/src/index.ts (paste content)
     - path: libs/csv-utils/tests/index.test.ts (paste content)
-      Then report the commit SHA.”
+      Then report the commit SHA."
 
 - Open pull request
-  - “Open PR to main from feature/phase-2-csv-utils titled: feat(csv): add csv utils.
+  - "Open PR to main from feature/phase-2-csv-utils titled: feat(csv): add csv utils.
     Body: follow .github/PULL_REQUEST_TEMPLATE.md (Problem Statement, Summary, Tests + Coverage, Docs Updates).
-    Labels: type:feat, area:csv, status:ready-for-review.”
+    Labels: type:feat, area:csv, status:ready-for-review."
 
 - Comment on a PR (review notes)
-  - “Add PR comment: Please add edge-case tests for empty rows and malformed CSV headers.”
+  - "Add PR comment: Please add edge-case tests for empty rows and malformed CSV headers."
 
 - Update PR branch
-  - “Update PR #<number> with latest from main.”
+  - "Update PR #<number> with latest from main."
 
 - Create issue
-  - “Create issue: flaky CSV profiler test when file has BOM. Label: bug, area:csv.”
+  - "Create issue: flaky CSV profiler test when file has BOM. Label: bug, area:csv."
 
 - Search code
-  - “Search code for registerFastify or fastify routes in services/api-gateway.”
+  - "Search code for registerFastify or fastify routes in services/api-gateway."
 
 Notes
 
