@@ -1215,6 +1215,8 @@ node dist/jobs/fetch-kaggle/src/cli/index.js download --dry-run
 
 ## Phase 8: Enhanced Testing
 
+Note: For a combined and more granular plan covering Phases 8–9, see [docs/phase-8-9.md](docs/phase-8-9.md).
+
 ### 8.1 Add Edge Case Tests
 
 - [ ] **Task**: Add comprehensive edge case testing
@@ -1299,6 +1301,8 @@ done
 ---
 
 ## Phase 9: Documentation & Polish
+
+Note: For a combined and more granular plan covering Phases 8–9, see [docs/phase-8-9.md](docs/phase-8-9.md).
 
 ### 9.1 Add JSDoc Comments
 

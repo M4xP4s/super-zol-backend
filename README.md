@@ -385,3 +385,5 @@ pnpm install
 - [Fastify Documentation](https://fastify.dev)
 - [Vitest Documentation](https://vitest.dev)
 - [TypeScript Documentation](https://www.typescriptlang.org)
+- Project TODO/Roadmap: [TODO.md](TODO.md)
+- Combined Phases 8–9 Plan: [docs/phase-8-9.md](docs/phase-8-9.md)
