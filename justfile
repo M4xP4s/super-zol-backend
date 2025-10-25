@@ -157,3 +157,11 @@ merge-to-main-with method branch='':
 # Keep local branch after merge (don't auto-delete)
 merge-to-main-keep branch='':
     DELETE_BRANCH=false ./scripts/merge-to-main.sh {{branch}}
+
+# Quick commit to main: format, commit, affected checks, push
+quick-commit message='':
+    bash ./scripts/quick-commit.sh {{message}}
+
+# Shorthand alias for quick-commit
+qc message='':
+    bash ./scripts/quick-commit.sh {{message}}
