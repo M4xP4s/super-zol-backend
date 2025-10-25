@@ -1,5 +1,5 @@
 import { join, dirname } from 'node:path';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, access, constants } from 'node:fs/promises';
 import { KAGGLE_CONFIG } from '../../infrastructure/config';
 import { findLatestDirectory } from '../utils/fs';
 import { analyzeDirectory } from './analyze';
@@ -36,7 +36,17 @@ export async function runInventory(targetDir?: string, outputPath?: string): Pro
     let directory: string;
 
     if (targetDir) {
-      directory = targetDir;
+      // Validate that target directory exists and is readable
+      try {
+        await access(targetDir, constants.R_OK);
+        directory = targetDir;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(
+          `Target directory does not exist or is not readable: ${targetDir} (${errorMessage})`
+        );
+        return 1;
+      }
     } else {
       // Find the latest directory in the data root
       try {
@@ -44,8 +54,11 @@ export async function runInventory(targetDir?: string, outputPath?: string): Pro
           KAGGLE_CONFIG.dataRoot,
           /^\d{8}$/ // YYYYMMDD pattern
         );
-      } catch {
-        console.error('No download directories found. Please run download first.');
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(
+          `No download directories found (${errorMessage}). Please run download first.`
+        );
         return 1;
       }
     }
@@ -74,7 +87,10 @@ export async function runInventory(targetDir?: string, outputPath?: string): Pro
       reportPath = outputPath;
     } else {
       // Generate default report path
-      const date = new Date().toISOString().split('T')[0]!.replace(/-/g, '');
+      const dateStr = new Date().toISOString().split('T')[0];
+      const date = dateStr
+        ? dateStr.replace(/-/g, '')
+        : new Date().toISOString().slice(0, 10).replace(/-/g, '');
       reportPath = join(KAGGLE_CONFIG.reportsDir, `kaggle_inventory_${date}.md`);
     }
 

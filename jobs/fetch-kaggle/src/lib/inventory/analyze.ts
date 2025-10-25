@@ -44,10 +44,12 @@ export async function analyzeDirectory(targetDir: string): Promise<InventoryAnal
       const patternInfo = extractPatternInfo(file.filename);
 
       // Group by pattern
-      if (!patterns[patternInfo.pattern]) {
-        patterns[patternInfo.pattern] = [];
+      const existingPattern = patterns[patternInfo.pattern];
+      if (existingPattern) {
+        existingPattern.push(file);
+      } else {
+        patterns[patternInfo.pattern] = [file];
       }
-      patterns[patternInfo.pattern]!.push(file);
 
       // Count by chain
       chains[patternInfo.chain] = (chains[patternInfo.chain] || 0) + 1;
@@ -71,8 +73,13 @@ export async function analyzeDirectory(targetDir: string): Promise<InventoryAnal
         total_rows: totalRows,
       },
     };
-  } catch {
+  } catch (error) {
     // Return null if manifest doesn't exist or is invalid
+    // Log error details for debugging
+    if (process.env.DEBUG) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Failed to analyze directory ${targetDir}: ${errorMessage}`);
+    }
     return null;
   }
 }

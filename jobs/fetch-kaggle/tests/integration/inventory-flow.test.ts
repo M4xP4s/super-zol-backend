@@ -1,12 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { writeFile, mkdir, rm, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { runInventory } from '../../src/lib/inventory/index';
 import type { DownloadManifest } from '../../src/core/domain/entities/manifest';
+import { KAGGLE_CONFIG } from '../../src/infrastructure/config';
 
 describe('Inventory Flow Integration', () => {
   const testDir = '/tmp/test-inventory-flow';
   const manifestPath = join(testDir, 'download_manifest.json');
+
+  // Clean up any leftover data from previous test runs to prevent flaky tests
+  beforeAll(async () => {
+    await rm(KAGGLE_CONFIG.dataRoot, { recursive: true, force: true });
+    await rm(KAGGLE_CONFIG.reportsDir, { recursive: true, force: true });
+  });
 
   beforeEach(async () => {
     await mkdir(testDir, { recursive: true });

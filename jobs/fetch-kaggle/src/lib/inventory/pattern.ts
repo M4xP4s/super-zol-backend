@@ -38,9 +38,19 @@ export function extractPatternInfo(filename: string): PatternInfo {
   if (match) {
     const [, fileType, chain] = match;
 
+    // Defensive check: regex guarantees these are defined, but TypeScript doesn't know that
+    if (!fileType || !chain) {
+      // This should never happen with our regex, but TypeScript needs this check
+      return {
+        chain: 'unknown',
+        fileType: 'unknown',
+        pattern: filename,
+      };
+    }
+
     return {
-      chain: chain!,
-      fileType: fileType!,
+      chain,
+      fileType,
       pattern: `${fileType}_file_${chain}_YYYYMMDD.csv`,
     };
   }
