@@ -3,6 +3,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 import { runDownload } from '../../src/lib/download';
+import { KAGGLE_CONFIG } from '../../src/infrastructure/config';
 
 describe('download flow (integration)', () => {
   it('should complete full flow in dry-run mode', async () => {
@@ -10,7 +11,7 @@ describe('download flow (integration)', () => {
     expect([0, 2]).toContain(code); // 0 success, 2 if already present
 
     // Verify a manifest exists in the latest dated directory
-    const root = path.join(process.cwd(), 'jobs/fetch-kaggle/data/kaggle_raw');
+    const root = KAGGLE_CONFIG.dataRoot;
     const dirs = (await fs.readdir(root, { withFileTypes: true }))
       .filter((d) => d.isDirectory() && /^\d{8}$/.test(d.name))
       .map((d) => d.name)

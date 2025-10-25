@@ -1,13 +1,23 @@
+import { join } from 'node:path';
+
+/**
+ * Get the job root directory (jobs/fetch-kaggle)
+ * This ensures paths are relative to the job, not the execution directory
+ *
+ * __dirname is always available in CommonJS (this project's module system)
+ * From src/infrastructure, we go up two levels to reach jobs/fetch-kaggle
+ */
+const JOB_ROOT = join(__dirname, '..', '..');
+
 /**
  * Configuration constants for Kaggle dataset operations
  */
-
 export const KAGGLE_CONFIG = {
   datasetId: 'erlichsefi/israeli-supermarkets-2024',
   datasetUrl: 'https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024',
-  dataRoot: './data/kaggle_raw',
-  reportsDir: './data/reports',
-  metadataDir: './data/metadata',
+  dataRoot: join(JOB_ROOT, 'data', 'kaggle_raw'),
+  reportsDir: join(JOB_ROOT, 'data', 'reports'),
+  metadataDir: join(JOB_ROOT, 'data', 'metadata'),
 } as const;
 
 export const KAGGLE_PATHS = {
