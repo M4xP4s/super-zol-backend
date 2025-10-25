@@ -39,8 +39,8 @@ export function extractPatternInfo(filename: string): PatternInfo {
     const [, fileType, chain] = match;
 
     return {
-      chain,
-      fileType,
+      chain: chain!,
+      fileType: fileType!,
       pattern: `${fileType}_file_${chain}_YYYYMMDD.csv`,
     };
   }

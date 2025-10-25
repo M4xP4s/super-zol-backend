@@ -47,7 +47,7 @@ export async function analyzeDirectory(targetDir: string): Promise<InventoryAnal
       if (!patterns[patternInfo.pattern]) {
         patterns[patternInfo.pattern] = [];
       }
-      patterns[patternInfo.pattern].push(file);
+      patterns[patternInfo.pattern]!.push(file);
 
       // Count by chain
       chains[patternInfo.chain] = (chains[patternInfo.chain] || 0) + 1;

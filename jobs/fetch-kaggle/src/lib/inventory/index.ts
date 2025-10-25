@@ -74,7 +74,7 @@ export async function runInventory(targetDir?: string, outputPath?: string): Pro
       reportPath = outputPath;
     } else {
       // Generate default report path
-      const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const date = new Date().toISOString().split('T')[0]!.replace(/-/g, '');
       reportPath = join(KAGGLE_CONFIG.reportsDir, `kaggle_inventory_${date}.md`);
     }
 
