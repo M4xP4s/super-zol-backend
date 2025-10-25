@@ -1,0 +1,91 @@
+{
+  "name": "fetch-kaggle",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "jobs/fetch-kaggle/src",
+  "projectType": "application",
+  "tags": ["scope:jobs", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/jobs/fetch-kaggle",
+        "format": ["esm"],
+        "bundle": false,
+        "main": "jobs/fetch-kaggle/src/main.ts",
+        "tsConfig": "jobs/fetch-kaggle/tsconfig.app.json",
+        "assets": ["jobs/fetch-kaggle/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "fetch-kaggle:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "fetch-kaggle:build:development"
+        },
+        "production": {
+          "buildTarget": "fetch-kaggle:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/jobs/fetch-kaggle"],
+      "options": {
+        "config": "jobs/fetch-kaggle/vitest.config.ts",
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/jobs/fetch-kaggle"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["jobs/fetch-kaggle/**/*.ts"]
+      }
+    },
+    "cli": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "production",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "fetch-kaggle:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "fetch-kaggle:build:development"
+        },
+        "production": {
+          "buildTarget": "fetch-kaggle:build:production"
+        }
+      }
+    }
+  }
+}
