@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added - Phase 8–9 Plan (Testing, Docs & Polish)
+
+- Added combined, granular plan for phases 8 and 9 in `docs/phase-8-9.md` covering:
+  - Exhaustive unit/edge-case tests, integration/E2E flows, and opt-in performance baselines
+  - Coverage gates aligned to 90% repo standard and CI-friendly commands
+  - Comprehensive JSDoc coverage for public APIs, user README, and Python→TypeScript migration guide
+  - Final polish tasks for CLI UX (`--check-only`, latest-dir resolution) and documentation quality
+
 ### Added - Phase 7: CLI Interface
 
 - **CLI main entry point** (`src/cli/index.ts`) - Main CLI orchestrator using commander framework with version detection
@@ -12,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - **Inventory command** (`src/cli/commands/inventory.ts`) - Dataset inventory analysis with optional directory argument
 - **Profile command** (`src/cli/commands/profile.ts`) - Schema profiling with `--data-dir` and `--output` options
 - **All-in-one command** (`src/cli/commands/all.ts`) - Complete workflow orchestration (auth → download → inventory → profile)
+- **CLI README** (`src/cli/README.md`) - Comprehensive documentation with installation guide, command examples, common workflows, and troubleshooting
 - **CLI integration tests** - 21 new tests for CLI command structure and configuration
 - **CLI target in project.json** - Nx configuration for running CLI via `nx run fetch-kaggle:cli`
 
