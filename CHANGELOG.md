@@ -46,6 +46,18 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
   - `runDownload()` orchestrates end-to-end with `--dry-run` support for tests
   - Extended coverage include to `src/lib/download/**`; phase tests pass with thresholds
 
+- **fetch-kaggle job – Phase 5 (Inventory Analysis, TDD) complete**
+  - Implemented inventory modules under `src/lib/inventory`: `pattern.ts`, `analyze.ts`, `report.ts`, `index.ts`
+  - Added 31 tests: 10 pattern tests, 8 analyze tests, 9 report tests, 4 integration tests
+  - `extractPatternInfo()` identifies chain, file type, and pattern from Kaggle dataset filenames
+  - `analyzeDirectory()` loads manifest, groups files by pattern, aggregates stats by chain and file type
+  - `generateReport()` creates comprehensive Markdown reports with Executive Summary, Files by Pattern, Chain Distribution, and File Type Distribution
+  - `runInventory()` orchestrates full workflow: analyze → report → save to `data/reports/kaggle_inventory_YYYYMMDD.md`
+  - Achieved 97.66% statement coverage, 82.44% branch coverage, 100% function coverage
+  - All 99 tests pass with 100% pass rate
+  - Extended coverage include to `src/lib/inventory/**`
+  - Updated vitest.config.ts to track inventory module coverage
+
 ### Changed
 
 - **Removed all Jest references** from monorepo (switched to Vitest consistently)
