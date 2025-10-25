@@ -1,24 +1,13 @@
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 /**
  * Get the job root directory (jobs/fetch-kaggle)
  * This ensures paths are relative to the job, not the execution directory
+ *
+ * __dirname is always available in CommonJS (this project's module system)
+ * From src/infrastructure, we go up two levels to reach jobs/fetch-kaggle
  */
-const getJobRoot = (): string => {
-  // In ESM: resolve from this file's location
-  // In CJS: use __dirname
-  if (typeof __dirname !== 'undefined') {
-    // CJS: go up from src/infrastructure to job root
-    return join(__dirname, '..', '..');
-  }
-  // ESM fallback (not needed for this project but good practice)
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname_esm = dirname(__filename);
-  return join(__dirname_esm, '..', '..');
-};
-
-const JOB_ROOT = getJobRoot();
+const JOB_ROOT = join(__dirname, '..', '..');
 
 /**
  * Configuration constants for Kaggle dataset operations
