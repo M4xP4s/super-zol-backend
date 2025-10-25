@@ -69,6 +69,23 @@
       "options": {
         "lintFilePatterns": ["jobs/fetch-kaggle/**/*.ts"]
       }
+    },
+    "cli": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "production",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "fetch-kaggle:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "fetch-kaggle:build:development"
+        },
+        "production": {
+          "buildTarget": "fetch-kaggle:build:production"
+        }
+      }
     }
   }
 }

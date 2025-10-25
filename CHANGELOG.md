@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added - Phase 8–9 Plan (Testing, Docs & Polish)
+
+- Added combined, granular plan for phases 8 and 9 in `docs/phase-8-9.md` covering:
+  - Exhaustive unit/edge-case tests, integration/E2E flows, and opt-in performance baselines
+  - Coverage gates aligned to 90% repo standard and CI-friendly commands
+  - Comprehensive JSDoc coverage for public APIs, user README, and Python→TypeScript migration guide
+  - Final polish tasks for CLI UX (`--check-only`, latest-dir resolution) and documentation quality
+
+### Added - Phase 7: CLI Interface
+
+- **CLI main entry point** (`src/cli/index.ts`) - Main CLI orchestrator using commander framework with version detection
+- **Auth command** (`src/cli/commands/auth.ts`) - Kaggle authentication workflow with `--check-only` option
+- **Download command** (`src/cli/commands/download.ts`) - Dataset download with `--dataset-id` and `--dry-run` options
+- **Inventory command** (`src/cli/commands/inventory.ts`) - Dataset inventory analysis with optional directory argument
+- **Profile command** (`src/cli/commands/profile.ts`) - Schema profiling with `--data-dir` and `--output` options
+- **All-in-one command** (`src/cli/commands/all.ts`) - Complete workflow orchestration (auth → download → inventory → profile)
+- **CLI README** (`src/cli/README.md`) - Comprehensive documentation with installation guide, command examples, common workflows, and troubleshooting
+- **CLI integration tests** - 21 new tests for CLI command structure and configuration
+- **CLI target in project.json** - Nx configuration for running CLI via `nx run fetch-kaggle:cli`
+
+### Fixed - Phase 7
+
+- **[P0] Profile command directory resolution** - Fixed TypeError when `--data-dir` omitted; now automatically resolves latest directory
+- **[P0] All command directory handling** - Fixed workflow failure at step 3/4 when `--data-dir` not provided; now resolves directory once and passes to inventory/profile
+- **[P1] Auth command check-only flag** - Fixed `--check-only` being ignored; now properly skips interactive setup when flag is present
+
+### Technical Details - Phase 7
+
+- All CLI commands properly wire to existing library functions with zero business logic duplication
+- Proper error handling with user-friendly messages and correct exit codes (0 for success, 1 for failure)
+- Full help text for all commands with descriptive options
+- All 156 tests passing (32 test files) with proper command structure validation
+- ESLint passes with zero errors and zero warnings
+- Commands executable via: `node dist/jobs/fetch-kaggle/cli/index.js <command> [options]`
+- Tested dry-run functionality for download command
+
 ### Added - Phase 6: Schema Profiling
 
 - **Profile family detection module** (`detectFileFamily`) - Identifies file families and retail chains from Kaggle dataset filenames
@@ -15,7 +51,7 @@ All notable changes to this project will be documented in this file.
 - **Comprehensive test suite for profiling** - 28 new tests across 6 modules (family, select, column, file, directory, integration) with 100% pass rate
 - **FileTarget type** to inventory entities for improved type safety in profile workflow
 
-### Technical Details
+### Technical Details - Phase 6
 
 - Implemented custom CSV parser (handles quoted fields, escaping) without external dependencies
 - All modules follow TDD methodology with comprehensive test coverage
