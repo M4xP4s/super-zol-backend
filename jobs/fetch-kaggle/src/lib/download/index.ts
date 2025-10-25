@@ -14,9 +14,7 @@ export async function runDownload(options?: {
 }): Promise<number> {
   const datasetId = options?.datasetId ?? KAGGLE_CONFIG.datasetId;
   const dateStr = format(new Date(), 'yyyyMMdd');
-  const targetDir = path
-    .join('jobs/fetch-kaggle', KAGGLE_CONFIG.dataRoot, dateStr)
-    .replace('jobs/fetch-kaggle/', 'jobs/fetch-kaggle/');
+  const targetDir = path.join(KAGGLE_CONFIG.dataRoot, dateStr);
 
   await ensureDir(targetDir);
 
