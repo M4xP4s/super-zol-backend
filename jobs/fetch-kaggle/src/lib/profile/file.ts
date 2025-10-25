@@ -16,7 +16,8 @@ import type { FileProfile } from '../../core/domain/entities/profile.js';
  * @returns Array of records where each record is a key-value object
  */
 function parseCSV(content: string): Record<string, string | null>[] {
-  const lines = content.split('\n');
+  // Split on both LF (\n) and CRLF (\r\n) line endings
+  const lines = content.split(/\r?\n/);
   if (lines.length === 0) {
     return [];
   }

@@ -125,4 +125,35 @@ E`;
     const letterColumn = profile.columns.find((c) => c.name === 'letter');
     expect(letterColumn?.sample_values.length).toBeLessThanOrEqual(3);
   });
+
+  it('should handle CRLF line endings correctly', async () => {
+    // Create CSV with CRLF line endings (Windows-style, common in Kaggle CSVs)
+    const csvContent = `id,price,quantity,name\r\n1,10.5,100,Apple\r\n2,20.75,50,Banana\r\n3,15.0,75,Orange`;
+
+    const csvPath = path.join(testDir, 'crlf_file_test_20240101.csv');
+    await fs.writeFile(csvPath, csvContent);
+
+    const profile = await profileFile(testDir, {
+      filename: 'crlf_file_test_20240101.csv',
+      family: 'crlf',
+      chain: 'test',
+      path: csvPath,
+      rowCount: 3,
+    });
+
+    // Verify numeric columns are correctly detected (not as strings)
+    const priceColumn = profile.columns.find((c) => c.name === 'price');
+    expect(priceColumn?.dtype).toBe('numeric');
+    expect(priceColumn?.min).toBe(10.5);
+    expect(priceColumn?.max).toBe(20.75);
+
+    const idColumn = profile.columns.find((c) => c.name === 'id');
+    expect(idColumn?.dtype).toBe('numeric');
+    expect(idColumn?.min).toBe(1);
+    expect(idColumn?.max).toBe(3);
+
+    // String column should remain string
+    const nameColumn = profile.columns.find((c) => c.name === 'name');
+    expect(nameColumn?.dtype).toBe('string');
+  });
 });
