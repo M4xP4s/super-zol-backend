@@ -1,5 +1,7 @@
 import { Command } from 'commander';
 import { runProfile } from '../../lib/profile/index.js';
+import { findLatestDirectory } from '../../lib/utils/fs.js';
+import { KAGGLE_CONFIG } from '../../infrastructure/config.js';
 
 /**
  * Create the 'profile' command for schema profiling
@@ -15,7 +17,24 @@ export default function profileCommand(): Command {
       try {
         console.log('Profiling dataset schema...\n');
 
-        const exitCode = await runProfile(options.dataDir, options.output);
+        // Resolve directory: use provided path or find latest
+        let targetDir = options.dataDir;
+        if (!targetDir) {
+          try {
+            targetDir = await findLatestDirectory(
+              KAGGLE_CONFIG.dataRoot,
+              /^\d{8}$/ // YYYYMMDD pattern
+            );
+            console.log(`Using latest directory: ${targetDir}\n`);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.error(`✗ No download directories found: ${message}`);
+            console.error('Please run download first or specify --data-dir');
+            process.exit(1);
+          }
+        }
+
+        const exitCode = await runProfile(targetDir, options.output);
 
         if (exitCode === 0) {
           console.log('\n✓ Schema profiling completed successfully!');

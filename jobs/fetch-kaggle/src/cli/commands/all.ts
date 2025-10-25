@@ -3,6 +3,8 @@ import { ensureKaggleAuth } from '../../lib/auth/index.js';
 import { runDownload } from '../../lib/download/index.js';
 import { runInventory } from '../../lib/inventory/index.js';
 import { runProfile } from '../../lib/profile/index.js';
+import { findLatestDirectory } from '../../lib/utils/fs.js';
+import { KAGGLE_CONFIG } from '../../infrastructure/config.js';
 
 /**
  * Create the 'all' command for full workflow orchestration
@@ -46,9 +48,25 @@ export default function allCommand(): Command {
         }
         console.log('✓ Download successful\n');
 
+        // Resolve target directory for inventory and profile
+        let targetDir = options.dataDir;
+        if (!targetDir) {
+          try {
+            targetDir = await findLatestDirectory(
+              KAGGLE_CONFIG.dataRoot,
+              /^\d{8}$/ // YYYYMMDD pattern
+            );
+            console.log(`Using directory: ${targetDir}\n`);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.error(`✗ Failed to locate download directory: ${message}`);
+            process.exit(1);
+          }
+        }
+
         // Step 3: Inventory
         console.log('Step 3/4: Analyzing inventory...');
-        const inventoryCode = await runInventory(options.dataDir);
+        const inventoryCode = await runInventory(targetDir);
         if (inventoryCode !== 0) {
           console.error('✗ Inventory analysis failed. Aborting workflow.');
           process.exit(1);
@@ -57,7 +75,7 @@ export default function allCommand(): Command {
 
         // Step 4: Profile
         console.log('Step 4/4: Profiling schema...');
-        const profileCode = await runProfile(options.dataDir, options.output);
+        const profileCode = await runProfile(targetDir, options.output);
         if (profileCode !== 0) {
           console.error('✗ Schema profiling failed. Aborting workflow.');
           process.exit(1);
