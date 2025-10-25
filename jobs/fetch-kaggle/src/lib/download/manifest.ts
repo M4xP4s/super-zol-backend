@@ -4,6 +4,18 @@ import { KAGGLE_CONFIG } from '../../infrastructure/config.js';
 import type { DownloadManifest } from '../../core/domain/entities/manifest.js';
 import type { ProcessedFilesResult } from './process.js';
 
+/**
+ * Create and persist a `download_manifest.json` in the target directory.
+ *
+ * The manifest summarizes dataset metadata and per-file stats so that inventory
+ * and profiling steps can operate deterministically.
+ *
+ * @param targetDir - Directory where the manifest will be written
+ * @param filesData - Output of `processFiles` for the directory
+ * @param downloadTime - ISO timestamp for when the dataset was downloaded
+ * @param datasetId - Kaggle dataset identifier ("user/dataset")
+ * @returns Absolute path to the saved manifest file
+ */
 export async function createManifest(
   targetDir: string,
   filesData: ProcessedFilesResult,

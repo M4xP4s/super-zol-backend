@@ -216,12 +216,12 @@ Based on [TODO.md](TODO.md):
 - ✅ **Demo**: Auth service with TDD tests (Hexagonal Architecture)
 - ✅ **Phase 2**: Utility functions (FS, Hash, CSV, Console)
 - ✅ **Phase 3**: Full authentication workflow (env vars, kaggle.json, API verify, interactive setup)
-- ⏳ **Phase 4**: Dataset download
-- ⏳ **Phase 5**: Inventory analysis
-- ⏳ **Phase 6**: Schema profiling
-- ⏳ **Phase 7**: CLI interface
-- ⏳ **Phase 8**: Enhanced testing
-- ⏳ **Phase 9**: Documentation
+- ✅ **Phase 4**: Dataset download
+- ✅ **Phase 5**: Inventory analysis
+- ✅ **Phase 6**: Schema profiling
+- ✅ **Phase 7**: CLI interface
+- ✅ **Phase 8**: Enhanced testing
+- ✅ **Phase 9**: Documentation & polish
 
 ## Later Stages
 
@@ -248,5 +248,6 @@ Based on [TODO.md](TODO.md):
 - [TODO.md](TODO.md) - Full migration plan
 - [CLAUDE.md](../../CLAUDE.md) - Project conventions
 - [TIME_SAVE.md](../../TIME_SAVE.md) - Development tools
+- [TESTING.md](./TESTING.md) - Test structure, commands, and conventions
 - [Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/) - Original pattern
 - [Ports & Adapters](https://herbertograca.com/2017/09/14/ports-adapters-architecture/) - Detailed explanation

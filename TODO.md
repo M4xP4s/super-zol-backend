@@ -16,7 +16,7 @@ Phases & Status
 - ✅ Phase 6: Profiling
 - ✅ Phase 7: CLI interface (auth, download, inventory, profile, all)
 - ✅ Phase 8: Enhanced testing (coverage gates, fixtures, helpers)
-- ⏳ Phase 9: Docs & polish (ongoing maintenance)
+- ✅ Phase 9: Docs & polish (ongoing maintenance)
 
 Quality Gates
 

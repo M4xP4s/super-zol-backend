@@ -8,6 +8,22 @@ import { processFiles } from './process.js';
 import { createManifest } from './manifest.js';
 import { validateCompletion } from './validate.js';
 
+/**
+ * Orchestrate the dataset download workflow.
+ *
+ * Steps:
+ * 1. Resolve `datasetId` and target directory for today (YYYYMMDD)
+ * 2. Ensure target directory exists
+ * 3. Download via Kaggle CLI or simulate in `dryRun` mode
+ * 4. Process files to compute sizes, hashes, and row counts
+ * 5. Write a `download_manifest.json`
+ * 6. Validate manifest completeness
+ *
+ * @param options - Optional configuration
+ * @param options.datasetId - Kaggle dataset id (e.g., "user/dataset")
+ * @param options.dryRun - When true, create a sample CSV instead of calling Kaggle CLI
+ * @returns Exit code: 0 on success, 1 on failure
+ */
 export async function runDownload(options?: {
   datasetId?: string;
   dryRun?: boolean;

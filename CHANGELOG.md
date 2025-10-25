@@ -64,6 +64,20 @@ All notable changes to this project will be documented in this file.
   - Comprehensive JSDoc coverage for public APIs, user README, and Python→TypeScript migration guide
   - Final polish tasks for CLI UX (`--check-only`, latest-dir resolution) and documentation quality
 
+### Added - Phase 9: Documentation & Polish (Completed)
+
+- JSDoc coverage for public APIs across utils and download modules:
+  - `utils`: `hash.calculateSHA256`, `fs.ensureDir`, `fs.findLatestDirectory`, `fs.fileExists`, `csv.countCSVRows`, `console.printSection`, `console.printBanner`
+  - `download`: `index.runDownload`, `process.processFiles`, `manifest.createManifest`, `validate.validateCompletion`
+  - `auth`: documented `openBrowserToKaggle`, `findKaggleJsonInDownloads`
+- Dedicated testing guide `jobs/fetch-kaggle/TESTING.md` with structure, commands, and conventions
+- CLI documentation cross-linked from job README
+
+### Changed - Phase 9
+
+- Updated `jobs/fetch-kaggle/README.md` migration status to reflect Phase 4–9 completion
+- Marked Phase 9 complete in `TODO.md` (Docs & polish)
+
 ### Added - Phase 7: CLI Interface
 
 - **CLI main entry point** (`src/cli/index.ts`) - Main CLI orchestrator using commander framework with version detection

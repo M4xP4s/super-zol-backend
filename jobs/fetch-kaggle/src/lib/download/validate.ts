@@ -6,6 +6,17 @@ export interface ValidationResult {
   checks: Array<{ name: string; passed: boolean }>;
 }
 
+/**
+ * Validate that a download directory has a complete and consistent manifest.
+ *
+ * Checks include:
+ * - Manifest presence
+ * - Non-empty file list
+ * - Presence of 64-char SHA-256 checksums for all files
+ *
+ * @param targetDir - Download directory to validate
+ * @returns ValidationResult with per-check outcomes and overall pass/fail
+ */
 export async function validateCompletion(targetDir: string): Promise<ValidationResult> {
   const checks: ValidationResult['checks'] = [];
   const manifestPath = path.join(targetDir, 'download_manifest.json');

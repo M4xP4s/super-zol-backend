@@ -11,6 +11,15 @@ export interface ProcessedFilesResult {
   files: FileMetadata[];
 }
 
+/**
+ * Scan a directory for CSV files and compute per-file and aggregate stats.
+ *
+ * Calculates SHA-256 checksums and counts data rows (header excluded) for each CSV,
+ * accumulating totals for the directory.
+ *
+ * @param dir - Directory to scan for CSV files
+ * @returns ProcessedFilesResult with file list and totals
+ */
 export async function processFiles(dir: string): Promise<ProcessedFilesResult> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const csvs = entries.filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.csv'));

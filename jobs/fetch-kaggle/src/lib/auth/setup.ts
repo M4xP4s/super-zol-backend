@@ -4,6 +4,11 @@ import { createInterface } from 'node:readline/promises';
 import { KAGGLE_PATHS } from '../../infrastructure/config.js';
 import { fixKaggleJsonPermissions, checkKaggleJson } from './kaggle-json.js';
 
+/**
+ * Attempt to open the Kaggle API token page in the user's default browser.
+ *
+ * Best-effort: failures are swallowed to avoid interrupting CLI flows.
+ */
 export async function openBrowserToKaggle(): Promise<void> {
   try {
     const { execa } = await import('execa');
@@ -20,6 +25,11 @@ export async function openBrowserToKaggle(): Promise<void> {
   }
 }
 
+/**
+ * Look for a `kaggle.json` file in the user's `~/Downloads` directory.
+ *
+ * @returns Absolute path when found, otherwise null
+ */
 export async function findKaggleJsonInDownloads(): Promise<string | null> {
   const home = process.env.HOME || process.env.USERPROFILE || '';
   if (!home) return null;
