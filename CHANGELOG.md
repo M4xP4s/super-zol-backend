@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 - Compact `TODO.md` to a concise overview; removed detailed task descriptions and verification commands.
 - Move Phase 10 (CI/CD validation) to later stage; updated references in job README and review docs.
+- Run CI-like checks on pre-commit for single-dev workflow: typecheck, affected lint/test/build (kept pre-push checks as well).
 
 ### Added - Phase 8: Enhanced Testing (Completed)
 

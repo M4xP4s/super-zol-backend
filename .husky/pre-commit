@@ -1,1 +1,46 @@
-pnpm exec lint-staged
+echo "🧹 Running lint-staged (format + quick lint)..."
+pnpm exec lint-staged || {
+  echo "❌ lint-staged failed. Fix issues before committing."
+  exit 1
+}
+
+# Determine base branch for affected runs (mirror pre-push logic)
+if git rev-parse --verify origin/main >/dev/null 2>&1; then
+  BASE="origin/main"
+elif git rev-parse --verify main >/dev/null 2>&1; then
+  BASE="main"
+else
+  BASE="HEAD~1"
+fi
+
+echo "📊 Pre-commit checks against: $BASE"
+
+# Type checking (full repo)
+echo "📝 Type checking..."
+pnpm exec tsc --noEmit || {
+  echo "❌ Type check failed. Fix type errors before committing."
+  exit 1
+}
+
+# Lint affected projects (in addition to lint-staged for safety)
+echo "🔎 Linting affected projects..."
+pnpm nx affected -t lint --base="$BASE" --parallel=3 || {
+  echo "❌ Lint failed on affected projects."
+  exit 1
+}
+
+# Test affected projects
+echo "🧪 Testing affected projects..."
+pnpm nx affected -t test --base="$BASE" --parallel=3 || {
+  echo "❌ Tests failed on affected projects."
+  exit 1
+}
+
+# Build affected projects
+echo "🏗️  Building affected projects..."
+pnpm nx affected -t build --base="$BASE" --parallel=3 || {
+  echo "❌ Build failed on affected projects."
+  exit 1
+}
+
+echo "✅ Pre-commit checks passed!"
