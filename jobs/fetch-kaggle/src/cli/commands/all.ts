@@ -6,13 +6,36 @@ import { runProfile } from '../../lib/profile/index.js';
 import { findLatestDirectory } from '../../lib/utils/fs.js';
 import { KAGGLE_CONFIG } from '../../infrastructure/config.js';
 
-/**
- * Create the 'all' command for full workflow orchestration
- */
-export default function allCommand(): Command {
-  const command = new Command('all');
+type Step = { name: string; fn: () => Promise<number | boolean> };
 
-  command
+/** Execute workflow step and exit on failure */
+async function executeStep({ name, fn }: Step): Promise<void> {
+  const result = await fn();
+  if (!result || result !== 0) {
+    console.error(`✗ ${name} failed. Aborting workflow.`);
+    process.exit(1);
+  }
+  console.log(`✓ ${name} successful\n`);
+}
+
+/** Resolve data directory from options or find latest */
+async function resolveDataDir(dataDir?: string): Promise<string> {
+  if (dataDir) return dataDir;
+
+  try {
+    const dir = await findLatestDirectory(KAGGLE_CONFIG.dataRoot, /^\d{8}$/);
+    console.log(`Using directory: ${dir}\n`);
+    return dir;
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error(`✗ Failed to locate download directory: ${msg}`);
+    process.exit(1);
+  }
+}
+
+/** Create the 'all' command for full workflow orchestration */
+export default function allCommand(): Command {
+  return new Command('all')
     .description('Run complete workflow: auth → download → inventory → profile')
     .option('--dataset-id <id>', 'Kaggle dataset ID (e.g., username/dataset-name)')
     .option('--dry-run', 'Simulate download without actually downloading')
@@ -26,74 +49,44 @@ export default function allCommand(): Command {
 
         // Step 1: Auth
         console.log('Step 1/4: Authenticating with Kaggle...');
-        const authenticated = await ensureKaggleAuth();
-        if (!authenticated) {
-          console.error('✗ Authentication failed. Aborting workflow.');
-          process.exit(1);
-        }
-        console.log('✓ Authentication successful\n');
+        await executeStep({
+          name: 'Authentication',
+          fn: async () => ensureKaggleAuth(),
+        });
 
         // Step 2: Download
         console.log('Step 2/4: Downloading dataset...');
-        if (options.dryRun) {
-          console.log('(DRY RUN MODE)\n');
-        }
-        const downloadCode = await runDownload({
-          datasetId: options.datasetId,
-          dryRun: options.dryRun || false,
+        void (options.dryRun && console.log('(DRY RUN MODE)\n'));
+        await executeStep({
+          name: 'Download',
+          fn: async () =>
+            runDownload({ datasetId: options.datasetId, dryRun: options.dryRun || false }),
         });
-        if (downloadCode !== 0) {
-          console.error('✗ Download failed. Aborting workflow.');
-          process.exit(1);
-        }
-        console.log('✓ Download successful\n');
 
-        // Resolve target directory for inventory and profile
-        let targetDir = options.dataDir;
-        if (!targetDir) {
-          try {
-            targetDir = await findLatestDirectory(
-              KAGGLE_CONFIG.dataRoot,
-              /^\d{8}$/ // YYYYMMDD pattern
-            );
-            console.log(`Using directory: ${targetDir}\n`);
-          } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            console.error(`✗ Failed to locate download directory: ${message}`);
-            process.exit(1);
-          }
-        }
+        // Resolve directory
+        const targetDir = await resolveDataDir(options.dataDir);
 
         // Step 3: Inventory
         console.log('Step 3/4: Analyzing inventory...');
-        const inventoryCode = await runInventory(targetDir);
-        if (inventoryCode !== 0) {
-          console.error('✗ Inventory analysis failed. Aborting workflow.');
-          process.exit(1);
-        }
-        console.log('✓ Inventory analysis successful\n');
+        await executeStep({
+          name: 'Inventory analysis',
+          fn: async () => runInventory(targetDir),
+        });
 
         // Step 4: Profile
         console.log('Step 4/4: Profiling schema...');
-        const profileCode = await runProfile(targetDir, options.output);
-        if (profileCode !== 0) {
-          console.error('✗ Schema profiling failed. Aborting workflow.');
-          process.exit(1);
-        }
-        console.log('✓ Schema profiling successful\n');
+        await executeStep({
+          name: 'Schema profiling',
+          fn: async () => runProfile(targetDir, options.output),
+        });
 
-        // Summary
         console.log('╔════════════════════════════════════════╗');
         console.log('║    ✓ Workflow Completed Successfully   ║');
         console.log('╚════════════════════════════════════════╝\n');
-
         process.exit(0);
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.error('✗ Workflow error:', message);
+        console.error('✗ Workflow error:', error instanceof Error ? error.message : String(error));
         process.exit(1);
       }
     });
-
-  return command;
 }
