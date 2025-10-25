@@ -12,10 +12,11 @@ export async function findLatestDirectory(root: string, pattern: RegExp): Promis
     .map((e) => e.name)
     .sort((a, b) => (a < b ? 1 : a > b ? -1 : 0));
 
-  if (candidates.length === 0) {
+  const latest = candidates[0];
+  if (!latest) {
     throw new Error('No matching directories found');
   }
-  return path.join(root, candidates[0]!);
+  return path.join(root, latest);
 }
 
 export async function fileExists(p: string): Promise<boolean> {
