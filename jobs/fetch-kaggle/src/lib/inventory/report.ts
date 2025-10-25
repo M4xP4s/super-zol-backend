@@ -1,5 +1,5 @@
 import { writeFile } from 'node:fs/promises';
-import type { InventoryAnalysis } from '../../core/domain/entities/inventory';
+import type { InventoryAnalysis } from '../../core/domain/entities/inventory.js';
 
 /**
  * Generates a Markdown report from inventory analysis.

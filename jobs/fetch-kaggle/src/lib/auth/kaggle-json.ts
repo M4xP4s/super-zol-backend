@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { KAGGLE_PATHS } from '../../infrastructure/config';
+import { KAGGLE_PATHS } from '../../infrastructure/config.js';
 
 export interface KaggleJsonCreds {
   username: string;

@@ -3,8 +3,8 @@
  * Implements IKaggleAPI port without external dependencies
  */
 
-import { IKaggleAPI } from '../../core/ports/outbound/kaggle-api.port';
-import { KaggleCredentials } from '../../core/domain/value-objects/kaggle-credentials';
+import { IKaggleAPI } from '../../core/ports/outbound/kaggle-api.port.js';
+import { KaggleCredentials } from '../../core/domain/value-objects/kaggle-credentials.js';
 
 export class MockKaggleCLIAdapter implements IKaggleAPI {
   constructor(private shouldSucceed = true) {}

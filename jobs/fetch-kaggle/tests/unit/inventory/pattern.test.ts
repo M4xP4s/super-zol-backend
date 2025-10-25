@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractPatternInfo } from '../../../src/lib/inventory/pattern';
+import { extractPatternInfo } from '../../../src/lib/inventory/pattern.js';
 
 describe('extractPatternInfo', () => {
   it('should extract chain and file type from standard filename', () => {

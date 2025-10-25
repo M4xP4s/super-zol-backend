@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { writeFile, mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { analyzeDirectory } from '../../../src/lib/inventory/analyze';
-import type { DownloadManifest } from '../../../src/core/domain/entities/manifest';
+import { analyzeDirectory } from '../../../src/lib/inventory/analyze.js';
+import type { DownloadManifest } from '../../../src/core/domain/entities/manifest.js';
 
 describe('analyzeDirectory', () => {
   const testDir = '/tmp/test-inventory-analyze';

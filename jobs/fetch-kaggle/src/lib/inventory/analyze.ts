@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { DownloadManifest } from '../../core/domain/entities/manifest';
-import type { InventoryAnalysis } from '../../core/domain/entities/inventory';
-import { extractPatternInfo } from './pattern';
+import type { DownloadManifest } from '../../core/domain/entities/manifest.js';
+import type { InventoryAnalysis } from '../../core/domain/entities/inventory.js';
+import { extractPatternInfo } from './pattern.js';
 
 /**
  * Analyzes a directory containing a download manifest.

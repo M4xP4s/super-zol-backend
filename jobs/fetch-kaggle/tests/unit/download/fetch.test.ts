@@ -7,7 +7,7 @@ vi.mock('execa', () => ({
 
 import { execa } from 'execa';
 
-import { downloadDataset } from '../../../src/lib/download/fetch';
+import { downloadDataset } from '../../../src/lib/download/fetch.js';
 
 describe('downloadDataset', () => {
   beforeEach(() => {

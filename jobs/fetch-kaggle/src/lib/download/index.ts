@@ -1,12 +1,12 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { format } from 'date-fns';
-import { KAGGLE_CONFIG } from '../../infrastructure/config';
-import { ensureDir } from '../utils/fs';
-import { downloadDataset } from './fetch';
-import { processFiles } from './process';
-import { createManifest } from './manifest';
-import { validateCompletion } from './validate';
+import { KAGGLE_CONFIG } from '../../infrastructure/config.js';
+import { ensureDir } from '../utils/fs.js';
+import { downloadDataset } from './fetch.js';
+import { processFiles } from './process.js';
+import { createManifest } from './manifest.js';
+import { validateCompletion } from './validate.js';
 
 export async function runDownload(options?: {
   datasetId?: string;
@@ -40,7 +40,7 @@ export async function runDownload(options?: {
 }
 
 // Re-exports
-export * from './fetch';
-export * from './process';
-export * from './manifest';
-export * from './validate';
+export * from './fetch.js';
+export * from './process.js';
+export * from './manifest.js';
+export * from './validate.js';

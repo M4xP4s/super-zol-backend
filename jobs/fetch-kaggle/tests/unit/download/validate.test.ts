@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { validateCompletion } from '../../../src/lib/download/validate';
+import { validateCompletion } from '../../../src/lib/download/validate.js';
 
 describe('validateCompletion', () => {
   it('should pass when manifest exists and files have checksums', async () => {

@@ -1,6 +1,7 @@
 {
   "name": "super-zol-backend",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "description": "Super Zol Backend Monorepo",
   "packageManager": "pnpm@10.0.0",

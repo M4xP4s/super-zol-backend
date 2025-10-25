@@ -1,9 +1,12 @@
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import Fastify, { FastifyInstance } from 'fastify';
 import AutoLoad from '@fastify/autoload';
 
 /* eslint-disable-next-line */
 export interface AppOptions {}
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export async function app(fastify: FastifyInstance, opts: AppOptions) {
   // Place here your custom code!

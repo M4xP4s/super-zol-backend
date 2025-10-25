@@ -1,4 +1,4 @@
-import { PatternInfo } from '../../core/domain/entities/inventory';
+import { PatternInfo } from '../../core/domain/entities/inventory.js';
 
 /**
  * Regular expression to match date patterns in filenames (YYYYMMDD format)

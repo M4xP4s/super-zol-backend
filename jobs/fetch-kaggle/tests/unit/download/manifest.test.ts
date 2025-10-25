@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { createManifest } from '../../../src/lib/download/manifest';
-import { DownloadManifestSchema } from '../../../src/infrastructure/zod-schemas';
+import { createManifest } from '../../../src/lib/download/manifest.js';
+import { DownloadManifestSchema } from '../../../src/infrastructure/zod-schemas.js';
 
 describe('createManifest', () => {
   it('should create valid manifest JSON at expected path', async () => {

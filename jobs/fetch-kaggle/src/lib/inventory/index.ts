@@ -1,9 +1,9 @@
 import { join, dirname } from 'node:path';
 import { mkdir, access, constants } from 'node:fs/promises';
-import { KAGGLE_CONFIG } from '../../infrastructure/config';
-import { findLatestDirectory } from '../utils/fs';
-import { analyzeDirectory } from './analyze';
-import { generateReport } from './report';
+import { KAGGLE_CONFIG } from '../../infrastructure/config.js';
+import { findLatestDirectory } from '../utils/fs.js';
+import { analyzeDirectory } from './analyze.js';
+import { generateReport } from './report.js';
 
 /**
  * Runs the complete inventory analysis workflow.
