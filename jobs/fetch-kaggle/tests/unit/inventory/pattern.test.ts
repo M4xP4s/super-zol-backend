@@ -101,4 +101,32 @@ describe('extractPatternInfo', () => {
     expect(result).toHaveProperty('fileType');
     expect(result).toHaveProperty('pattern');
   });
+
+  it('should handle non-standard filenames with date patterns', () => {
+    // Files that have dates but don't match the standard pattern
+    const result = extractPatternInfo('custom_dataset_20240101.csv');
+
+    expect(result.chain).toBe('unknown');
+    expect(result.fileType).toBe('unknown');
+    // Should replace the date with YYYYMMDD
+    expect(result.pattern).toBe('custom_dataset_YYYYMMDD.csv');
+  });
+
+  it('should handle files with dates in middle of name', () => {
+    const result = extractPatternInfo('data_20240215_export.csv');
+
+    expect(result.chain).toBe('unknown');
+    expect(result.fileType).toBe('unknown');
+    // Should replace first date occurrence with YYYYMMDD
+    expect(result.pattern).toBe('data_YYYYMMDD_export.csv');
+  });
+
+  it('should fallback to unknown for completely non-standard names without dates', () => {
+    const result = extractPatternInfo('random-file-no-date.csv');
+
+    expect(result.chain).toBe('unknown');
+    expect(result.fileType).toBe('unknown');
+    // No date to replace, pattern should be the filename itself
+    expect(result.pattern).toBe('random-file-no-date.csv');
+  });
 });
