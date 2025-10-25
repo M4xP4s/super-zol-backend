@@ -1,0 +1,424 @@
+{
+  "graph": {
+    "nodes": {
+      "api-gateway": {
+        "name": "api-gateway",
+        "type": "app",
+        "data": {
+          "root": "services/api-gateway",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "services/api-gateway",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/eslint.config.mjs"
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "pnpm exec eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": ["{options.outputPath}"],
+              "defaultConfiguration": "production",
+              "options": {
+                "platform": "node",
+                "outputPath": "dist/services/api-gateway",
+                "format": ["esm"],
+                "bundle": false,
+                "main": "services/api-gateway/src/main.ts",
+                "tsConfig": "services/api-gateway/tsconfig.app.json",
+                "assets": ["services/api-gateway/src/assets"],
+                "generatePackageJson": true,
+                "esbuildOptions": {
+                  "sourcemap": true,
+                  "outExtension": {
+                    ".js": ".js"
+                  }
+                }
+              },
+              "configurations": {
+                "development": {},
+                "production": {
+                  "esbuildOptions": {
+                    "sourcemap": false,
+                    "outExtension": {
+                      ".js": ".js"
+                    }
+                  }
+                }
+              },
+              "parallelism": true,
+              "cache": true,
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"]
+            },
+            "serve": {
+              "executor": "@nx/js:node",
+              "defaultConfiguration": "development",
+              "dependsOn": ["build"],
+              "options": {
+                "buildTarget": "api-gateway:build",
+                "runBuildTargetDependencies": false
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "api-gateway:build:development"
+                },
+                "production": {
+                  "buildTarget": "api-gateway:build:production"
+                }
+              },
+              "parallelism": true,
+              "cache": false
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": ["{projectRoot}/coverage"],
+              "options": {
+                "config": "services/api-gateway/vitest.config.ts",
+                "passWithNoTests": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": ["default", "^production", "{workspaceRoot}/vitest.config.ts"]
+            }
+          },
+          "name": "api-gateway",
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "services/api-gateway/src",
+          "projectType": "application",
+          "tags": [],
+          "implicitDependencies": []
+        }
+      },
+      "fetch-kaggle": {
+        "name": "fetch-kaggle",
+        "type": "app",
+        "data": {
+          "root": "jobs/fetch-kaggle",
+          "targets": {
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["jobs/fetch-kaggle/**/*.ts"]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/eslint.config.mjs"
+              ]
+            },
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": ["{options.outputPath}"],
+              "defaultConfiguration": "production",
+              "options": {
+                "platform": "node",
+                "outputPath": "dist/jobs/fetch-kaggle",
+                "format": ["esm"],
+                "bundle": false,
+                "main": "jobs/fetch-kaggle/src/main.ts",
+                "tsConfig": "jobs/fetch-kaggle/tsconfig.app.json",
+                "assets": ["jobs/fetch-kaggle/src/assets"],
+                "generatePackageJson": true,
+                "esbuildOptions": {
+                  "sourcemap": true,
+                  "outExtension": {
+                    ".js": ".js"
+                  }
+                }
+              },
+              "configurations": {
+                "development": {},
+                "production": {
+                  "esbuildOptions": {
+                    "sourcemap": false,
+                    "outExtension": {
+                      ".js": ".js"
+                    }
+                  }
+                }
+              },
+              "parallelism": true,
+              "cache": true,
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"]
+            },
+            "serve": {
+              "executor": "@nx/js:node",
+              "defaultConfiguration": "development",
+              "dependsOn": ["build"],
+              "options": {
+                "buildTarget": "fetch-kaggle:build",
+                "runBuildTargetDependencies": false
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "fetch-kaggle:build:development"
+                },
+                "production": {
+                  "buildTarget": "fetch-kaggle:build:production"
+                }
+              },
+              "parallelism": true,
+              "cache": false
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": ["{workspaceRoot}/coverage/jobs/fetch-kaggle"],
+              "options": {
+                "config": "jobs/fetch-kaggle/vitest.config.ts",
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/jobs/fetch-kaggle"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": ["default", "^production", "{workspaceRoot}/vitest.config.ts"]
+            },
+            "cli": {
+              "executor": "@nx/js:node",
+              "defaultConfiguration": "production",
+              "dependsOn": ["build"],
+              "options": {
+                "buildTarget": "fetch-kaggle:build",
+                "runBuildTargetDependencies": false
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "fetch-kaggle:build:development"
+                },
+                "production": {
+                  "buildTarget": "fetch-kaggle:build:production"
+                }
+              },
+              "parallelism": true
+            }
+          },
+          "name": "fetch-kaggle",
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "jobs/fetch-kaggle/src",
+          "projectType": "application",
+          "tags": ["scope:jobs", "type:app"],
+          "implicitDependencies": []
+        }
+      },
+      "shared-util": {
+        "name": "shared-util",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared-util",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/shared-util",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/eslint.config.mjs"
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "pnpm exec eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": ["{options.outputPath}"],
+              "options": {
+                "outputPath": "dist/libs/shared-util",
+                "main": "libs/shared-util/src/index.ts",
+                "tsConfig": "libs/shared-util/tsconfig.lib.json",
+                "assets": ["libs/shared-util/*.md"]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": ["{projectRoot}/coverage"],
+              "options": {
+                "config": "libs/shared-util/vitest.config.ts",
+                "passWithNoTests": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": ["default", "^production", "{workspaceRoot}/vitest.config.ts"]
+            }
+          },
+          "name": "shared-util",
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/shared-util/src",
+          "projectType": "library",
+          "tags": [],
+          "implicitDependencies": []
+        }
+      },
+      "worker": {
+        "name": "worker",
+        "type": "app",
+        "data": {
+          "root": "services/worker",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "services/worker",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/eslint.config.mjs"
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "pnpm exec eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": ["{options.outputPath}"],
+              "defaultConfiguration": "production",
+              "options": {
+                "platform": "node",
+                "outputPath": "dist/services/worker",
+                "format": ["esm"],
+                "bundle": false,
+                "main": "services/worker/src/main.ts",
+                "tsConfig": "services/worker/tsconfig.app.json",
+                "assets": ["services/worker/src/assets"],
+                "generatePackageJson": true,
+                "esbuildOptions": {
+                  "sourcemap": true,
+                  "outExtension": {
+                    ".js": ".js"
+                  }
+                }
+              },
+              "configurations": {
+                "development": {},
+                "production": {
+                  "esbuildOptions": {
+                    "sourcemap": false,
+                    "outExtension": {
+                      ".js": ".js"
+                    }
+                  }
+                }
+              },
+              "parallelism": true,
+              "cache": true,
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"]
+            },
+            "serve": {
+              "executor": "@nx/js:node",
+              "defaultConfiguration": "development",
+              "dependsOn": ["build"],
+              "options": {
+                "buildTarget": "worker:build",
+                "runBuildTargetDependencies": false
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "worker:build:development"
+                },
+                "production": {
+                  "buildTarget": "worker:build:production"
+                }
+              },
+              "parallelism": true,
+              "cache": false
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": ["{projectRoot}/coverage"],
+              "options": {
+                "config": "services/worker/vitest.config.ts",
+                "passWithNoTests": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": ["default", "^production", "{workspaceRoot}/vitest.config.ts"]
+            }
+          },
+          "name": "worker",
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "services/worker/src",
+          "projectType": "application",
+          "tags": [],
+          "implicitDependencies": []
+        }
+      }
+    },
+    "dependencies": {
+      "api-gateway": [],
+      "fetch-kaggle": [
+        {
+          "source": "fetch-kaggle",
+          "target": "shared-util",
+          "type": "static"
+        }
+      ],
+      "shared-util": [],
+      "worker": []
+    }
+  }
+}

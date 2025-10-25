@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add Nx dependency graph snapshot `dep-graph.json` at repo root for reference and documentation of current project graph.
+
 ### Added - Phase 8: Enhanced Testing (Completed)
 
 - **Test Infrastructure** (`tests/helpers/tmp.ts`) - Reusable utilities for test setup: `makeTempDir()`, `cleanupTempDir()`, `writeCSV()`, `createDirStructure()`
