@@ -5,6 +5,33 @@ import { checkKaggleJson } from '../../lib/auth/kaggle-json.js';
 import { verifyKaggleAPI } from '../../lib/auth/verify-api.js';
 
 /**
+ * Check authentication status without interactive setup
+ * Tries environment variables first, then kaggle.json
+ */
+async function checkAuthenticationStatus(): Promise<boolean> {
+  // Try environment variables
+  if (checkEnvVars()) {
+    console.log('Found credentials in environment variables');
+    if (await verifyKaggleAPI()) {
+      return true;
+    }
+  }
+
+  // Try kaggle.json
+  if (await checkKaggleJson()) {
+    console.log('Found credentials in kaggle.json');
+    if (await verifyKaggleAPI()) {
+      return true;
+    }
+  }
+
+  // No valid credentials found
+  console.log('No valid credentials found');
+  console.log('Run without --check-only to set up interactively');
+  return false;
+}
+
+/**
  * Create the 'auth' command for Kaggle authentication
  */
 export default function authCommand(): Command {
@@ -17,40 +44,17 @@ export default function authCommand(): Command {
       try {
         console.log('Checking Kaggle authentication...\n');
 
-        let authenticated = false;
-
-        if (options.checkOnly) {
-          // Check-only mode: test env vars and kaggle.json without interactive setup
-          const env = checkEnvVars();
-          if (env) {
-            console.log('Found credentials in environment variables');
-            authenticated = await verifyKaggleAPI();
-          }
-
-          if (!authenticated) {
-            const file = await checkKaggleJson();
-            if (file) {
-              console.log('Found credentials in kaggle.json');
-              authenticated = await verifyKaggleAPI();
-            }
-          }
-
-          if (!authenticated) {
-            console.log('No valid credentials found');
-            console.log('Run without --check-only to set up interactively');
-          }
-        } else {
-          // Normal mode: run full auth flow including interactive setup
-          authenticated = await ensureKaggleAuth();
-        }
+        const authenticated = options.checkOnly
+          ? await checkAuthenticationStatus()
+          : await ensureKaggleAuth();
 
         if (authenticated) {
           console.log('✓ Authentication successful!');
           process.exit(0);
-        } else {
-          console.error('✗ Authentication failed');
-          process.exit(1);
         }
+
+        console.error('✗ Authentication failed');
+        process.exit(1);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.error('✗ Authentication error:', message);

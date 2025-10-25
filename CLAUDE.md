@@ -40,54 +40,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
      - Be specific about what changed and why it matters
    - Push regularly to create backup points
    - Example: `feat(api): add user authentication endpoint`
-   - **Quick commit workflow**: Use [scripts/quick-commit.sh](scripts/quick-commit.sh) for automated formatting, commit, checks, and push:
-     ```bash
-     ./scripts/quick-commit.sh "feat(api): add user auth"
-     ```
-     This automatically formats code, stages changes, creates a commit, runs affected checks, and pushes to main.
 
 **Why?** This ensures you have full context on project status and available tools before proposing solutions. Frequent commits create checkpoints, make it easier to track progress, and provide rollback points if needed.
 
-## Essential Commands
+## Quick Reference
 
-### Development Workflow
+For detailed command documentation, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+### Essential Commands
 
 ```bash
-# Using Just (recommended - faster to type)
+# Quality Checks
 just check              # Run all quality checks (lint + typecheck + test)
 just test               # Run all tests
 just test-watch <name>  # Run tests in watch mode for a specific project
+
+# Development
+just serve-api          # Start API gateway service
+just serve-worker       # Start worker service
+just infra-up           # Start Docker infrastructure
+
+# Code Quality
 just lint               # Lint all code
 just typecheck          # Type check all TypeScript
-just build              # Build all projects
 just format             # Format all code
 
-# Using pnpm/nx directly
-pnpm nx test <project>              # Run tests for specific project
-pnpm nx test <project> --watch      # Watch mode for specific project
-pnpm nx serve <project>             # Start a service
-pnpm nx build <project>             # Build specific project
-pnpm nx show project <project>      # Show project details and dependencies
-pnpm nx affected -t test --base=origin/main  # Test only affected projects
-```
+# Building
+just build              # Build all projects
+just build-prod         # Build for production
 
-### Generator Commands
-
-```bash
-# Generate new components (uses deterministic structure)
-just gen-service <name>   # Creates services/<name> with Fastify setup
-just gen-lib <name>       # Creates libs/<name> for shared code
-just gen-job <name>       # Creates jobs/<name> for scheduled tasks
-```
-
-### Development Environment
-
-```bash
-just dev-setup      # Complete setup: install + docker up + .env
-just infra-up       # Start Docker infrastructure
-just infra-down     # Stop Docker infrastructure
-just serve-api      # Start API gateway service
-just serve-worker   # Start worker service
+# Visualization
+just graph              # View dependency graph in browser
 ```
 
 ### Quick Commit Workflow
@@ -105,16 +88,9 @@ For rapid iteration on main branch (solo development):
 ./scripts/quick-commit.sh "update docs"  # → "chore(repo): update docs"
 ```
 
-**What it does:**
-
-1. Syncs with remote main branch
-2. Formats code (`pnpm nx format:write`)
-3. Stages all changes
-4. Creates commit (ensures Conventional Commits format)
-5. Runs affected lint, test, build
-6. Pushes to main
-
 **When to use:** Fast iteration on main for solo development. For collaborative work or feature branches, use the standard git workflow or `just merge-to-main`.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete git workflow and commit guidelines.
 
 ### Automated PR Workflow
 
@@ -124,15 +100,9 @@ just merge-to-main                    # Use current branch
 just merge-to-main <branch-name>      # Specify branch
 just merge-to-main-with squash <branch>  # Custom merge method
 just merge-to-main-keep <branch>      # Keep local branch after merge
-
-# What it does:
-# 1. Pushes branch upstream (with -u if needed)
-# 2. Creates PR with proper Conventional Commits format
-# 3. Waits for CI checks to pass (polls every 10s, max 10min)
-# 4. Auto-merges when all checks are green
-# 5. Switches to main, pulls latest, deletes feature branch
-# 6. Cleans up stale remote tracking branches
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete PR process and requirements.
 
 ## Architecture Overview
 
@@ -144,9 +114,11 @@ This is an **Nx-powered TypeScript monorepo** with strict typing, comprehensive 
 backend/
 ├── services/       # Deployable Fastify services (api-gateway, worker)
 ├── libs/          # Shared internal libraries (shared-util)
-├── jobs/          # Scheduled tasks/batch jobs
+├── jobs/          # Scheduled tasks/batch jobs (fetch-kaggle)
 └── packages/      # Optional publishable packages
 ```
+
+For detailed architecture information, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ### Path Aliases (tsconfig.base.json)
 
@@ -183,131 +155,7 @@ component-name/
 
 **Why tests/ is separate**: Cleaner source, simpler build exclusion, easier coverage patterns.
 
-### TypeScript Configuration Layers
-
-1. **`tsconfig.base.json`** (root): Single source of truth for compiler options, path aliases
-2. **`tsconfig.json`** (component): Extends base, defines project references
-3. **`tsconfig.app.json`** or **`tsconfig.lib.json`**: Compilation settings for apps vs libraries
-
-**Why multiple configs?**: Enables incremental builds, separate compilation targets, better IDE support.
-
-### Fastify Service Structure
-
-Services use Fastify with autoloading:
-
-- **`src/main.ts`**: Entry point
-- **`src/app/app.ts`**: Fastify app setup with AutoLoad
-- **`src/app/plugins/`**: Reusable Fastify plugins (auto-loaded)
-- **`src/app/routes/`**: Route handlers (auto-loaded)
-
-AutoLoad automatically registers all plugins and routes from their respective directories.
-
-## Testing
-
-### Test Configuration
-
-- **Framework**: Vitest (faster than Jest, native ESM, better TS integration)
-- **Coverage**: 90% threshold enforced (lines, functions, branches, statements)
-- **Location**: All tests in `tests/` folder (NOT co-located with source)
-
-### Running Tests
-
-```bash
-# All tests
-just test
-
-# Single project
-pnpm nx test api-gateway
-
-# Watch mode
-just test-watch api-gateway
-
-# Coverage
-just test-coverage
-
-# Affected tests only
-pnpm nx affected -t test --base=origin/main
-```
-
-## Git Hooks (Automatic Quality Gates)
-
-Three hooks enforce quality at different stages:
-
-### 1. Pre-Commit (1-5 seconds)
-
-- **What**: ESLint + Prettier on staged files only
-- **Tool**: lint-staged for performance
-- **Scope**: Only files you changed
-
-### 2. Pre-Push (30-120 seconds)
-
-- **What**: TypeScript check + Tests + Builds
-- **Scope**: Affected projects only (via Nx)
-- **Purpose**: Prevent broken code from reaching remote
-
-### 3. Commit-Msg (<1 second)
-
-- **What**: Enforces Conventional Commits format
-- **Format**: `type(scope): subject`
-- **Valid types**: feat, fix, docs, style, refactor, test, chore, ci, build, perf
-
-**Examples**:
-
-```bash
-✅ feat(api): add user authentication
-✅ fix(worker): resolve memory leak
-✅ test(shared-util): add unit tests
-❌ added stuff
-❌ WIP
-```
-
-**Skip hooks** (emergency only):
-
-```bash
-git commit --no-verify  # Skip pre-commit + commit-msg
-git push --no-verify    # Skip pre-push
-```
-
-## Nx Features
-
-### Dependency Graph
-
-```bash
-just graph              # Visual graph in browser
-pnpm nx graph          # Same as above
-pnpm nx show project api-gateway  # Show dependencies for project
-```
-
-### Affected Commands (CI Performance)
-
-Nx tracks what changed and only runs tasks on affected projects:
-
-```bash
-pnpm nx affected -t test --base=origin/main   # Test only affected
-pnpm nx affected -t build --base=origin/main  # Build only affected
-pnpm nx affected -t lint --base=origin/main   # Lint only affected
-```
-
-### Caching
-
-Nx caches test/build/lint results. To reset:
-
-```bash
-pnpm nx reset
-# or
-just clean
-```
-
-## Stack & Tools
-
-- **Runtime**: Node.js 22 (enforced via .nvmrc and .node-version)
-- **Package Manager**: pnpm 10 (enforced via packageManager field)
-- **Build System**: Nx 19.8 with esbuild (services) and tsc (libs)
-- **Language**: TypeScript 5.6 with strict mode + noUncheckedIndexedAccess
-- **Testing**: Vitest with 90% coverage requirement
-- **Linting**: ESLint 9 (flat config) + TypeScript ESLint
-- **Formatting**: Prettier
-- **API Framework**: Fastify 4 with autoload, sensible defaults
+For detailed TypeScript configuration layers and testing setup, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Key Principles
 
@@ -370,27 +218,36 @@ export default async function (fastify: FastifyInstance) {
 
 AutoLoad automatically registers it.
 
-### Importing Shared Code
+For more patterns and examples, see [DEVELOPMENT.md](DEVELOPMENT.md#common-patterns).
 
-```typescript
-// From a library
-import { myUtil } from '@libs/shared-util';
-import { myUtil } from 'shared-util'; // If alias configured
+## Testing
 
-// Services should NOT import from other services
-// ❌ import { something } from '@services/api-gateway';
+### Test Configuration
+
+- **Framework**: Vitest (faster than Jest, native ESM, better TS integration)
+- **Coverage**: 90% threshold enforced (lines, functions, branches, statements)
+- **Location**: All tests in `tests/` folder (NOT co-located with source)
+
+### Running Tests
+
+```bash
+# All tests
+just test
+
+# Single project
+pnpm nx test api-gateway
+
+# Watch mode
+just test-watch api-gateway
+
+# Coverage
+just test-coverage
+
+# Affected tests only
+pnpm nx affected -t test --base=origin/main
 ```
 
-## Environment & Configuration
-
-- **Environment files**: `.env.example` provided, copy to `.env`
-- **Docker**: `docker-compose.yml` for local infrastructure
-- **Node version**: Managed via `.nvmrc` and `.node-version` (both point to Node 22)
-
-## Documentation
-
-- **Architecture deep-dive**: `ARCHITECTURE.md` - explains tsconfig layers, why separate tests/, git hooks philosophy
-- **README**: `README.md` - full project documentation with all commands
+For detailed testing guidelines and best practices, see [CONTRIBUTING.md](CONTRIBUTING.md#testing-requirements).
 
 ## Code Reviews & Reference Implementations
 
@@ -454,6 +311,35 @@ Each completed phase should have a comprehensive code review document in the `re
 - ✅ Atomic commits with clear messages
 - ✅ All DoD criteria verified before merge
 
+## Documentation Resources
+
+### For Development
+
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Complete command reference, workflows, debugging tips, and troubleshooting
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Git workflow, commit conventions, PR process, code quality standards
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical deep-dive: tsconfig layers, testing setup, git hooks philosophy
+
+### For Project Context
+
+- **[README.md](README.md)** - Project overview, quick start, and navigation hub
+- **[TODO.md](TODO.md)** - Current roadmap, completed work, upcoming epics
+- **[CHANGELOG.md](CHANGELOG.md)** - Detailed change history
+
+### For AI Agents
+
+- **[AGENTS.md](AGENTS.md)** - Concise guidelines for AI agents working with this codebase
+
+## Stack & Tools
+
+- **Runtime**: Node.js 22 (enforced via .nvmrc and .node-version)
+- **Package Manager**: pnpm 10 (enforced via packageManager field)
+- **Build System**: Nx 19.8 with esbuild (services) and tsc (libs)
+- **Language**: TypeScript 5.6 with strict mode + noUncheckedIndexedAccess
+- **Testing**: Vitest with 90% coverage requirement
+- **Linting**: ESLint 9 (flat config) + TypeScript ESLint
+- **Formatting**: Prettier
+- **API Framework**: Fastify 4 with autoload, sensible defaults
+
 ## CI/CD
 
 ```bash
@@ -465,3 +351,5 @@ pnpm nx affected -t lint --base=origin/main
 pnpm nx affected -t test --base=origin/main --coverage
 pnpm nx affected -t build --base=origin/main
 ```
+
+For complete CI/CD setup and troubleshooting, see [DEVELOPMENT.md](DEVELOPMENT.md).

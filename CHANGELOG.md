@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+- **Documentation reorganization** - Improved README structure and created focused documentation files
+  - Created [CONTRIBUTING.md](CONTRIBUTING.md) - Comprehensive contributor guidelines with git workflow, commit conventions, and PR process
+  - Created [DEVELOPMENT.md](DEVELOPMENT.md) - Complete development guide with all commands, workflows, debugging tips, and troubleshooting
+  - Restructured [README.md](README.md) - Now more welcoming, scannable, and navigation-focused with clear signposting to other docs
+  - Updated [CLAUDE.md](CLAUDE.md) - Streamlined to focus on AI-specific workflows while referencing detailed docs
+  - Improved discoverability of sub-project documentation (fetch-kaggle, shared-util)
+  - Better separation of concerns: developer guides, contributor guidelines, technical deep-dives, and project management docs
+
 #### Epic 1: Kaggle Dataset Download & Processing Pipeline (Completed)
 
 Complete TypeScript implementation of Kaggle dataset operations in `jobs/fetch-kaggle` with:
