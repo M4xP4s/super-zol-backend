@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Add Nx dependency graph snapshot `dep-graph.json` at repo root for reference and documentation of current project graph.
 
+### Changed
+
+- Compact `TODO.md` to a concise overview; removed detailed task descriptions and verification commands.
+
 ### Added - Phase 8: Enhanced Testing (Completed)
 
 - **Test Infrastructure** (`tests/helpers/tmp.ts`) - Reusable utilities for test setup: `makeTempDir()`, `cleanupTempDir()`, `writeCSV()`, `createDirStructure()`
