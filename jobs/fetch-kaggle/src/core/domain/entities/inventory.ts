@@ -11,6 +11,14 @@ export interface PatternInfo {
   pattern: string;
 }
 
+export interface FileTarget {
+  filename: string;
+  family: string;
+  chain: string;
+  path: string;
+  rowCount: number;
+}
+
 export interface InventoryAnalysis {
   files: FileMetadata[];
   patterns: Record<string, FileMetadata[]>;
