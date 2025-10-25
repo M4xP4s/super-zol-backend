@@ -39,11 +39,11 @@ export async function build(opts: AppOptions = {}) {
   });
 
   // Manually register sensible plugin
-  const sensiblePlugin = await import('./plugins/sensible');
+  const sensiblePlugin = await import('./plugins/sensible.js');
   await fastify.register(sensiblePlugin.default, opts);
 
   // Manually register root route
-  const rootRoute = await import('./routes/root');
+  const rootRoute = await import('./routes/root.js');
   await fastify.register(rootRoute.default, opts);
 
   await fastify.ready();

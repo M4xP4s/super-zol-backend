@@ -60,6 +60,16 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ### Changed
 
+- **Converted entire monorepo to native ESM** (PR #6)
+  - Added `"type": "module"` to root package.json
+  - Updated all esbuild configs from `"cjs"` to `"esm"` format
+  - Converted all ESLint configs from `.js` to `.mjs` (ESM-compatible)
+  - Added `.js` extensions to all relative imports (64 TypeScript files updated)
+  - Replaced `__dirname` usage with `import.meta.url` pattern
+  - Updated `tsconfig.app.json` files from `"commonjs"` to `"ES2022"`
+  - Created `@libs/shared-util/esm-utils` with `getDirname()` and `getFilename()` helpers
+  - Updated dynamic imports to use explicit `.js` extensions
+  - All 99 tests passing, builds verified with ESM output, no breaking behavior changes
 - **Removed all Jest references** from monorepo (switched to Vitest consistently)
 - Updated `nx.json` to reference `vitest.config` instead of `jest.config`
 - Removed Jest packages: @nx/jest, @types/jest, jest, jest-environment-node, ts-jest

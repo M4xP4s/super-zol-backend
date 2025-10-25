@@ -268,6 +268,11 @@ just clean
 4. **Performance**: Nx caching, affected commands, lint-staged
 5. **Quality gates**: Automated checks at commit and push
 6. **Path aliases**: Always use `@libs/*`, `@services/*`, `@packages/*`
+7. **Pure ESM**: Native ECMAScript Modules throughout
+   - All imports use `.js` extensions (even for `.ts` sources)
+   - Use `import.meta.url` instead of `__dirname`
+   - Use `getDirname()` helper from `@libs/shared-util` for ESM-compatible directory resolution
+   - No `require()` or `module.exports` in source code
 
 ## Common Patterns
 
