@@ -145,3 +145,15 @@ audit-fix:
 # Create a tar.gz suitable for LLMs (excludes .gitignored files)
 pack-for-llm:
     @./scripts/pack-for-llm.sh
+
+# Automated PR workflow: push, create PR, wait for CI, merge to main
+merge-to-main branch='':
+    @./scripts/merge-to-main.sh {{branch}}
+
+# Automated PR workflow with custom merge method (squash|merge|rebase)
+merge-to-main-with method branch='':
+    MERGE_METHOD={{method}} ./scripts/merge-to-main.sh {{branch}}
+
+# Keep local branch after merge (don't auto-delete)
+merge-to-main-keep branch='':
+    DELETE_BRANCH=false ./scripts/merge-to-main.sh {{branch}}

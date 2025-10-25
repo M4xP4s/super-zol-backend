@@ -90,6 +90,43 @@ just graph        # View dependency graph
 - `just gen-service <name>` - Generate new service
 - `just gen-lib <name>` - Generate new library
 - `just ci` - Run CI pipeline locally
+- `just merge-to-main [branch]` - Automated PR workflow (push, PR, CI wait, merge)
+
+### Automated PR Workflow
+
+The `just merge-to-main` command automates the entire PR creation and merge process:
+
+```bash
+# Use current branch
+just merge-to-main
+
+# Specify a branch
+just merge-to-main feat/my-feature
+
+# Use merge instead of squash
+just merge-to-main-with merge feat/my-feature
+
+# Keep local branch after merge
+just merge-to-main-keep feat/my-feature
+```
+
+**What it does automatically:**
+
+1. Pushes your branch upstream (with `-u` if needed)
+2. Creates a PR with proper Conventional Commits format
+3. Waits for CI checks to pass (polls every 10s, max 10 minutes)
+4. Auto-merges when all checks are green
+5. Switches back to main and pulls latest changes
+6. Deletes the feature branch locally
+7. Cleans up stale remote tracking branches
+
+**Requirements:**
+
+- [GitHub CLI (`gh`)](https://cli.github.com/) installed and authenticated
+- All CI checks must pass before merge
+- PR title must follow Conventional Commits format (auto-generated from branch name)
+
+See `scripts/merge-to-main.sh` for implementation details.
 
 ### Development
 
