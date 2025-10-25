@@ -64,6 +64,14 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 - Updated `nx.json` to reference `vitest.config` instead of `jest.config`
 - Removed Jest packages: @nx/jest, @types/jest, jest, jest-environment-node, ts-jest
 
+### Fixed
+
+- **fetch-kaggle configuration**: Fixed path resolution to be job-relative instead of execution-relative
+  - Reports now correctly save to `jobs/fetch-kaggle/data/reports/` instead of `backend/data/reports/`
+  - Removed ESM code (`import.meta.url`) from CommonJS project that caused build failures
+  - Simplified config to use only `__dirname` for path resolution
+  - Updated `runDownload()` and tests to use centralized config paths
+
 ### Security
 
 - Ensured real secrets remain local: `.env` is gitignored; no secrets are committed.
