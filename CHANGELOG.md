@@ -2,9 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
-
 ## [Unreleased]
+
+### Added - Phase 6: Schema Profiling
+
+- **Profile family detection module** (`detectFileFamily`) - Identifies file families and retail chains from Kaggle dataset filenames
+- **Profile file selection module** (`chooseRepresentativeFiles`) - Selects one representative CSV file per family based on row count preference
+- **Column summarization module** (`summarizeColumn`) - Analyzes individual columns for null rate, data type, unique count, samples, min/max statistics
+- **CSV profiler module** (`profileFile`) - Parses CSV files and generates detailed column-level statistics and profiles
+- **Directory profiler module** (`profileDirectory`) - Aggregates profiles for multiple representative files and coordinates profiling workflow
+- **Profile orchestrator** (`runProfile`) - Coordinates full profiling workflow: manifest parsing → file selection → profiling → JSON output
+- **Comprehensive test suite for profiling** - 28 new tests across 6 modules (family, select, column, file, directory, integration) with 100% pass rate
+- **FileTarget type** to inventory entities for improved type safety in profile workflow
+
+### Technical Details
+
+- Implemented custom CSV parser (handles quoted fields, escaping) without external dependencies
+- All modules follow TDD methodology with comprehensive test coverage
+- Full test coverage: 134 total tests passing, 93.72% statement coverage, 100% function coverage
+- Strict TypeScript with no implicit any types
+- All linting passes with zero errors
+- ESM-compatible implementation with proper module exports
+
+The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
 ### Added
 
