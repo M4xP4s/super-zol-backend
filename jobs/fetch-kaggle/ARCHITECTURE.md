@@ -76,6 +76,219 @@ Hexagonal Architecture organizes code around the **application core** (the "hexa
 └─────────────────────────────────────────────────┘
 ```
 
+#### Mermaid Diagram: Hexagonal Architecture
+
+```mermaid
+graph TB
+    subgraph "PRIMARY ADAPTERS (Driving)"
+        CLI[CLI Commands]
+        Tests[Unit Tests]
+        IntTests[Integration Tests]
+    end
+
+    subgraph "APPLICATION CORE (The Hexagon)"
+        subgraph "Inbound Ports"
+            IAuth[IAuthenticateKaggle]
+            IDownload[IDownloadDataset]
+            IProfile[IProfileSchema]
+        end
+
+        subgraph "Domain Layer"
+            VO[Value Objects<br/>KaggleCredentials]
+            Entities[Entities<br/>Manifest, Profile]
+        end
+
+        subgraph "Business Services"
+            AuthSvc[AuthService]
+            DownloadSvc[DownloadService]
+            ProfileSvc[ProfileService]
+        end
+
+        subgraph "Outbound Ports"
+            IKaggle[IKaggleAPI]
+            IStore[ICredentialStore]
+            IFileSystem[IFileSystem]
+        end
+    end
+
+    subgraph "SECONDARY ADAPTERS (Driven)"
+        KaggleCLI[KaggleCLIAdapter<br/>Real Kaggle CLI]
+        MockKaggle[MockKaggleCLIAdapter<br/>Test Mock]
+        EnvStore[EnvCredentialStore]
+        FileStore[FileCredentialStore]
+        RealFS[File System Adapter]
+    end
+
+    CLI --> IAuth
+    Tests --> IAuth
+    IntTests --> IDownload
+
+    IAuth --> AuthSvc
+    IDownload --> DownloadSvc
+    IProfile --> ProfileSvc
+
+    AuthSvc --> VO
+    DownloadSvc --> Entities
+    ProfileSvc --> Entities
+
+    AuthSvc --> IKaggle
+    AuthSvc --> IStore
+    DownloadSvc --> IKaggle
+    DownloadSvc --> IFileSystem
+    ProfileSvc --> IFileSystem
+
+    IKaggle -.implements.-> KaggleCLI
+    IKaggle -.implements.-> MockKaggle
+    IStore -.implements.-> EnvStore
+    IStore -.implements.-> FileStore
+    IFileSystem -.implements.-> RealFS
+
+    style CLI fill:#e1f5ff
+    style Tests fill:#e1f5ff
+    style IntTests fill:#e1f5ff
+    style IAuth fill:#fff4e6
+    style IDownload fill:#fff4e6
+    style IProfile fill:#fff4e6
+    style AuthSvc fill:#f0f0f0
+    style DownloadSvc fill:#f0f0f0
+    style ProfileSvc fill:#f0f0f0
+    style VO fill:#e8f5e9
+    style Entities fill:#e8f5e9
+    style IKaggle fill:#fff4e6
+    style IStore fill:#fff4e6
+    style IFileSystem fill:#fff4e6
+    style KaggleCLI fill:#ffe6e6
+    style MockKaggle fill:#ffe6e6
+    style EnvStore fill:#ffe6e6
+    style FileStore fill:#ffe6e6
+    style RealFS fill:#ffe6e6
+```
+
+#### Mermaid Class Diagram: Core Domain Model
+
+```mermaid
+classDiagram
+    %% Value Objects
+    class KaggleCredentials {
+        <<Value Object>>
+        -username: string
+        -apiKey: string
+        +create(username, apiKey)$ KaggleCredentials
+        +toJSON() Object
+        +equals(other) boolean
+    }
+
+    %% Entities
+    class DownloadManifest {
+        <<Entity>>
+        +dataset: DatasetInfo
+        +download_info: DownloadInfo
+        +files: FileMetadata[]
+    }
+
+    class DataProfile {
+        <<Entity>>
+        +generated_at: string
+        +source_directory: string
+        +profiles: FileProfile[]
+    }
+
+    class FileMetadata {
+        +filename: string
+        +path: string
+        +size_bytes: number
+        +sha256: string
+        +row_count: number
+    }
+
+    %% Inbound Ports
+    class IAuthenticateKaggle {
+        <<Inbound Port>>
+        +execute(request) Promise~AuthResponse~
+    }
+
+    class IDownloadDataset {
+        <<Inbound Port>>
+        +execute(request) Promise~DownloadResponse~
+    }
+
+    %% Outbound Ports
+    class IKaggleAPI {
+        <<Outbound Port>>
+        +verify(credentials) Promise~boolean~
+        +downloadDataset(id, dir) Promise~void~
+    }
+
+    class ICredentialStore {
+        <<Outbound Port>>
+        +load() Promise~KaggleCredentials~
+        +save(credentials) Promise~void~
+        +exists() Promise~boolean~
+    }
+
+    %% Services
+    class AuthService {
+        <<Service>>
+        -kaggleAPI: IKaggleAPI
+        -envStore: ICredentialStore
+        -fileStore: ICredentialStore
+        +execute(request) Promise~AuthResponse~
+    }
+
+    class DownloadService {
+        <<Service>>
+        -kaggleAPI: IKaggleAPI
+        -fileSystem: IFileSystem
+        +execute(request) Promise~DownloadResponse~
+    }
+
+    %% Adapters
+    class KaggleCLIAdapter {
+        <<Secondary Adapter>>
+        +verify(credentials) Promise~boolean~
+        +downloadDataset(id, dir) Promise~void~
+    }
+
+    class EnvCredentialStore {
+        <<Secondary Adapter>>
+        +load() Promise~KaggleCredentials~
+        +save(credentials) Promise~void~
+        +exists() Promise~boolean~
+    }
+
+    %% Relationships
+    AuthService ..|> IAuthenticateKaggle : implements
+    DownloadService ..|> IDownloadDataset : implements
+
+    AuthService --> IKaggleAPI : depends on
+    AuthService --> ICredentialStore : depends on
+    AuthService --> KaggleCredentials : uses
+
+    DownloadService --> IKaggleAPI : depends on
+    DownloadService --> DownloadManifest : creates
+
+    DownloadManifest --> FileMetadata : contains
+
+    KaggleCLIAdapter ..|> IKaggleAPI : implements
+    EnvCredentialStore ..|> ICredentialStore : implements
+
+    ICredentialStore --> KaggleCredentials : returns
+
+    %% Styling
+    style KaggleCredentials fill:#e8f5e9
+    style DownloadManifest fill:#e8f5e9
+    style DataProfile fill:#e8f5e9
+    style FileMetadata fill:#e8f5e9
+    style IAuthenticateKaggle fill:#fff4e6
+    style IDownloadDataset fill:#fff4e6
+    style IKaggleAPI fill:#fff4e6
+    style ICredentialStore fill:#fff4e6
+    style AuthService fill:#f0f0f0
+    style DownloadService fill:#f0f0f0
+    style KaggleCLIAdapter fill:#ffe6e6
+    style EnvCredentialStore fill:#ffe6e6
+```
+
 ### Key Concepts
 
 1. **Application Core (The Hexagon)**
@@ -632,6 +845,64 @@ fetch-kaggle/
 
 ### Example 1: Authentication Flow
 
+#### Mermaid Sequence Diagram: Authentication Flow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant CLI as CLI Command<br/>(Primary Adapter)
+    participant AuthSvc as AuthService<br/>(Core)
+    participant EnvStore as EnvCredentialStore<br/>(Secondary Adapter)
+    participant FileStore as FileCredentialStore<br/>(Secondary Adapter)
+    participant KaggleCLI as KaggleCLIAdapter<br/>(Secondary Adapter)
+    participant Kaggle as Kaggle API<br/>(External)
+
+    User->>CLI: fetch-kaggle auth
+    CLI->>CLI: Wire dependencies<br/>(DI setup)
+    CLI->>AuthSvc: execute({ forceInteractive: false })
+
+    Note over AuthSvc: Try env vars first
+
+    AuthSvc->>EnvStore: load()
+    EnvStore->>EnvStore: Read KAGGLE_USERNAME<br/>KAGGLE_KEY from env
+    EnvStore-->>AuthSvc: KaggleCredentials | null
+
+    alt Env credentials found
+        AuthSvc->>KaggleCLI: verify(credentials)
+        KaggleCLI->>Kaggle: kaggle datasets list --max-size 1
+        Kaggle-->>KaggleCLI: Success / Failure
+        KaggleCLI-->>AuthSvc: true / false
+
+        alt Verification succeeds
+            AuthSvc-->>CLI: { success: true, source: 'env' }
+            CLI->>User: ✓ Authentication successful!
+        else Verification fails
+            Note over AuthSvc: Fall through to file store
+        end
+    end
+
+    Note over AuthSvc: Try kaggle.json file
+
+    AuthSvc->>FileStore: load()
+    FileStore->>FileStore: Read ~/.kaggle/kaggle.json
+    FileStore-->>AuthSvc: KaggleCredentials | null
+
+    alt File credentials found
+        AuthSvc->>KaggleCLI: verify(credentials)
+        KaggleCLI->>Kaggle: kaggle datasets list --max-size 1
+        Kaggle-->>KaggleCLI: Success / Failure
+        KaggleCLI-->>AuthSvc: true / false
+
+        alt Verification succeeds
+            AuthSvc-->>CLI: { success: true, source: 'file' }
+            CLI->>User: ✓ Authentication successful!
+        else Verification fails
+            AuthSvc-->>CLI: { success: false, error: '...' }
+            CLI->>User: ✗ Authentication failed
+        end
+    end
+```
+
 **Scenario:** User runs `fetch-kaggle auth`
 
 ```
@@ -745,6 +1016,49 @@ describe('AuthService', () => {
 ### Example 3: Download Flow (Feature Organization)
 
 **Scenario:** Download a Kaggle dataset
+
+#### Mermaid Flowchart: Download Workflow
+
+```mermaid
+flowchart TD
+    Start([User: fetch-kaggle download]) --> CLI[CLI Command<br/>Parse arguments]
+    CLI --> RunDownload[runDownload<br/>lib/download/index.ts]
+
+    RunDownload --> Validate{Validate Download<br/>Already exists?}
+
+    Validate -->|Not found| Fetch[Fetch Dataset<br/>lib/download/fetch.ts]
+    Validate -->|Found + Valid| Exit2[Exit: Already downloaded]
+    Validate -->|Found + Invalid| Fetch
+
+    Fetch -->|Dry Run| CreateSample[Create sample.csv<br/>Mock data]
+    Fetch -->|Real| KaggleCLI[Kaggle CLI Download<br/>kaggle datasets download]
+
+    CreateSample --> Process
+    KaggleCLI --> Process
+
+    Process[Process Files<br/>lib/download/process.ts] --> Hash[Calculate SHA-256<br/>lib/utils/hash.ts]
+    Hash --> Size[Calculate file sizes<br/>lib/utils/fs.ts]
+    Size --> Rows[Count CSV rows<br/>lib/utils/csv.ts]
+
+    Rows --> Manifest[Generate Manifest<br/>lib/download/manifest.ts]
+
+    Manifest --> CreateEntity[Create DownloadManifest<br/>domain entity]
+    CreateEntity --> ValidateZod{Validate with Zod<br/>zod-schemas.ts}
+
+    ValidateZod -->|Invalid| Error1[Throw validation error]
+    ValidateZod -->|Valid| WriteJSON[Write manifest JSON<br/>to target directory]
+
+    WriteJSON --> Success[Exit: Success]
+    Error1 --> Failure[Exit: Failure]
+
+    style Start fill:#e1f5ff
+    style Success fill:#c8e6c9
+    style Failure fill:#ffcdd2
+    style Exit2 fill:#fff9c4
+    style CreateEntity fill:#e8f5e9
+    style ValidateZod fill:#fff4e6
+    style KaggleCLI fill:#ffe6e6
+```
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
