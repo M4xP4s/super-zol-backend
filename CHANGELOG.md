@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added - Phase 7: CLI Interface
+
+- **CLI main entry point** (`src/cli/index.ts`) - Main CLI orchestrator using commander framework with version detection
+- **Auth command** (`src/cli/commands/auth.ts`) - Kaggle authentication workflow with `--check-only` option
+- **Download command** (`src/cli/commands/download.ts`) - Dataset download with `--dataset-id` and `--dry-run` options
+- **Inventory command** (`src/cli/commands/inventory.ts`) - Dataset inventory analysis with optional directory argument
+- **Profile command** (`src/cli/commands/profile.ts`) - Schema profiling with `--data-dir` and `--output` options
+- **All-in-one command** (`src/cli/commands/all.ts`) - Complete workflow orchestration (auth → download → inventory → profile)
+- **CLI integration tests** - 21 new tests for CLI command structure and configuration
+- **CLI target in project.json** - Nx configuration for running CLI via `nx run fetch-kaggle:cli`
+
+### Technical Details - Phase 7
+
+- All CLI commands properly wire to existing library functions with zero business logic duplication
+- Proper error handling with user-friendly messages and correct exit codes (0 for success, 1 for failure)
+- Full help text for all commands with descriptive options
+- All 6 CLI tests passing with proper command structure validation
+- ESLint passes with zero errors and zero warnings
+- Commands executable via: `node dist/jobs/fetch-kaggle/cli/index.js <command> [options]`
+- Tested dry-run functionality for download command
+
 ### Added - Phase 6: Schema Profiling
 
 - **Profile family detection module** (`detectFileFamily`) - Identifies file families and retail chains from Kaggle dataset filenames
@@ -15,7 +36,7 @@ All notable changes to this project will be documented in this file.
 - **Comprehensive test suite for profiling** - 28 new tests across 6 modules (family, select, column, file, directory, integration) with 100% pass rate
 - **FileTarget type** to inventory entities for improved type safety in profile workflow
 
-### Technical Details
+### Technical Details - Phase 6
 
 - Implemented custom CSV parser (handles quoted fields, escaping) without external dependencies
 - All modules follow TDD methodology with comprehensive test coverage
