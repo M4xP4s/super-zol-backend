@@ -40,6 +40,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
      - Be specific about what changed and why it matters
    - Push regularly to create backup points
    - Example: `feat(api): add user authentication endpoint`
+   - **Quick commit workflow**: Use [scripts/quick-commit.sh](scripts/quick-commit.sh) for automated formatting, commit, checks, and push:
+     ```bash
+     ./scripts/quick-commit.sh "feat(api): add user auth"
+     ```
+     This automatically formats code, stages changes, creates a commit, runs affected checks, and pushes to main.
 
 **Why?** This ensures you have full context on project status and available tools before proposing solutions. Frequent commits create checkpoints, make it easier to track progress, and provide rollback points if needed.
 
@@ -84,6 +89,32 @@ just infra-down     # Stop Docker infrastructure
 just serve-api      # Start API gateway service
 just serve-worker   # Start worker service
 ```
+
+### Quick Commit Workflow
+
+For rapid iteration on main branch (solo development):
+
+```bash
+# Quick commit: format + commit + affected checks + push
+./scripts/quick-commit.sh "feat(api): add health check"
+
+# Without message (defaults to "chore(repo): quick commit")
+./scripts/quick-commit.sh
+
+# Non-conventional messages are auto-prefixed
+./scripts/quick-commit.sh "update docs"  # → "chore(repo): update docs"
+```
+
+**What it does:**
+
+1. Syncs with remote main branch
+2. Formats code (`pnpm nx format:write`)
+3. Stages all changes
+4. Creates commit (ensures Conventional Commits format)
+5. Runs affected lint, test, build
+6. Pushes to main
+
+**When to use:** Fast iteration on main for solo development. For collaborative work or feature branches, use the standard git workflow or `just merge-to-main`.
 
 ### Automated PR Workflow
 

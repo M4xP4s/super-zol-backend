@@ -69,6 +69,9 @@ just serve-api    # Start API gateway
 just test         # Run all tests
 just build        # Build all projects
 just graph        # View dependency graph
+
+# Quick commit workflow (solo development)
+./scripts/quick-commit.sh "feat(api): add endpoint"  # Format + commit + check + push
 ```
 
 **All Available Commands:**
@@ -127,6 +130,40 @@ just merge-to-main-keep feat/my-feature
 - PR title must follow Conventional Commits format (auto-generated from branch name)
 
 See `scripts/merge-to-main.sh` for implementation details.
+
+### Quick Commit Workflow (Solo Development)
+
+For rapid iteration directly on the main branch:
+
+```bash
+# Format, commit, run checks, and push in one command
+./scripts/quick-commit.sh "feat(api): add health check endpoint"
+
+# Without message (defaults to "chore(repo): quick commit")
+./scripts/quick-commit.sh
+
+# Non-conventional commit messages are auto-prefixed with "chore(repo):"
+./scripts/quick-commit.sh "update documentation"
+# Results in: "chore(repo): update documentation"
+```
+
+**What it does automatically:**
+
+1. Syncs with remote main branch (fast-forward only)
+2. Formats code using `pnpm nx format:write`
+3. Stages all changes (`git add -A`)
+4. Creates commit with Conventional Commits format validation
+5. Runs affected lint, test, and build checks
+6. Pushes to main
+
+**When to use:**
+
+- ✅ Solo development on main branch
+- ✅ Quick iterations and experiments
+- ✅ Small, atomic changes
+- ❌ Collaborative work (use feature branches + `just merge-to-main` instead)
+
+See `scripts/quick-commit.sh` for implementation details.
 
 ### Development
 
@@ -308,16 +345,18 @@ docker compose logs -f
 
 ## Scripts Reference
 
-| Command               | Description                            |
-| --------------------- | -------------------------------------- |
-| `pnpm dev`            | Start all services in development mode |
-| `pnpm build`          | Build all projects                     |
-| `pnpm test`           | Run all tests                          |
-| `pnpm lint`           | Lint all code                          |
-| `pnpm format`         | Format all code                        |
-| `pnpm graph`          | View dependency graph                  |
-| `pnpm affected:test`  | Test only affected projects            |
-| `pnpm affected:build` | Build only affected projects           |
+| Command                               | Description                                  |
+| ------------------------------------- | -------------------------------------------- |
+| `pnpm dev`                            | Start all services in development mode       |
+| `pnpm build`                          | Build all projects                           |
+| `pnpm test`                           | Run all tests                                |
+| `pnpm lint`                           | Lint all code                                |
+| `pnpm format`                         | Format all code                              |
+| `pnpm graph`                          | View dependency graph                        |
+| `pnpm affected:test`                  | Test only affected projects                  |
+| `pnpm affected:build`                 | Build only affected projects                 |
+| `./scripts/quick-commit.sh "<msg>"`   | Quick commit: format + commit + check + push |
+| `./scripts/merge-to-main.sh [branch]` | Automated PR workflow                        |
 
 ## CI/CD
 
