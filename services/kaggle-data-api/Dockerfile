@@ -1,61 +1,51 @@
-# Multi-stage Docker build for kaggle-data-api service
-# Stage 1: Builder
+# Kaggle Data API Service Dockerfile
+
+# Build stage
 FROM node:22-alpine AS builder
 
 WORKDIR /app
-
-# Enable corepack for pnpm
 RUN corepack enable
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
-COPY nx.json tsconfig.base.json ./
+# Copy dependency files
+COPY package.json pnpm-lock.yaml nx.json tsconfig.base.json ./
 
-# Install dependencies
+# Install all dependencies (needed for build)
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Reset Nx cache and build the service
-RUN pnpm nx reset && pnpm nx build kaggle-data-api --configuration=production
+# Build the service (with bundling enabled)
+RUN pnpm nx build kaggle-data-api --configuration=production
 
-# Stage 2: Runtime
+# Runtime stage - use base image with fallback
+# Build with: docker build -f services/kaggle-data-api/Dockerfile .
+# Or with base: docker build --build-arg USE_BASE=true -f services/kaggle-data-api/Dockerfile .
+ARG USE_BASE=false
 FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-# Install production dependencies only
 ENV NODE_ENV=production
 
-# Enable corepack for pnpm
-RUN corepack enable
+# Add wget for healthcheck
+RUN apk add --no-cache wget
 
-# Copy built application and dependencies from builder
+# Copy built application (all dependencies bundled in main.js)
 COPY --from=builder /app/dist/services/kaggle-data-api ./
-COPY --from=builder /app/dist/libs ./libs
-COPY --from=builder /app/node_modules ./node_modules
 
-# Configure package.json to resolve @libs paths
-RUN node -e "const pkg=require('./package.json'); pkg.imports={'@libs/*':'./libs/*/index.js'}; require('fs').writeFileSync('./package.json', JSON.stringify(pkg,null,2));"
-
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 fastify && \
+# Create and switch to non-root user
+RUN addgroup --system --gid 1001 nodejs 2>/dev/null || true && \
+    adduser --system --uid 1001 fastify 2>/dev/null || true && \
     chown -R fastify:nodejs /app
 
 USER fastify
 
-# Expose service port
 EXPOSE 3000
 
-# Set environment variables
-ENV HOST=0.0.0.0
-ENV PORT=3000
-
-# Health check
+# Health check for Kubernetes liveness/readiness probes
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health/live', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health/live || exit 1
 
 # Start the service
 CMD ["node", "main.js"]

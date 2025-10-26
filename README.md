@@ -52,24 +52,34 @@ That's it! 🎉
 
 ```
 backend/
-├── services/          # Deployable backend services
-│   ├── api-gateway/   # Fastify REST API
-│   └── worker/        # Background worker
-├── libs/              # Shared internal libraries
-│   └── shared-util/   # Common utilities
-├── jobs/              # Scheduled tasks and batch jobs
-│   └── fetch-kaggle/  # Kaggle dataset operations
-└── scripts/           # Development and deployment scripts
+├── services/             # Deployable backend services
+│   ├── api-gateway/      # Fastify REST API (legacy)
+│   ├── kaggle-data-api/  # Kaggle Data API (Fastify 5.x, production-ready)
+│   └── worker/           # Background worker
+├── libs/                 # Shared internal libraries
+│   └── shared-util/      # Common utilities
+├── jobs/                 # Scheduled tasks and batch jobs
+│   └── fetch-kaggle/     # Kaggle dataset operations
+└── scripts/              # Development and deployment scripts
 ```
 
 ### Component Documentation
 
 Each major component has its own README with detailed information:
 
+**Services:**
+
+- **[services/kaggle-data-api](services/kaggle-data-api/README.md)** - RESTful API for Kaggle data access (Fastify 5.x)
+
+**Jobs:**
+
 - **[jobs/fetch-kaggle](jobs/fetch-kaggle/README.md)** - Kaggle dataset pipeline architecture and usage
   - [Architecture Overview](jobs/fetch-kaggle/ARCHITECTURE.md) - Hexagonal architecture deep-dive
   - [Testing Guide](jobs/fetch-kaggle/TESTING.md) - Test strategy and TDD approach
   - [CLI Reference](jobs/fetch-kaggle/src/cli/README.md) - Command-line interface documentation
+
+**Libraries:**
+
 - **[libs/shared-util](libs/shared-util/README.md)** - Shared utility functions
 
 ## Documentation

@@ -13,11 +13,13 @@
         "platform": "node",
         "outputPath": "dist/services/kaggle-data-api",
         "format": ["esm"],
-        "bundle": false,
+        "bundle": true,
+        "thirdParty": true,
         "main": "services/kaggle-data-api/src/main.ts",
         "tsConfig": "services/kaggle-data-api/tsconfig.app.json",
         "assets": ["services/kaggle-data-api/src/assets"],
         "generatePackageJson": true,
+        "external": [],
         "esbuildOptions": {
           "sourcemap": true,
           "outExtension": {

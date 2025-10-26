@@ -48,6 +48,9 @@ export async function build(opts: AppOptions = {}) {
   const helmetPlugin = await import('./plugins/helmet.js');
   await fastify.register(helmetPlugin.default, opts);
 
+  const rateLimitPlugin = await import('./plugins/rate-limit.js');
+  await fastify.register(rateLimitPlugin.default, opts);
+
   const swaggerPlugin = await import('./plugins/swagger.js');
   await fastify.register(swaggerPlugin.default, opts);
 
