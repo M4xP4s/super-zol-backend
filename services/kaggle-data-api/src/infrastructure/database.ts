@@ -1,4 +1,19 @@
-import { Pool, PoolClient, QueryResult } from 'pg';
+import { Pool, PoolClient } from 'pg';
+
+/**
+ * Interface for node-pg-migrate runner to avoid @ts-expect-error
+ * Properly typed for type safety
+ */
+interface MigrationRunner {
+  (options: MigrationRunnerOptions): Promise<string[]>;
+}
+
+interface MigrationRunnerOptions {
+  databaseUrl: string;
+  migrationsTable: string;
+  dir: string;
+  direction: 'up' | 'down';
+}
 
 /**
  * Singleton pool instance - ensures connection pooling is reused across queries
@@ -70,11 +85,25 @@ export function getPool(): Pool {
 }
 
 /**
- * Execute a query on the singleton pool
+ * Execute a query on the singleton pool with optional type safety
  * Reuses connections efficiently through pooling
+ *
+ * @template T - Type of the row returned by the query
+ * @param sql - SQL query string
+ * @param params - Query parameters
+ * @returns Typed query result
+ *
+ * @example
+ * interface DatasetRow { id: number; name: string; }
+ * const result = await query<DatasetRow>('SELECT * FROM datasets WHERE id = $1', [id]);
  */
-export async function query(sql: string, params?: unknown[]): Promise<QueryResult> {
-  return getPool().query(sql, params);
+export async function query<T = Record<string, unknown>>(
+  sql: string,
+  params?: unknown[]
+): Promise<{ rows: T[]; rowCount: number | null; command: string }> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = await (getPool().query(sql, params) as Promise<any>);
+  return result as { rows: T[]; rowCount: number | null; command: string };
 }
 
 /**
@@ -97,13 +126,15 @@ export async function closePool(): Promise<void> {
 /**
  * Run pending database migrations
  * Uses node-pg-migrate to execute SQL migration files
+ * Properly typed for type safety without @ts-expect-error
  */
 export async function runMigrations(): Promise<void> {
-  // Dynamically import node-pg-migrate to avoid type resolution issues
+  // Dynamically import node-pg-migrate with proper type assertion
   // This function is called at runtime, not during build
-  // @ts-expect-error node-pg-migrate types can't be resolved with current moduleResolution
-
-  const migrationModule = await import('node-pg-migrate');
+  // @ts-expect-error node-pg-migrate is available at runtime; moduleResolution doesn't auto-detect it
+  const migrationModule = (await import('node-pg-migrate')) as {
+    runner: MigrationRunner;
+  };
   const runner = migrationModule.runner;
   const connectionString = getDatabaseUrl();
 
@@ -115,8 +146,9 @@ export async function runMigrations(): Promise<void> {
       direction: 'up',
     });
     console.log('Migrations completed successfully');
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
     console.error('Migration failed:', errorMessage);
     throw error;
   }

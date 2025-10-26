@@ -1,8 +1,20 @@
-import { FastifyInstance, FastifyRequest } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { query } from '../../infrastructure/database.js';
 
 /**
- * Dataset schema for validation and type safety
+ * Database row type for type-safe queries
+ */
+interface DatasetRow {
+  id: number;
+  name: string;
+  description: string | null;
+  source_url: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+/**
+ * Request/Response types for API contracts
  */
 interface CreateDatasetRequest {
   name: string;
@@ -14,6 +26,99 @@ interface UpdateDatasetRequest {
   name?: string;
   description?: string | null;
   source_url?: string | null;
+}
+
+interface ErrorResponse {
+  error: string;
+  message?: string;
+}
+
+interface DatasetResponse {
+  dataset: DatasetRow;
+}
+
+interface DatasetsListResponse {
+  datasets: DatasetRow[];
+  pagination: {
+    limit: number;
+    offset: number;
+    count: number;
+  };
+}
+
+/**
+ * Validation error messages - single source of truth
+ */
+const VALIDATION_ERRORS = {
+  DATASET_NAME_REQUIRED: 'Dataset name is required and must be a non-empty string',
+  DATASET_NAME_INVALID: 'Dataset name must be a non-empty string',
+  DATASET_ID_INVALID: 'Dataset ID must be a positive integer',
+  DATASET_NOT_FOUND: 'Dataset not found',
+  DUPLICATE_NAME: 'Dataset with this name already exists',
+  NO_UPDATE_FIELDS: 'At least one field must be provided for update',
+} as const;
+
+/**
+ * Explicit list of dataset columns for SELECT queries
+ * Prevents fetching unnecessary columns and makes schema changes explicit
+ */
+const DATASET_COLUMNS = [
+  'id',
+  'name',
+  'description',
+  'source_url',
+  'created_at',
+  'updated_at',
+].join(', ');
+
+/**
+ * Type for allowed update fields
+ * Limits what fields clients can modify
+ */
+type UpdateField = 'name' | 'description' | 'source_url';
+
+interface UpdateFieldConfig {
+  field: UpdateField;
+  key: keyof UpdateDatasetRequest;
+}
+
+/**
+ * Extract error message safely from any error type
+ * Handles Error objects, strings, and unknown types
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return String(error);
+}
+
+/**
+ * Handle database errors with consistent response format
+ * Logs detailed errors server-side while returning safe messages to client
+ *
+ * @param fastify - Fastify instance for logging
+ * @param error - The error that occurred
+ * @param logContext - Additional context to include in logs
+ * @param userMessage - Generic error message to send to client
+ * @returns Error response object
+ */
+function handleDatabaseError(
+  fastify: FastifyInstance,
+  error: unknown,
+  logContext: Record<string, unknown>,
+  userMessage: string
+): ErrorResponse {
+  const errorMessage = getErrorMessage(error);
+  fastify.log.error({ error, ...logContext }, userMessage);
+
+  return {
+    error: userMessage,
+    message: process.env['NODE_ENV'] === 'development' ? errorMessage : undefined,
+  };
 }
 
 /**
@@ -36,54 +141,48 @@ export default async function (fastify: FastifyInstance) {
    *
    * Example: GET /datasets?limit=50&offset=0&order=name
    *
-   * @returns {object} datasets array and pagination metadata
+   * @returns {DatasetsListResponse} datasets array and pagination metadata
    * @throws {500} Database connection or query errors
    */
-  fastify.get(
-    '/datasets',
-    async (
-      request: FastifyRequest<{ Querystring: { limit?: string; offset?: string; order?: string } }>,
-      reply
-    ) => {
-      try {
-        // Validate and sanitize query parameters
-        const limit = Math.min(Math.max(1, parseInt(request.query.limit || '100', 10)), 1000);
-        const offset = Math.max(0, parseInt(request.query.offset || '0', 10));
-        const allowedOrder = ['name', 'id', 'created_at'];
-        const order = (
-          allowedOrder.includes(request.query.order || '') ? request.query.order : 'name'
-        ) as string;
+  fastify.get<{
+    Querystring: { limit?: string; offset?: string; order?: string };
+    Reply: DatasetsListResponse | ErrorResponse;
+  }>('/datasets', async (request, reply): Promise<DatasetsListResponse | ErrorResponse> => {
+    try {
+      // Validate and sanitize query parameters
+      const limit = Math.min(Math.max(1, parseInt(request.query.limit || '100', 10)), 1000);
+      const offset = Math.max(0, parseInt(request.query.offset || '0', 10));
+      const allowedOrder = ['name', 'id', 'created_at'];
+      const order = (
+        allowedOrder.includes(request.query.order || '') ? request.query.order : 'name'
+      ) as string;
 
-        // Use parameterized query to prevent SQL injection
-        // The $1, $2, $3 placeholders are filled safely by the pg library
-        const result = await query(`SELECT * FROM datasets ORDER BY ${order} LIMIT $1 OFFSET $2`, [
+      // Use parameterized query to prevent SQL injection
+      // The $1, $2, $3 placeholders are filled safely by the pg library
+      // Explicit column list instead of SELECT *
+      const result = await query<DatasetRow>(
+        `SELECT ${DATASET_COLUMNS} FROM datasets ORDER BY ${order} LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      return {
+        datasets: result.rows,
+        pagination: {
           limit,
           offset,
-        ]);
-
-        return {
-          datasets: result.rows,
-          pagination: {
-            limit,
-            offset,
-            count: result.rows.length,
-          },
-        };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-        // Log detailed error for debugging
-        fastify.log.error({ error, query: request.query }, 'Failed to fetch datasets');
-
-        // Return generic error to client for security
-        reply.code(500);
-        return {
-          error: 'Failed to fetch datasets from database',
-          message: process.env['NODE_ENV'] === 'development' ? errorMessage : undefined,
-        };
-      }
+          count: result.rows.length,
+        },
+      };
+    } catch (error: unknown) {
+      reply.code(500);
+      return handleDatabaseError(
+        fastify,
+        error,
+        { query: request.query },
+        'Failed to fetch datasets from database'
+      );
     }
-  );
+  });
 
   /**
    * POST /datasets
@@ -94,25 +193,28 @@ export default async function (fastify: FastifyInstance) {
    * - description: string (optional)
    * - source_url: string (optional)
    *
-   * @returns {object} created dataset with id and timestamps
+   * @returns {DatasetResponse} created dataset with id and timestamps
    * @throws {400} Validation error (missing name or duplicate)
    * @throws {500} Database error
    */
-  fastify.post<{ Body: CreateDatasetRequest }>('/datasets', async (request, reply) => {
+  fastify.post<{
+    Body: CreateDatasetRequest;
+    Reply: DatasetResponse | ErrorResponse;
+  }>('/datasets', async (request, reply): Promise<DatasetResponse | ErrorResponse> => {
     try {
       // Validate required fields
       const { name, description, source_url } = request.body;
 
       if (!name || typeof name !== 'string' || name.trim().length === 0) {
         reply.code(400);
-        return { error: 'Dataset name is required and must be a non-empty string' };
+        return { error: VALIDATION_ERRORS.DATASET_NAME_REQUIRED };
       }
 
       // Insert dataset and return the created record
-      const result = await query(
+      const result = await query<DatasetRow>(
         `INSERT INTO datasets (name, description, source_url)
            VALUES ($1, $2, $3)
-           RETURNING id, name, description, source_url, created_at, updated_at`,
+           RETURNING ${DATASET_COLUMNS}`,
         [name.trim(), description || null, source_url || null]
       );
 
@@ -121,23 +223,23 @@ export default async function (fastify: FastifyInstance) {
       }
 
       reply.code(201);
-      return { dataset: result.rows[0] };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-      fastify.log.error({ error, body: request.body }, 'Failed to create dataset');
+      return { dataset: result.rows[0]! };
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
 
       // Handle unique constraint violation
       if (errorMessage.includes('duplicate key') || errorMessage.includes('unique')) {
         reply.code(409);
-        return { error: 'Dataset with this name already exists' };
+        return { error: VALIDATION_ERRORS.DUPLICATE_NAME };
       }
 
       reply.code(500);
-      return {
-        error: 'Failed to create dataset',
-        message: process.env['NODE_ENV'] === 'development' ? errorMessage : undefined,
-      };
+      return handleDatabaseError(
+        fastify,
+        error,
+        { body: request.body },
+        'Failed to create dataset'
+      );
     }
   });
 
@@ -145,182 +247,185 @@ export default async function (fastify: FastifyInstance) {
    * GET /datasets/:id
    * Fetch a single dataset by ID
    *
-   * @param {number} id - Dataset ID
-   * @returns {object} dataset object
+   * @param id - Dataset ID
+   * @returns {DatasetResponse} dataset object
    * @throws {404} Dataset not found
    * @throws {500} Database error
    */
-  fastify.get<{ Params: { id: string } }>('/datasets/:id', async (request, reply) => {
+  fastify.get<{
+    Params: { id: string };
+    Reply: DatasetResponse | ErrorResponse;
+  }>('/datasets/:id', async (request, reply): Promise<DatasetResponse | ErrorResponse> => {
     try {
       const id = parseInt(request.params.id, 10);
 
       if (isNaN(id) || id < 1) {
         reply.code(400);
-        return { error: 'Dataset ID must be a positive integer' };
+        return { error: VALIDATION_ERRORS.DATASET_ID_INVALID };
       }
 
-      const result = await query('SELECT * FROM datasets WHERE id = $1', [id]);
+      const result = await query<DatasetRow>(
+        `SELECT ${DATASET_COLUMNS} FROM datasets WHERE id = $1`,
+        [id]
+      );
 
       if (result.rows.length === 0) {
         reply.code(404);
-        return { error: 'Dataset not found' };
+        return { error: VALIDATION_ERRORS.DATASET_NOT_FOUND };
       }
 
-      return { dataset: result.rows[0] };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-      fastify.log.error({ error, params: request.params }, 'Failed to fetch dataset');
-
+      return { dataset: result.rows[0]! };
+    } catch (error: unknown) {
       reply.code(500);
-      return {
-        error: 'Failed to fetch dataset',
-        message: process.env['NODE_ENV'] === 'development' ? errorMessage : undefined,
-      };
+      return handleDatabaseError(
+        fastify,
+        error,
+        { params: request.params },
+        'Failed to fetch dataset'
+      );
     }
   });
 
   /**
    * PUT /datasets/:id
-   * Update a dataset
+   * Update a dataset with partial field support
+   * Whitelist ensures only allowed fields can be updated
+   * Removed N+1 query: relies on UPDATE RETURNING for 404 detection
    *
-   * @param {number} id - Dataset ID
+   * @param id - Dataset ID
    * Request Body (all optional, at least one required):
    * - name: string
    * - description: string | null
    * - source_url: string | null
    *
-   * @returns {object} updated dataset
+   * @returns {DatasetResponse} updated dataset
    * @throws {400} Invalid request or no fields to update
    * @throws {404} Dataset not found
    * @throws {409} Name already exists
    * @throws {500} Database error
    */
-  fastify.put<{ Params: { id: string }; Body: UpdateDatasetRequest }>(
-    '/datasets/:id',
-    async (request, reply) => {
-      try {
-        const id = parseInt(request.params.id, 10);
-
-        if (isNaN(id) || id < 1) {
-          reply.code(400);
-          return { error: 'Dataset ID must be a positive integer' };
-        }
-
-        const { name, description, source_url } = request.body;
-
-        // Check if dataset exists
-        const existsResult = await query('SELECT id FROM datasets WHERE id = $1', [id]);
-        if (existsResult.rows.length === 0) {
-          reply.code(404);
-          return { error: 'Dataset not found' };
-        }
-
-        // Build dynamic update query
-        const updates: string[] = [];
-        const params: unknown[] = [];
-        let paramIndex = 1;
-
-        if (name !== undefined) {
-          if (typeof name !== 'string' || name.trim().length === 0) {
-            reply.code(400);
-            return { error: 'Dataset name must be a non-empty string' };
-          }
-          updates.push(`name = $${paramIndex}`);
-          params.push(name.trim());
-          paramIndex++;
-        }
-
-        if (description !== undefined) {
-          updates.push(`description = $${paramIndex}`);
-          params.push(description);
-          paramIndex++;
-        }
-
-        if (source_url !== undefined) {
-          updates.push(`source_url = $${paramIndex}`);
-          params.push(source_url);
-          paramIndex++;
-        }
-
-        if (updates.length === 0) {
-          reply.code(400);
-          return { error: 'At least one field must be provided for update' };
-        }
-
-        params.push(id);
-
-        const result = await query(
-          `UPDATE datasets SET ${updates.join(', ')} WHERE id = $${paramIndex}
-           RETURNING id, name, description, source_url, created_at, updated_at`,
-          params
-        );
-
-        if (result.rows.length === 0) {
-          throw new Error('Failed to update dataset');
-        }
-
-        return { dataset: result.rows[0] };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-        fastify.log.error(
-          { error, params: request.params, body: request.body },
-          'Failed to update dataset'
-        );
-
-        // Handle unique constraint violation
-        if (errorMessage.includes('duplicate key') || errorMessage.includes('unique')) {
-          reply.code(409);
-          return { error: 'Dataset with this name already exists' };
-        }
-
-        reply.code(500);
-        return {
-          error: 'Failed to update dataset',
-          message: process.env['NODE_ENV'] === 'development' ? errorMessage : undefined,
-        };
-      }
-    }
-  );
-
-  /**
-   * DELETE /datasets/:id
-   * Delete a dataset
-   *
-   * @param {number} id - Dataset ID
-   * @returns {object} success message
-   * @throws {404} Dataset not found
-   * @throws {500} Database error
-   */
-  fastify.delete<{ Params: { id: string } }>('/datasets/:id', async (request, reply) => {
+  fastify.put<{
+    Params: { id: string };
+    Body: UpdateDatasetRequest;
+    Reply: DatasetResponse | ErrorResponse;
+  }>('/datasets/:id', async (request, reply): Promise<DatasetResponse | ErrorResponse> => {
     try {
       const id = parseInt(request.params.id, 10);
 
       if (isNaN(id) || id < 1) {
         reply.code(400);
-        return { error: 'Dataset ID must be a positive integer' };
+        return { error: VALIDATION_ERRORS.DATASET_ID_INVALID };
       }
 
-      const result = await query('DELETE FROM datasets WHERE id = $1 RETURNING id', [id]);
+      // Build dynamic update query using whitelist
+      // Only allowed fields can be updated, preventing accidental modifications
+      const fieldConfigs: UpdateFieldConfig[] = [
+        { field: 'name', key: 'name' },
+        { field: 'description', key: 'description' },
+        { field: 'source_url', key: 'source_url' },
+      ];
+
+      const updates: Array<{ field: string; value: unknown }> = [];
+
+      for (const config of fieldConfigs) {
+        const value = request.body[config.key];
+        if (value !== undefined) {
+          // Validate name field specifically
+          if (config.field === 'name') {
+            if (typeof value !== 'string' || value.trim().length === 0) {
+              reply.code(400);
+              return { error: VALIDATION_ERRORS.DATASET_NAME_INVALID };
+            }
+            updates.push({ field: config.field, value: value.trim() });
+          } else {
+            updates.push({ field: config.field, value });
+          }
+        }
+      }
+
+      if (updates.length === 0) {
+        reply.code(400);
+        return { error: VALIDATION_ERRORS.NO_UPDATE_FIELDS };
+      }
+
+      // Build parameterized update query
+      const updateClauses = updates.map((u, i) => `${u.field} = $${i + 1}`).join(', ');
+      const params = [...updates.map((u) => u.value), id];
+
+      // Single query: UPDATE with RETURNING
+      // Returns 0 rows if dataset doesn't exist (handled below)
+      const result = await query<DatasetRow>(
+        `UPDATE datasets SET ${updateClauses} WHERE id = $${updates.length + 1}
+           RETURNING ${DATASET_COLUMNS}`,
+        params
+      );
 
       if (result.rows.length === 0) {
         reply.code(404);
-        return { error: 'Dataset not found' };
+        return { error: VALIDATION_ERRORS.DATASET_NOT_FOUND };
+      }
+
+      return { dataset: result.rows[0]! };
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+
+      // Handle unique constraint violation
+      if (errorMessage.includes('duplicate key') || errorMessage.includes('unique')) {
+        reply.code(409);
+        return { error: VALIDATION_ERRORS.DUPLICATE_NAME };
+      }
+
+      reply.code(500);
+      return handleDatabaseError(
+        fastify,
+        error,
+        { params: request.params, body: request.body },
+        'Failed to update dataset'
+      );
+    }
+  });
+
+  /**
+   * DELETE /datasets/:id
+   * Delete a dataset
+   *
+   * @param id - Dataset ID
+   * @returns void (204 No Content on success)
+   * @throws {404} Dataset not found
+   * @throws {500} Database error
+   */
+  fastify.delete<{
+    Params: { id: string };
+    Reply: ErrorResponse | null;
+  }>('/datasets/:id', async (request, reply): Promise<ErrorResponse | null> => {
+    try {
+      const id = parseInt(request.params.id, 10);
+
+      if (isNaN(id) || id < 1) {
+        reply.code(400);
+        return { error: VALIDATION_ERRORS.DATASET_ID_INVALID };
+      }
+
+      const result = await query<{ id: number }>(
+        'DELETE FROM datasets WHERE id = $1 RETURNING id',
+        [id]
+      );
+
+      if (result.rows.length === 0) {
+        reply.code(404);
+        return { error: VALIDATION_ERRORS.DATASET_NOT_FOUND };
       }
 
       reply.code(204);
       return null;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-      fastify.log.error({ error, params: request.params }, 'Failed to delete dataset');
-
+    } catch (error: unknown) {
       reply.code(500);
-      return {
-        error: 'Failed to delete dataset',
-        message: process.env['NODE_ENV'] === 'development' ? errorMessage : undefined,
-      };
+      return handleDatabaseError(
+        fastify,
+        error,
+        { params: request.params },
+        'Failed to delete dataset'
+      );
     }
   });
 }
