@@ -21,6 +21,14 @@ interface MigrationRunnerOptions {
 let pool: Pool | null = null;
 
 /**
+ * Encode credentials for use in PostgreSQL connection URL
+ * Handles special characters in passwords and usernames
+ */
+function encodeCredential(value: string): string {
+  return encodeURIComponent(value);
+}
+
+/**
  * Get PostgreSQL connection URL from environment
  *
  * Environment Variable Precedence:
@@ -32,7 +40,10 @@ let pool: Pool | null = null;
  *    - DB_PASSWORD: defaults to 'postgres'
  *    - DB_NAME: defaults to 'postgres'
  *
- * @throws Error if environment is misconfigured (missing required vars in production)
+ * Note: This function re-resolves environment variables on each call to allow
+ * for mid-run environment changes (important for testing and dynamic configs)
+ *
+ * @throws Error if environment is misconfigured
  * @returns PostgreSQL connection URL
  */
 export function getDatabaseUrl(): string {
@@ -57,7 +68,29 @@ export function getDatabaseUrl(): string {
     throw new Error(`Invalid DB_PORT: Must be a number between 1 and 65535, got "${port}"`);
   }
 
-  return `postgresql://${user}:${password}@${host}:${port}/${database}`;
+  // Validate pool size if provided
+  if (process.env['DB_POOL_SIZE']) {
+    const poolSize = parseInt(process.env['DB_POOL_SIZE'], 10);
+    if (isNaN(poolSize) || poolSize < 1 || poolSize > 100) {
+      throw new Error(
+        `Invalid DB_POOL_SIZE: Must be a number between 1 and 100, got "${process.env['DB_POOL_SIZE']}"`
+      );
+    }
+  }
+
+  // Validate idle timeout if provided
+  if (process.env['DB_IDLE_TIMEOUT']) {
+    const idleTimeout = parseInt(process.env['DB_IDLE_TIMEOUT'], 10);
+    if (isNaN(idleTimeout) || idleTimeout < 0) {
+      throw new Error(
+        `Invalid DB_IDLE_TIMEOUT: Must be a non-negative number, got "${process.env['DB_IDLE_TIMEOUT']}"`
+      );
+    }
+  }
+
+  const encodedPassword = encodeCredential(password);
+  const encodedUser = encodeCredential(user);
+  return `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${database}`;
 }
 
 /**
@@ -76,12 +109,27 @@ export function createPool(): Pool {
 /**
  * Get the singleton pool instance
  * Creates pool on first use, reuses for all subsequent calls
+ * Guards against reusing a closed pool
  */
 export function getPool(): Pool {
   if (!pool) {
     pool = createPool();
   }
+  // Guard against reusing a closed pool by checking its state
+  if (pool.ended) {
+    pool = createPool();
+  }
   return pool;
+}
+
+/**
+ * Query result type for proper type safety
+ * Matches the pg library's QueryResult interface
+ */
+export interface QueryResult<T = Record<string, unknown>> {
+  rows: T[];
+  rowCount: number | null;
+  command: string;
 }
 
 /**
@@ -90,20 +138,26 @@ export function getPool(): Pool {
  *
  * @template T - Type of the row returned by the query
  * @param sql - SQL query string
- * @param params - Query parameters
+ * @param params - Query parameters (readonly array for safety)
  * @returns Typed query result
  *
  * @example
  * interface DatasetRow { id: number; name: string; }
- * const result = await query<DatasetRow>('SELECT * FROM datasets WHERE id = $1', [id]);
+ * const result = await query<DatasetRow>('SELECT * FROM datasets WHERE id = $1', [id] as const);
  */
 export async function query<T = Record<string, unknown>>(
   sql: string,
-  params?: unknown[]
-): Promise<{ rows: T[]; rowCount: number | null; command: string }> {
+  params?: ReadonlyArray<unknown>
+): Promise<QueryResult<T>> {
+  // Convert readonly array to mutable array for pg library compatibility
+  const mutableParams = params ? Array.from(params) : undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await (getPool().query(sql, params) as Promise<any>);
-  return result as { rows: T[]; rowCount: number | null; command: string };
+  const result = await getPool().query<any>(sql, mutableParams);
+  return {
+    rows: result.rows as T[],
+    rowCount: result.rowCount,
+    command: result.command,
+  };
 }
 
 /**
@@ -124,32 +178,51 @@ export async function closePool(): Promise<void> {
 }
 
 /**
+ * Dynamically load the migration runner from node-pg-migrate
+ * This is typed cleanly without @ts-expect-error by using a module adapter
+ */
+async function loadMigrationRunner(): Promise<MigrationRunner> {
+  // node-pg-migrate is available at runtime, just not in the module resolution
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const module = await import('node-pg-migrate' as any);
+  return module.runner as MigrationRunner;
+}
+
+/**
  * Run pending database migrations
  * Uses node-pg-migrate to execute SQL migration files
- * Properly typed for type safety without @ts-expect-error
+ * Validates migration directory and preserves stack traces for debugging
  */
 export async function runMigrations(): Promise<void> {
-  // Dynamically import node-pg-migrate with proper type assertion
-  // This function is called at runtime, not during build
-  // @ts-expect-error node-pg-migrate is available at runtime; moduleResolution doesn't auto-detect it
-  const migrationModule = (await import('node-pg-migrate')) as {
-    runner: MigrationRunner;
-  };
-  const runner = migrationModule.runner;
   const connectionString = getDatabaseUrl();
+  const migrationsDir = 'services/kaggle-data-api/migrations';
 
   try {
+    // Validate migrations directory path (non-empty, not containing suspicious patterns)
+    if (!migrationsDir || migrationsDir.includes('..')) {
+      throw new Error(`Invalid migrations directory: "${migrationsDir}"`);
+    }
+
+    const runner = await loadMigrationRunner();
+
     await runner({
       databaseUrl: connectionString,
       migrationsTable: 'pgmigrations',
-      dir: 'services/kaggle-data-api/migrations',
+      dir: migrationsDir,
       direction: 'up',
     });
     console.log('Migrations completed successfully');
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
-    console.error('Migration failed:', errorMessage);
-    throw error;
+    // Preserve stack trace for better debugging
+    if (error instanceof Error) {
+      console.error('Migration failed:', {
+        message: error.message,
+        stack: error.stack,
+      });
+      throw error;
+    }
+    // For non-Error types, include context
+    console.error('Migration failed with unknown error type:', error);
+    throw new Error(`Migration failed: ${String(error)}`);
   }
 }

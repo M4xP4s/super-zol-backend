@@ -1,6 +1,7 @@
 /**
  * Zod schemas for runtime validation
  * Based on TODO.md Phase 1.4
+ * Inferred types keep API contracts DRY and in sync with schemas
  */
 
 import { z } from 'zod';
@@ -13,6 +14,12 @@ export const FileMetadataSchema = z.object({
   sha256: z.string().length(64),
   row_count: z.number().nullable(),
 });
+
+/**
+ * File metadata type inferred from schema
+ * Automatically stays in sync with the Zod schema definition
+ */
+export type FileMetadata = z.infer<typeof FileMetadataSchema>;
 
 export const DownloadManifestSchema = z.object({
   dataset: z.object({
@@ -31,6 +38,12 @@ export const DownloadManifestSchema = z.object({
   files: z.array(FileMetadataSchema),
 });
 
+/**
+ * Download manifest type inferred from schema
+ * Automatically stays in sync with the Zod schema definition
+ */
+export type DownloadManifest = z.infer<typeof DownloadManifestSchema>;
+
 export const ColumnSummarySchema = z.object({
   name: z.string(),
   dtype: z.string(),
@@ -42,6 +55,12 @@ export const ColumnSummarySchema = z.object({
   max: z.union([z.number(), z.string()]).optional(),
 });
 
+/**
+ * Column summary type inferred from schema
+ * Automatically stays in sync with the Zod schema definition
+ */
+export type ColumnSummary = z.infer<typeof ColumnSummarySchema>;
+
 export const FileProfileSchema = z.object({
   family: z.string(),
   chain: z.string(),
@@ -51,6 +70,12 @@ export const FileProfileSchema = z.object({
   columns: z.array(ColumnSummarySchema),
 });
 
+/**
+ * File profile type inferred from schema
+ * Automatically stays in sync with the Zod schema definition
+ */
+export type FileProfile = z.infer<typeof FileProfileSchema>;
+
 export const DataProfileSchema = z.object({
   generated_at: z.string(),
   source_directory: z.string(),
@@ -58,3 +83,9 @@ export const DataProfileSchema = z.object({
   total_patterns: z.number(),
   profiles: z.array(FileProfileSchema),
 });
+
+/**
+ * Data profile type inferred from schema
+ * Automatically stays in sync with the Zod schema definition
+ */
+export type DataProfile = z.infer<typeof DataProfileSchema>;

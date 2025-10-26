@@ -83,22 +83,25 @@ interface UpdateFieldConfig {
 }
 
 /**
- * Extract error message safely from any error type
+ * Extract error message and stack trace safely from any error type
  * Handles Error objects, strings, and unknown types
  */
-function getErrorMessage(error: unknown): string {
+function getErrorDetails(error: unknown): { message: string; stack?: string } {
   if (error instanceof Error) {
-    return error.message;
+    return {
+      message: error.message,
+      stack: error.stack,
+    };
   }
   if (typeof error === 'string') {
-    return error;
+    return { message: error };
   }
-  return String(error);
+  return { message: String(error) };
 }
 
 /**
  * Handle database errors with consistent response format
- * Logs detailed errors server-side while returning safe messages to client
+ * Logs detailed errors (including stack traces) server-side while returning safe messages to client
  *
  * @param fastify - Fastify instance for logging
  * @param error - The error that occurred
@@ -112,13 +115,38 @@ function handleDatabaseError(
   logContext: Record<string, unknown>,
   userMessage: string
 ): ErrorResponse {
-  const errorMessage = getErrorMessage(error);
-  fastify.log.error({ error, ...logContext }, userMessage);
+  const errorDetails = getErrorDetails(error);
+  fastify.log.error(
+    { errorMessage: errorDetails.message, errorStack: errorDetails.stack, ...logContext },
+    userMessage
+  );
 
   return {
     error: userMessage,
-    message: process.env['NODE_ENV'] === 'development' ? errorMessage : undefined,
+    message: process.env['NODE_ENV'] === 'development' ? errorDetails.message : undefined,
   };
+}
+
+/**
+ * Validate and parse pagination parameters
+ * Extracts and sanitizes limit and offset from query string
+ */
+function parsePaginationParams(
+  limitStr?: string,
+  offsetStr?: string
+): { limit: number; offset: number } {
+  const limit = Math.min(Math.max(1, parseInt(limitStr || '100', 10)), 1000);
+  const offset = Math.max(0, parseInt(offsetStr || '0', 10));
+  return { limit, offset };
+}
+
+/**
+ * Validate order parameter against allowed columns
+ * Returns safe column name for ORDER BY clause
+ */
+function validateOrderParam(order?: string): string {
+  const allowedColumns = ['name', 'id', 'created_at'];
+  return allowedColumns.includes(order || '') ? (order as string) : 'name';
 }
 
 /**
@@ -149,20 +177,16 @@ export default async function (fastify: FastifyInstance) {
     Reply: DatasetsListResponse | ErrorResponse;
   }>('/datasets', async (request, reply): Promise<DatasetsListResponse | ErrorResponse> => {
     try {
-      // Validate and sanitize query parameters
-      const limit = Math.min(Math.max(1, parseInt(request.query.limit || '100', 10)), 1000);
-      const offset = Math.max(0, parseInt(request.query.offset || '0', 10));
-      const allowedOrder = ['name', 'id', 'created_at'];
-      const order = (
-        allowedOrder.includes(request.query.order || '') ? request.query.order : 'name'
-      ) as string;
+      // Validate and sanitize query parameters using helper
+      const { limit, offset } = parsePaginationParams(request.query.limit, request.query.offset);
+      const order = validateOrderParam(request.query.order);
 
       // Use parameterized query to prevent SQL injection
-      // The $1, $2, $3 placeholders are filled safely by the pg library
+      // The $1, $2 placeholders are filled safely by the pg library
       // Explicit column list instead of SELECT *
       const result = await query<DatasetRow>(
         `SELECT ${DATASET_COLUMNS} FROM datasets ORDER BY ${order} LIMIT $1 OFFSET $2`,
-        [limit, offset]
+        [limit, offset] as const
       );
 
       return {
@@ -225,10 +249,13 @@ export default async function (fastify: FastifyInstance) {
       reply.code(201);
       return { dataset: result.rows[0]! };
     } catch (error: unknown) {
-      const errorMessage = getErrorMessage(error);
+      const errorDetails = getErrorDetails(error);
 
       // Handle unique constraint violation
-      if (errorMessage.includes('duplicate key') || errorMessage.includes('unique')) {
+      if (
+        errorDetails.message.includes('duplicate key') ||
+        errorDetails.message.includes('unique')
+      ) {
         reply.code(409);
         return { error: VALIDATION_ERRORS.DUPLICATE_NAME };
       }
@@ -266,7 +293,7 @@ export default async function (fastify: FastifyInstance) {
 
       const result = await query<DatasetRow>(
         `SELECT ${DATASET_COLUMNS} FROM datasets WHERE id = $1`,
-        [id]
+        [id] as const
       );
 
       if (result.rows.length === 0) {
@@ -350,7 +377,7 @@ export default async function (fastify: FastifyInstance) {
 
       // Build parameterized update query
       const updateClauses = updates.map((u, i) => `${u.field} = $${i + 1}`).join(', ');
-      const params = [...updates.map((u) => u.value), id];
+      const params = [...updates.map((u) => u.value), id] as const;
 
       // Single query: UPDATE with RETURNING
       // Returns 0 rows if dataset doesn't exist (handled below)
@@ -367,10 +394,13 @@ export default async function (fastify: FastifyInstance) {
 
       return { dataset: result.rows[0]! };
     } catch (error: unknown) {
-      const errorMessage = getErrorMessage(error);
+      const errorDetails = getErrorDetails(error);
 
       // Handle unique constraint violation
-      if (errorMessage.includes('duplicate key') || errorMessage.includes('unique')) {
+      if (
+        errorDetails.message.includes('duplicate key') ||
+        errorDetails.message.includes('unique')
+      ) {
         reply.code(409);
         return { error: VALIDATION_ERRORS.DUPLICATE_NAME };
       }
@@ -408,7 +438,7 @@ export default async function (fastify: FastifyInstance) {
 
       const result = await query<{ id: number }>(
         'DELETE FROM datasets WHERE id = $1 RETURNING id',
-        [id]
+        [id] as const
       );
 
       if (result.rows.length === 0) {

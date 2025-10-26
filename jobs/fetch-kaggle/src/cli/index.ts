@@ -14,14 +14,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 /**
- * Get package version from package.json
+ * Cached version string to avoid repeated disk I/O
+ * Read once at module load time and cached for CLI lifetime
+ */
+let cachedVersion: string | null = null;
+
+/**
+ * Get package version from package.json (cached)
+ * Reads the file once and caches the result to avoid repeated I/O on every invocation
  */
 function getVersion(): string {
+  if (cachedVersion !== null) {
+    return cachedVersion;
+  }
+
   try {
     const packageJsonPath = join(__dirname, '../../package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-    return packageJson.version || '1.0.0';
+    const version = packageJson.version || '1.0.0';
+    cachedVersion = version;
+    return version;
   } catch {
+    // If we can't read the version, cache the default
+    cachedVersion = '1.0.0';
     return '1.0.0';
   }
 }
