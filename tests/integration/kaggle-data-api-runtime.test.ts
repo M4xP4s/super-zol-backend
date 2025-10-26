@@ -71,6 +71,11 @@ describe('Kaggle Data API Runtime Integration', () => {
    * Teardown: Clean up test database
    */
   afterAll(async () => {
+    // Skip cleanup if database was never available
+    if (!databaseAvailable) {
+      return;
+    }
+
     try {
       await testPool.query('DROP TABLE IF EXISTS datasets CASCADE');
       await testPool.end();
