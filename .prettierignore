@@ -5,3 +5,5 @@ coverage
 .nx
 pnpm-lock.yaml
 infrastructure/helm/**/templates/**
+services/**/helm/**/templates/**
+jobs/**/helm/**/templates/**

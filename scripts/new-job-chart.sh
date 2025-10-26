@@ -18,8 +18,8 @@ if [[ "$TYPE" != "job" && "$TYPE" != "cronjob" ]]; then
   exit 1
 fi
 
-CHARTS_ROOT="infrastructure/helm"
-CHART_DIR="${CHARTS_ROOT}/${NAME}"
+CHARTS_ROOT="jobs/${NAME}/helm"
+CHART_DIR="${CHARTS_ROOT}"
 
 if [[ -d "$CHART_DIR" ]]; then
   echo "Error: Chart directory already exists: $CHART_DIR" >&2
@@ -39,7 +39,7 @@ appVersion: "1.0.0"
 dependencies:
   - name: job
     version: 0.1.0
-    repository: "file://../library-charts/job"
+    repository: "file://../../../infrastructure/helm/library-charts/job"
 EOF
 
 # values.yaml (base)
@@ -137,4 +137,3 @@ EOF
 
 echo "✅ Created job chart at ${CHART_DIR}"
 echo "ℹ️  Next: helm lint ${CHART_DIR}"
-

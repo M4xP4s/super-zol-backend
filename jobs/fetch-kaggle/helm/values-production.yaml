@@ -1,0 +1,10 @@
+image:
+  pullPolicy: IfNotPresent
+  tag: 'v0.1.0'
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1024Mi

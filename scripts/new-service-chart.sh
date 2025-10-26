@@ -7,8 +7,8 @@ if [[ ${1:-} == "" ]]; then
 fi
 
 NAME="$1"
-CHARTS_ROOT="infrastructure/helm"
-CHART_DIR="${CHARTS_ROOT}/${NAME}"
+CHARTS_ROOT="services/${NAME}/helm"
+CHART_DIR="${CHARTS_ROOT}"
 
 if [[ -d "$CHART_DIR" ]]; then
   echo "Error: Chart directory already exists: $CHART_DIR" >&2
@@ -28,7 +28,7 @@ appVersion: "1.0.0"
 dependencies:
   - name: service
     version: 0.1.0
-    repository: "file://../library-charts/service"
+    repository: "file://../../../infrastructure/helm/library-charts/service"
 EOF
 
 # values.yaml (base)
@@ -155,4 +155,3 @@ EOF
 
 echo "✅ Created service chart at ${CHART_DIR}"
 echo "ℹ️  Next: helm lint ${CHART_DIR}"
-
