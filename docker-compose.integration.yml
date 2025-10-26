@@ -17,6 +17,25 @@ services:
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
 
+  migrations:
+    build:
+      context: .
+      dockerfile: services/kaggle-data-api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://test_user:test_password@postgres:5432/test_db
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: test_db
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+      NODE_ENV: test
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ['node', 'services/kaggle-data-api/migrations/run-migrations.js']
+    profiles:
+      - init
+
   kaggle-data-api:
     build:
       context: .

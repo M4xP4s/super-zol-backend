@@ -1,15 +1,22 @@
 /**
- * Datasets Route Unit Tests
- * Tests the /datasets endpoint with mocked database queries
+ * Datasets Route Unit Tests - Phase 2
+ * Tests the GET /datasets endpoint with validation and error handling
+ * Does NOT require database - tests logic only
  */
 
 import { describe, it, expect } from 'vitest';
 
-describe('Datasets Route', () => {
+describe('Datasets Route - GET /datasets', () => {
   describe('Route Configuration', () => {
     it('should be a valid Fastify route handler', async () => {
       const route = await import('../src/app/routes/datasets.js');
       expect(typeof route.default).toBe('function');
+    });
+
+    it('should export a default async function', async () => {
+      const route = await import('../src/app/routes/datasets.js');
+      expect(route.default).toBeDefined();
+      expect(route.default.constructor.name).toBe('AsyncFunction');
     });
   });
 

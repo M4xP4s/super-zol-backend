@@ -93,3 +93,31 @@ export async function closePool(): Promise<void> {
     pool = null;
   }
 }
+
+/**
+ * Run pending database migrations
+ * Uses node-pg-migrate to execute SQL migration files
+ */
+export async function runMigrations(): Promise<void> {
+  // Dynamically import node-pg-migrate to avoid type resolution issues
+  // This function is called at runtime, not during build
+  // @ts-expect-error node-pg-migrate types can't be resolved with current moduleResolution
+
+  const migrationModule = await import('node-pg-migrate');
+  const runner = migrationModule.runner;
+  const connectionString = getDatabaseUrl();
+
+  try {
+    await runner({
+      databaseUrl: connectionString,
+      migrationsTable: 'pgmigrations',
+      dir: 'services/kaggle-data-api/migrations',
+      direction: 'up',
+    });
+    console.log('Migrations completed successfully');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Migration failed:', errorMessage);
+    throw error;
+  }
+}
