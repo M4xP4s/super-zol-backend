@@ -88,9 +88,34 @@ Comprehensive inventory of technologies, tools, and configurations in this repos
 
 - Fastify logger enabled (Pino via Fastify)
 
+## Methodologies & Practices
+
+- Hexagonal Architecture (Ports & Adapters) for jobs
+  - Clear separation of core domain, ports (inbound/outbound), and adapters
+  - Testable design: core logic isolated from infrastructure
+  - Example: `jobs/fetch-kaggle` with domain entities and value objects
+- Test-Driven Development (TDD) emphasis
+  - Vitest used for unit, integration, and e2e tests per project
+  - Watch-first local workflow; CI uses non-watch deterministic runs
+  - Coverage gates set at ≥90% lines/functions/statements (roots and per‑project overrides)
+- Monorepo discipline with Nx
+  - Affected-only runs in hooks and CI (lint/test/build) for speed and focus
+  - Distributed caching and parallel execution
+  - Deterministic project scaffolding via scripts and Nx generators
+- Code quality gates
+  - Strict TypeScript (no `any`, explicit returns, non-null assertion banned)
+  - ESLint Nx module boundaries to prevent cross-service imports
+  - Prettier formatting enforced via lint-staged in pre-commit
+  - Conventional Commits enforced via `commit-msg` hook and PR title checks
+- ESM-first architecture
+  - Native ESM with `import.meta.url` patterns and helper utilities
+  - Consistent `.js` import extensions from TS transpilation settings
+- Secure configuration practices
+  - `.env` pattern with `.env.example`; secrets never committed
+  - Optional Docker services enabled locally when needed
+
 ## Notes
 
 - No ORM or database client configured yet; Postgres/Redis are optional and currently commented in `docker-compose.yml`.
 - Swagger/OpenAPI is referenced in docs/TODOs but not installed or wired in code.
 - Nx cache control respected through the test runner wrapper; `pnpm test --skip-nx-cache` disables Nx cache as expected.
-

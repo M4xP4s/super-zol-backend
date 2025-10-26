@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `TECH_STACK.md` documenting the full repository tech stack
+- Expanded `TECH_STACK.md` with Methodologies & Practices (TDD, Hexagonal architecture, quality gates)
 - Helm chart generator scripts:
   - `scripts/new-service-chart.sh` to scaffold service charts under `services/<name>/helm`
   - `scripts/new-job-chart.sh` to scaffold job charts under `jobs/<name>/helm` (supports Job and CronJob)
