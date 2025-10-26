@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kaggle-data-api
+description: Helm chart for kaggle-data-api service (uses library-charts/service)
+type: application
+version: 0.1.0
+appVersion: '1.0.0'
+dependencies:
+  - name: service
+    version: 0.1.0
+    repository: 'file://../../../infrastructure/helm/library-charts/service'

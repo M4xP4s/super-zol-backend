@@ -1,0 +1,6 @@
+dependencies:
+- name: service
+  repository: file://../../../infrastructure/helm/library-charts/service
+  version: 0.1.0
+digest: sha256:08b00cb4cefe4a0bcda115cc7fa93bf034ac03bd6435e9f9d5caf61306d4ff45
+generated: "2025-10-26T12:11:53.559842+02:00"
