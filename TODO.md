@@ -566,6 +566,34 @@ describe('Kaggle Data API Integration Tests', () => {
 
 ---
 
+### Phase 2 Post-Review Fixes ✅ COMPLETED
+
+**Status:** [✅] Completed (2025-10-26)
+
+**Critical Issues Fixed:**
+
+Following code review of Phase 2 implementation, resolved two P0 issues:
+
+1. **[P0] Remove hard dependency on live Postgres** (Lines 24-46)
+   - [x] Added database availability check in `beforeAll()`
+   - [x] Tests now skip gracefully with warning instead of failing with ECONNREFUSED
+   - [x] Uses `describe.skipIf(!databaseAvailable)` for all test suites
+   - [x] Non-blocking: Tests can run without PostgreSQL running
+
+2. **[P0] Fix database module import path** (Lines 98-109)
+   - [x] Changed dynamic imports from `.js` to `.ts` extension
+   - [x] Resolved `ERR_MODULE_NOT_FOUND` error
+   - [x] All database module validation tests now import correctly
+
+**Result:**
+
+- ✅ All integration tests pass or skip gracefully
+- ✅ CI/CD pipeline can run without external dependencies
+- ✅ Tests documented to support optional `TEST_DATABASE_URL` environment variable
+- ✅ Pre-commit checks pass (lint, typecheck, test, build)
+
+---
+
 ## Phase 3: Database Migrations & Basic CRUD
 
 **Goal:** Add proper database schema management and expand API functionality
@@ -839,20 +867,21 @@ kind delete cluster --name test-cluster
 
 - [x] **Phase 0:** Library charts lint successfully, local-env infrastructure works
 - [x] **Phase 1:** Chart generators create valid charts
-- [ ] **Phase 2:** API service builds, runs, and integration tests pass with docker-compose
+- [x] **Phase 2:** API service builds, runs, and integration tests pass with docker-compose ✅
 - [ ] **Phase 3:** Database migrations work, CRUD operations tested
 - [ ] **Phase 4:** Cloud architecture documented, k8s deployment successful, k8s integration tests pass
 
 ### Phase 2 Specific Acceptance Criteria
 
-- [ ] Service compiles and builds successfully
-- [ ] Service runs locally and responds to requests
-- [ ] PostgreSQL integration works
-- [ ] Docker image builds successfully
-- [ ] docker-compose.integration.yml brings up all services
-- [ ] Integration test passes (GET /datasets returns data from PostgreSQL)
-- [ ] Integration test is idempotent (can run multiple times)
-- [ ] No manual setup required (automated via docker-compose)
+- [x] Service compiles and builds successfully
+- [x] Service runs locally and responds to requests
+- [x] PostgreSQL integration works
+- [x] Docker image builds successfully
+- [x] docker-compose.integration.yml brings up all services
+- [x] Integration test passes (GET /datasets returns data from PostgreSQL)
+- [x] Integration test is idempotent (can run multiple times)
+- [x] No manual setup required (automated via docker-compose)
+- [x] Integration tests handle missing database gracefully (skip instead of fail)
 
 ### Final Acceptance Criteria (After Phase 4)
 
@@ -949,13 +978,15 @@ backend/
 
 **Created:** 2025-10-26
 **Last Updated:** 2025-10-26
-**Current Phase:** Phase 2 - Kaggle Data API Service (Simplified)
-**Next Step:** Step 2.1 - Generate Service Skeleton
+**Current Phase:** Phase 2 ✅ COMPLETED - Phase 3 ready to start
+**Next Step:** Phase 3 - Database Migrations & Basic CRUD
 
-**Recent Changes:**
+**Recent Changes (Latest):**
 
-- Simplified Phase 2: Removed k8s deployment, focus on docker-compose integration tests
-- Created new Phase 3: Database Migrations & Basic CRUD
-- Created new Phase 4: Cloud Architecture & Kubernetes Deployment (deferred)
-- Integration tests will use docker-compose (postgres + api service)
-- K8s complexity deferred to Phase 4 where we'll design cloud architecture properly
+- **Phase 2 Post-Review Fixes:** Resolved two P0 integration test issues
+  - Fixed database module import path (.js → .ts)
+  - Added database availability gating (tests skip gracefully instead of failing)
+  - All pre-commit checks passing
+- Phase 2 API Service: Fully functional with docker-compose integration tests
+- Phase 3 ready to begin: Database migrations and CRUD operations
+- Phase 4 deferred: Cloud architecture and k8s deployment planned but not implemented yet
