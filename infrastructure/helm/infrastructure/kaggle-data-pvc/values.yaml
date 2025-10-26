@@ -1,0 +1,62 @@
+# Default values for kaggle-data-pvc
+# This is a YAML-formatted file.
+
+# Storage configuration
+storage:
+  # Storage class to use
+  # For production: use cloud provider storage classes (e.g., "gp3" on AWS, "standard-rwo" on GCP)
+  # For local development: use "standard" (kind default) or "hostpath"
+  storageClassName: standard
+
+  # Access mode for the PVC
+  # ReadWriteMany: Required for multiple pods (fetch-kaggle job + API service) to access the same volume
+  accessMode: ReadWriteMany
+
+  # Storage size
+  # Should accommodate raw CSV files + processed data + archives
+  # Estimate: ~2-5GB for recent data, ~10-20GB with history
+  size: 10Gi
+
+  # Additional access modes (optional)
+  # Uncomment if you need multiple access modes
+  # additionalAccessModes:
+  #   - ReadWriteOnce
+  #   - ReadOnlyMany
+
+# PVC name override
+# If not set, uses the release name
+nameOverride: ''
+fullnameOverride: 'kaggle-data-pvc'
+
+# Labels to add to the PVC
+labels:
+  app: kaggle-data
+  component: storage
+  managed-by: helm
+
+# Annotations to add to the PVC
+annotations: {}
+  # volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
+
+# Selector for binding to specific PVs (optional)
+# Useful for pre-provisioned volumes
+selector: {}
+  # matchLabels:
+  #   app: kaggle-data
+  # matchExpressions:
+  #   - key: environment
+  #     operator: In
+  #     values:
+  #       - production
+
+# Volume mode
+# Filesystem: Standard file system (default)
+# Block: Raw block device
+volumeMode: Filesystem
+
+# Data source (optional)
+# Used for volume cloning or snapshots
+dataSource: {}
+  # name: existing-pvc-snapshot
+  # kind: VolumeSnapshot
+  # apiGroup: snapshot.storage.k8s.io

@@ -52,8 +52,8 @@ init-monitoring: ## Deploy monitoring stack (Prometheus + Grafana)
 init-kaggle-pvc: ## Create Kaggle data PVC
 	@echo "💾 Creating Kaggle data PVC..."
 	@kubectl create namespace $(NAMESPACE) --dry-run=client -o yaml | kubectl apply -f -
-	@helm upgrade --install kaggle-data-pvc ../../helm/infrastructure/kaggle-data-pvc \
-		-f ../../helm/infrastructure/kaggle-data-pvc/values-local.yaml \
+	@helm upgrade --install kaggle-data-pvc ../helm/infrastructure/kaggle-data-pvc \
+		-f ../helm/infrastructure/kaggle-data-pvc/values-local.yaml \
 		-n $(NAMESPACE) || echo "⚠️  PVC setup pending - will be created in Step 0.4"
 	@echo "✅ Kaggle data PVC created!"
 
