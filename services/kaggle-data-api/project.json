@@ -17,7 +17,19 @@
         "thirdParty": true,
         "main": "services/kaggle-data-api/src/main.ts",
         "tsConfig": "services/kaggle-data-api/tsconfig.app.json",
-        "assets": ["services/kaggle-data-api/src/assets"],
+        "assets": [
+          "services/kaggle-data-api/src/assets",
+          {
+            "glob": "**/*.ts",
+            "input": "services/kaggle-data-api/src/app/plugins",
+            "output": "./app/plugins"
+          },
+          {
+            "glob": "**/*.ts",
+            "input": "services/kaggle-data-api/src/app/routes",
+            "output": "./app/routes"
+          }
+        ],
         "generatePackageJson": true,
         "external": [],
         "esbuildOptions": {

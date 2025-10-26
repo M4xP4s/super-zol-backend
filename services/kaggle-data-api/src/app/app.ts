@@ -54,12 +54,19 @@ export async function build(opts: AppOptions = {}) {
   const swaggerPlugin = await import('./plugins/swagger.js');
   await fastify.register(swaggerPlugin.default, opts);
 
+  // Register database plugin (will be mocked in tests if needed)
+  const databasePlugin = await import('./plugins/database.js');
+  await fastify.register(databasePlugin.default, opts);
+
   // Manually register routes
   const rootRoute = await import('./routes/root.js');
   await fastify.register(rootRoute.default, opts);
 
   const healthRoute = await import('./routes/health.js');
   await fastify.register(healthRoute.default, opts);
+
+  const datasetsRoute = await import('./routes/datasets.js');
+  await fastify.register(datasetsRoute.default, opts);
 
   await fastify.ready();
 

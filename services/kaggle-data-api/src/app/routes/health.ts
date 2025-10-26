@@ -51,13 +51,13 @@ export default async function (fastify: FastifyInstance) {
   );
 
   // Readiness probe - checks if the application is ready to accept traffic
-  // In future, this should check database connectivity
+  // Checks database connectivity
   fastify.get(
     '/health/ready',
     {
       schema: {
         tags: ['health'],
-        description: 'Kubernetes readiness probe',
+        description: 'Kubernetes readiness probe - checks dependencies',
         response: {
           200: {
             type: 'object',
@@ -67,21 +67,50 @@ export default async function (fastify: FastifyInstance) {
                 type: 'object',
                 properties: {
                   database: { type: 'string' },
-                  redis: { type: 'string' },
                 },
               },
+            },
+          },
+          503: {
+            type: 'object',
+            properties: {
+              status: { type: 'string' },
+              checks: {
+                type: 'object',
+                properties: {
+                  database: { type: 'string' },
+                },
+              },
+              error: { type: 'string' },
             },
           },
         },
       },
     },
-    async () => ({
-      status: 'ready',
-      checks: {
-        // TODO: Add actual database and Redis connectivity checks
-        database: 'not_configured',
-        redis: 'not_configured',
-      },
-    })
+    async (request, reply) => {
+      const checks: { database: string } = {
+        database: 'unknown',
+      };
+
+      // Check database connectivity
+      try {
+        const result = await fastify.db.query('SELECT 1 as health');
+        checks.database = result.rows[0]?.['health'] === 1 ? 'healthy' : 'unhealthy';
+      } catch (error) {
+        checks.database = 'unhealthy';
+        fastify.log.warn({ err: error }, 'Database health check failed');
+        return reply.code(503).send({
+          status: 'not_ready',
+          checks,
+          error: 'Database connectivity check failed',
+        });
+      }
+
+      // All checks passed
+      return {
+        status: 'ready',
+        checks,
+      };
+    }
   );
 }

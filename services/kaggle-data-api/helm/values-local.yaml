@@ -5,7 +5,26 @@ image:
 ingress:
   enabled: true
   hosts:
-    - host: service.localhost
+    - host: kaggle-api.localhost
       paths:
         - path: /
           pathType: Prefix
+
+env:
+  - name: NODE_ENV
+    value: 'development'
+  - name: DB_HOST
+    value: 'postgresql.super-zol.svc.cluster.local'
+  - name: DB_PORT
+    value: '5432'
+  - name: DB_NAME
+    value: 'superzol'
+  - name: DB_USER
+    value: 'superzol'
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: postgresql
+        key: password
+  - name: CORS_ORIGINS
+    value: 'http://localhost:3000,http://localhost:8080'
