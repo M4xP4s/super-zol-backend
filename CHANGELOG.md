@@ -9,6 +9,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Phase 0: Infrastructure Foundation (In Progress - Step 0.4 Pending)
+
+Infrastructure setup for production-ready Kubernetes deployment with reusable Helm library charts:
+
+- **Helm Library Charts** - Reusable chart templates for services and jobs
+  - `infrastructure/helm/library-charts/service/` - Service deployment template with:
+    - Deployment with best practices (health probes, security contexts, resource limits)
+    - Service, Ingress, ConfigMap, Secret templates
+    - HorizontalPodAutoscaler and PodDisruptionBudget support
+    - ServiceAccount with configurable annotations
+  - `infrastructure/helm/library-charts/job/` - Job and CronJob template with:
+    - Job template with backoff limits and deadlines
+    - CronJob template with scheduling and concurrency policies
+    - Configurable restart policies and resource limits
+  - All charts pass `helm lint` validation
+  - Follows Kubernetes best practices and security guidelines
+
+- **Local Kubernetes Environment** - Complete development environment using Kind
+  - Makefile with commands: setup, deploy, init-all, clean, status, logs
+  - kind-config.yaml with 3-node cluster (1 control-plane + 2 workers)
+  - Scripts for cluster initialization:
+    - init-kind.sh - Create kind cluster with proper networking
+    - init-nginx.sh - Install nginx-ingress controller
+    - init-postgres.sh - Deploy PostgreSQL with Bitnami chart
+    - init-redis.sh - Deploy Redis with Bitnami chart
+    - init-monitoring.sh - Optional Prometheus + Grafana
+  - Helm values for local development (PostgreSQL and Redis)
+  - Comprehensive integration tests verifying:
+    - Required tools installation
+    - Cluster creation and health
+    - Ingress controller deployment
+    - PostgreSQL and Redis connectivity
+    - Service DNS resolution
+    - Helm chart validation
+  - Detailed README with quickstart, troubleshooting, and operations guide
+
+**Remaining:** Step 0.4 - Create Shared PVC for Kaggle Data
+
 ### Changed
 
 - **CLI commands refactoring** - Reduced nested conditionals across all CLI command files
