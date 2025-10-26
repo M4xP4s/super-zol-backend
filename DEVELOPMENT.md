@@ -50,7 +50,8 @@ cargo install just
 | Start all services      | -                           | `pnpm dev`                                               |
 | Start API               | `just serve-api`            | `pnpm nx serve api-gateway`                              |
 | Start worker            | `just serve-worker`         | `pnpm nx serve worker`                                   |
-| Run all tests           | `just test`                 | `pnpm test`                                              |
+| Run unit tests          | `just test`                 | `pnpm test`                                              |
+| Run integration tests   | `just test-integration`     | `bash scripts/integration-tests.sh`                      |
 | Run tests with coverage | `just test-coverage`        | `pnpm test -- --coverage`                                |
 | Watch tests             | `just test-watch <project>` | `pnpm nx test <project> --watch`                         |
 | Lint code               | `just lint`                 | `pnpm lint`                                              |
@@ -64,7 +65,7 @@ cargo install just
 
 ### Development Setup
 
-**Complete setup** (install + docker + env):
+**Complete setup** (install dependencies):
 
 ```bash
 just dev-setup
@@ -76,34 +77,42 @@ Or manually:
 # Install dependencies
 pnpm install
 
-# Copy environment file
-cp .env.example .env
-
-# Start infrastructure
-just infra-up
-# or: docker compose up -d
+# Setup Kubernetes infrastructure
+cd infrastructure/local-env
+make setup    # Install required tools (kind, helm, kubectl)
+make deploy   # Create Kind cluster
+make init-all # Deploy PostgreSQL and Redis
 ```
 
 ### Infrastructure Commands
 
+Local development uses Kubernetes (Kind cluster) instead of docker-compose.
+
 ```bash
-# Start all infrastructure (PostgreSQL, Redis, etc.)
+# Start Kubernetes infrastructure (shows instructions)
 just infra-up
 
-# Stop infrastructure
+# Stop Kind cluster
 just infra-down
 
-# View logs
-just infra-logs
+# View service logs
+just infra-logs kaggle-data-api
+just infra-logs postgresql
 
-# Restart infrastructure
-just infra-restart
+# Manual infrastructure setup
+cd infrastructure/local-env
+make deploy          # Create Kind cluster
+make init-postgres   # Deploy PostgreSQL
+make init-redis      # Deploy Redis
+make status          # Check cluster status
 ```
 
 ### Testing Commands
 
+#### Unit Tests
+
 ```bash
-# Run all tests
+# Run all unit tests
 just test
 # or: pnpm test
 
@@ -121,6 +130,65 @@ just test-coverage
 # Run only affected tests
 pnpm nx affected -t test --base=origin/main
 ```
+
+#### Integration Tests
+
+Integration tests run against real infrastructure (Kubernetes, PostgreSQL).
+
+```bash
+# Run integration tests (auto-starts Kind cluster and deploys services)
+just test-integration
+
+# Run integration tests in CI mode (expects pre-configured infrastructure)
+just test-integration-ci
+```
+
+**Prerequisites for integration tests:**
+
+The `just test-integration` command automatically:
+
+1. Creates Kind cluster if not exists
+2. Deploys PostgreSQL to Kubernetes
+3. Builds and deploys kaggle-data-api service
+4. Applies database migrations
+5. Sets up port forwarding
+6. Runs integration tests
+
+**Manual setup** (if needed):
+
+```bash
+# 1. Create Kind cluster
+cd infrastructure/local-env
+make deploy
+
+# 2. Deploy PostgreSQL
+make init-postgres
+
+# 3. Build and deploy API service
+cd ../../
+pnpm nx build kaggle-data-api
+docker build -t kaggle-data-api:local -f services/kaggle-data-api/Dockerfile .
+kind load docker-image kaggle-data-api:local --name super-zol
+cd services/kaggle-data-api
+helm upgrade --install kaggle-data-api ./helm \
+  -f ./helm/values-local.yaml \
+  -n super-zol \
+  --set image.tag=local \
+  --wait
+
+# 4. Apply migrations
+kubectl apply -f helm/migrations/migration-configmap.yaml -n super-zol
+kubectl apply -f helm/migrations/migration-job.yaml -n super-zol
+
+# 5. Port forwarding (in separate terminals)
+kubectl port-forward -n super-zol svc/kaggle-data-api 3001:80
+kubectl port-forward -n super-zol svc/postgresql 5432:5432
+
+# 6. Run tests
+just test-integration
+```
+
+See [tests/integration/README.md](tests/integration/README.md) for detailed integration testing documentation.
 
 ### Building
 
