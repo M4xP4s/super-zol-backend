@@ -191,6 +191,69 @@ helm/
 
 ---
 
+### Phase 0 Code Review Improvements
+
+**Status:** [✅] Completed
+
+Following comprehensive code review, implemented improvements to address findings:
+
+**Code Duplication (Score: 30% → 0%)**
+
+- [x] Create `helm/library-charts/common/` shared library chart
+- [x] Extract 69 lines of duplicated helper functions to common chart
+- [x] Update service and job charts to depend on common chart
+- [x] Verify charts lint successfully after refactoring
+
+**Test Coverage (Score: 65% → 90%)**
+
+- [x] Add JSON Schema validation (`values.schema.json`) for service chart
+- [x] Add JSON Schema validation for job chart
+- [x] Make integration tests fully idempotent with cleanup functions
+- [x] Add EXIT trap for reliable test resource cleanup
+- [x] Document idempotency guarantees in tests/README.md
+
+**Configuration Management**
+
+- [x] Create `infrastructure/config/versions.yaml` for centralized version management
+- [x] Create `infrastructure/config/load-versions.sh` helper script
+- [x] Pin ingress-nginx to v1.11.2 (instead of floating 'main')
+- [x] Update init-postgres.sh to source versions from central config
+- [x] Update init-redis.sh to source versions from central config
+- [x] Update init-nginx.sh to use pinned manifest URL
+- [x] Add comprehensive version management documentation
+
+**Deliverables:**
+
+```
+infrastructure/
+├── config/
+│   ├── versions.yaml          # Central version registry
+│   ├── load-versions.sh       # Version loading helper
+│   └── README.md              # Version management docs
+├── helm/
+│   └── library-charts/
+│       ├── common/            # NEW: Shared helpers
+│       │   ├── Chart.yaml
+│       │   └── templates/
+│       │       └── _helpers.tpl
+│       ├── service/
+│       │   └── values.schema.json  # NEW: Schema validation
+│       └── job/
+│           └── values.schema.json  # NEW: Schema validation
+└── local-env/
+    └── tests/
+        └── README.md          # Idempotency documentation
+```
+
+**Testing:**
+
+- [x] Integration tests run multiple times without failures
+- [x] Helm charts lint successfully with common dependency
+- [x] Schema validation catches invalid values
+- [x] Version loading works with and without yq
+
+---
+
 ## Phase 1: Service Chart Templates
 
 **Goal:** Create reusable templates for services and jobs
