@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- README: link `TECH_STACK.md` for easier discovery
 - Moved service/job-specific Helm charts into their respective project directories (`services/*/helm`, `jobs/*/helm`) instead of `infrastructure/helm/*`.
 - Library charts: fixed `common.chart` helper and checksum annotations to hash values directly (works when used as dependency).
 

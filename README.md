@@ -137,6 +137,8 @@ just merge-to-main                             # Automated PR workflow
 
 ## Tech Stack
 
+For the complete stack inventory and methodologies, see [TECH_STACK.md](TECH_STACK.md).
+
 | Category            | Technology     | Why?                                  |
 | ------------------- | -------------- | ------------------------------------- |
 | **Runtime**         | Node.js 22     | Latest LTS with modern features       |
