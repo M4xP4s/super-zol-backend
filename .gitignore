@@ -51,3 +51,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+ 
+# Helm packaged dependencies (do not commit built tgz dependencies)
+**/helm/charts/*.tgz
