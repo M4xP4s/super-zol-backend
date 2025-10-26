@@ -235,3 +235,8 @@ The road ahead includes:
 - Scheduling and job orchestration
 - Monitoring and observability
 - Production deployment configuration
+
+### Removed
+
+- Removed temporary mock services `api-gateway` and `worker`
+- Purged all references from configs, docs, and scripts

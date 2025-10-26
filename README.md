@@ -53,9 +53,7 @@ That's it! 🎉
 ```
 backend/
 ├── services/             # Deployable backend services
-│   ├── api-gateway/      # Fastify REST API (legacy)
-│   ├── kaggle-data-api/  # Kaggle Data API (Fastify 5.x, production-ready)
-│   └── worker/           # Background worker
+│   └── kaggle-data-api/  # Kaggle Data API (Fastify 5.x, production-ready)
 ├── libs/                 # Shared internal libraries
 │   └── shared-util/      # Common utilities
 ├── jobs/                 # Scheduled tasks and batch jobs
@@ -115,8 +113,7 @@ Most common tasks (see [DEVELOPMENT.md](DEVELOPMENT.md) for complete reference):
 just check              # Run all checks (lint + typecheck + test)
 
 # Development
-just serve-api          # Start API gateway
-just serve-worker       # Start worker service
+just serve-api          # Start API service
 
 # Testing
 just test               # Run all tests
@@ -265,7 +262,7 @@ We take testing seriously:
 just test
 
 # Watch mode for TDD
-just test-watch api-gateway
+just test-watch kaggle-data-api
 
 # Coverage report
 just test-coverage

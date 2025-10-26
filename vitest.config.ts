@@ -7,8 +7,6 @@ export default defineConfig({
       '@libs/shared-util': resolve(__dirname, 'libs/shared-util/src'),
       '@libs/test-lib': resolve(__dirname, 'libs/test-lib/src'),
       '@libs/test-utils': resolve(__dirname, 'libs/test-utils/src'),
-      '@services/api-gateway': resolve(__dirname, 'services/api-gateway/src'),
-      '@services/worker': resolve(__dirname, 'services/worker/src'),
       '@services/kaggle-data-api': resolve(__dirname, 'services/kaggle-data-api/src'),
       'shared-util': resolve(__dirname, 'libs/shared-util/src/index.ts'),
       'test-lib': resolve(__dirname, 'libs/test-lib/src/index.ts'),

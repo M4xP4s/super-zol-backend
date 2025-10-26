@@ -31,7 +31,7 @@
           }
         ],
         "generatePackageJson": true,
-        "external": [],
+        "external": ["pg-native", "node:*"],
         "esbuildOptions": {
           "sourcemap": true,
           "outExtension": {

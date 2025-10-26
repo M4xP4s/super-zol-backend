@@ -17,7 +17,7 @@ Comprehensive inventory of technologies, tools, and configurations in this repos
 ## Services & Frameworks
 
 - Fastify 4 (API): `fastify`, `@fastify/autoload`, `@fastify/sensible`, `fastify-plugin`
-- ESM application entrypoints (e.g., `services/api-gateway/src/main.ts`)
+- ESM application entrypoints (e.g., `services/kaggle-data-api/src/main.ts`)
 
 ## Jobs & Data Processing
 

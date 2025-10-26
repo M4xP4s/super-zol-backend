@@ -125,11 +125,11 @@ We enforce [Conventional Commits](https://www.conventionalcommits.org/) format v
 
 ```bash
 ✅ Good commits:
-feat(api): add user authentication endpoint
-fix(worker): resolve memory leak in job processor
+feat(kaggle-data-api): add user authentication endpoint
+fix(kaggle-data-api): resolve memory leak in job processor
 docs(readme): update installation instructions
 test(shared-util): add edge case tests for parser
-refactor(api): simplify route handlers
+refactor(kaggle-data-api): simplify route handlers
 
 ❌ Bad commits:
 added stuff
@@ -140,8 +140,7 @@ update
 
 ### Scope Guidelines
 
-- **api**: API Gateway service
-- **worker**: Worker service
+- **kaggle-data-api**: Kaggle Data API service
 - **shared-util**: Shared utilities library
 - **fetch-kaggle**: Kaggle fetch job
 - **repo**: Repository-wide changes (config, tooling)
@@ -172,8 +171,8 @@ Or simply run: `just check`
 Must follow Conventional Commits format:
 
 ```
-feat(api): add user authentication
-fix(worker): resolve memory leak
+feat(kaggle-data-api): add user authentication
+fix(kaggle-data-api): resolve memory leak
 docs: update README
 ```
 

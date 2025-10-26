@@ -28,11 +28,11 @@ test:
 test-coverage:
     pnpm nx run-many -t test --coverage
 
-# Run integration tests (auto-starts Kind cluster and deploys services)
+# Run integration tests (uses docker-compose)
 test-integration:
-    @bash ./scripts/integration-tests.sh
+    @bash ./scripts/run-integration-tests.sh
 
-# Run integration tests in CI mode (expects infrastructure to be pre-configured)
+# Run integration tests in CI mode
 test-integration-ci:
     CI=true pnpm vitest run --config vitest.integration.config.ts
 
@@ -57,13 +57,9 @@ clean:
 clean-all: clean
     rm -rf node_modules pnpm-lock.yaml
 
-# Start API gateway service
+# Start API service
 serve-api:
-    pnpm nx serve api-gateway
-
-# Start worker service
-serve-worker:
-    pnpm nx serve worker
+    pnpm nx serve kaggle-data-api
 
 # Start all services
 serve-all:
