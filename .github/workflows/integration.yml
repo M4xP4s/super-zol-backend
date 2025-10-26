@@ -54,11 +54,11 @@ jobs:
       - name: Apply database migrations
         working-directory: services/kaggle-data-api
         env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          PGHOST: localhost
+          PGPORT: 5432
+          PGDATABASE: test_db
+          PGUSER: test_user
+          PGPASSWORD: test_password
         run: |
           # Install postgresql-client for psql
           sudo apt-get update
@@ -67,18 +67,18 @@ jobs:
           # Run migrations
           for migration in helm/migrations/*.sql; do
             echo "Running migration: $migration"
-            psql -h localhost -U test_user -d test_db -f "$migration"
+            psql -f "$migration"
           done
 
       - name: Start API service in background
         working-directory: dist/services/kaggle-data-api
         env:
           PORT: 3001
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          PGHOST: localhost
+          PGPORT: 5432
+          PGDATABASE: test_db
+          PGUSER: test_user
+          PGPASSWORD: test_password
           LOG_LEVEL: info
         run: |
           node main.js &
@@ -91,11 +91,11 @@ jobs:
         env:
           CI: true
           API_BASE_URL: http://localhost:3001
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          PGHOST: localhost
+          PGPORT: 5432
+          PGDATABASE: test_db
+          PGUSER: test_user
+          PGPASSWORD: test_password
         run: just test-integration-ci
 
       - name: Stop API service

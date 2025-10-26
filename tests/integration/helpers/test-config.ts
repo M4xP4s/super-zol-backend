@@ -45,12 +45,12 @@ export function getCiConfig(): TestConfig {
       baseUrl: process.env.API_BASE_URL ?? 'http://localhost:3001',
     },
     database: {
-      // GitHub Actions service containers use localhost
-      host: process.env.POSTGRES_HOST ?? 'localhost',
-      port: parseInt(process.env.POSTGRES_PORT ?? '5432', 10),
-      database: process.env.POSTGRES_DB ?? 'test_db',
-      user: process.env.POSTGRES_USER ?? 'test_user',
-      password: process.env.POSTGRES_PASSWORD ?? 'test_password',
+      // GitHub Actions uses PG* environment variables
+      host: process.env.PGHOST ?? 'localhost',
+      port: parseInt(process.env.PGPORT ?? '5432', 10),
+      database: process.env.PGDATABASE ?? 'test_db',
+      user: process.env.PGUSER ?? 'test_user',
+      password: process.env.PGPASSWORD ?? 'test_password',
     },
   };
 }
