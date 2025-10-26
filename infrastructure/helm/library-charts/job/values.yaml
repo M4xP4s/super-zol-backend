@@ -1,0 +1,118 @@
+# Default values for job library chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Job or CronJob type
+type: job # Options: "job" or "cronjob"
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: ''
+
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  name: ''
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Job-specific settings
+job:
+  # Specifies the number of retries before marking this job failed
+  backoffLimit: 3
+  # Specifies the duration in seconds relative to the startTime that the job may be active
+  activeDeadlineSeconds: 3600
+  # Specifies the number of desired successful completions
+  completions: 1
+  # Specifies the maximum desired number of pods for the job
+  parallelism: 1
+  # ttlSecondsAfterFinished: 100  # Cleanup completed jobs after N seconds
+  # Specifies the pod replace policy when job pod fails
+  # podReplacementPolicy: Failed  # Options: Failed, TerminatingOrFailed
+
+# CronJob-specific settings
+cronJob:
+  # Cron schedule (only for cronjob type)
+  schedule: '0 2 * * *' # Daily at 2 AM
+  # Specifies how to treat concurrent executions of a Job
+  concurrencyPolicy: Forbid # Options: Allow, Forbid, Replace
+  # The number of successful finished jobs to retain
+  successfulJobsHistoryLimit: 3
+  # The number of failed finished jobs to retain
+  failedJobsHistoryLimit: 1
+  # Deadline in seconds for starting the job if it misses scheduled time
+  startingDeadlineSeconds: 300
+  # Suspend execution of jobs
+  suspend: false
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Environment variables
+env: []
+  # - name: NODE_ENV
+  #   value: "production"
+
+# Environment variables from secrets/configmaps
+envFrom: []
+  # - secretRef:
+  #     name: my-secret
+  # - configMapRef:
+  #     name: my-config
+
+# ConfigMap data
+configMap:
+  enabled: false
+  data: {}
+
+# Secret data (base64 encoded values)
+secrets:
+  enabled: false
+  data: {}
+
+# Volume mounts
+volumeMounts: []
+  # - name: data
+  #   mountPath: /data
+
+# Volumes
+volumes: []
+  # - name: data
+  #   persistentVolumeClaim:
+  #     claimName: my-pvc
+
+# Restart policy for the pod
+restartPolicy: OnFailure # Options: OnFailure, Never
