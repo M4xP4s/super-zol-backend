@@ -1,0 +1,26 @@
+# Redis configuration for local development
+
+auth:
+  password: dev-password-change-in-production
+
+architecture: standalone
+
+master:
+  resources:
+    limits:
+      cpu: 300m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  persistence:
+    enabled: false # Disable persistence for local dev
+
+  service:
+    type: ClusterIP
+    ports:
+      redis: 6379
+
+metrics:
+  enabled: false # Disable for local dev
