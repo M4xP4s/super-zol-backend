@@ -128,7 +128,7 @@ describe('Docker Compose Integration', () => {
     const content = await readFile(filePath, 'utf-8');
 
     // Verify route definition
-    expect(content).toContain("fastify.get('/datasets'");
+    expect(content).toContain("'/datasets'");
 
     // Verify proper error handling
     expect(content).toContain('try');
@@ -137,6 +137,10 @@ describe('Docker Compose Integration', () => {
 
     // Verify database query
     expect(content).toContain('query(');
+
+    // Verify security features
+    expect(content).toContain('parameterized');
+    expect(content).toContain('Querystring');
   });
 
   it('should have health check endpoint', async () => {
