@@ -84,13 +84,6 @@ clean:
 clean-all: clean
     rm -rf node_modules pnpm-lock.yaml
 
-# Start API gateway service
-serve-api:
-    pnpm nx serve api-gateway
-
-# Start worker service
-serve-worker:
-    pnpm nx serve worker
 
 # Start all services
 serve-all:
@@ -161,12 +154,12 @@ bundle-esbuild service:
 
 # Bundle all services with Docker images
 bundle-all:
-    @for service in api-gateway kaggle-data-api worker; do \
-        echo ""; \
-        ./scripts/bundle-docker.sh $$service; \
-    done
-    @echo ""
-    @echo "✅ All services bundled successfully"
+    @PROJECTS=$$(pnpm nx show projects --withTarget bundle --sep=,); \
+    if [ -z "$$PROJECTS" ]; then \
+        echo "ℹ️  No projects with a bundle target found."; \
+        exit 0; \
+    fi; \
+    pnpm nx run-many -t bundle --projects="$$PROJECTS"
 
 # Run a specific project's tests
 test-project project:
@@ -214,4 +207,4 @@ quick-commit message='':
 
 # Shorthand alias for quick-commit
 qc message='':
-    bash ./scripts/quick-commit.sh {{message}}
+    just quick-commit "{{message}}"

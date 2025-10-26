@@ -48,8 +48,7 @@ cargo install just
 | Run all checks          | `just check`                | `pnpm lint && pnpm typecheck && pnpm test`               |
 | Install deps            | `just install`              | `pnpm install`                                           |
 | Start all services      | -                           | `pnpm dev`                                               |
-| Start API               | `just serve-api`            | `pnpm nx serve api-gateway`                              |
-| Start worker            | `just serve-worker`         | `pnpm nx serve worker`                                   |
+| Start API               | -                           | `pnpm nx serve kaggle-data-api`                          |
 | Run all tests           | `just test`                 | `pnpm test`                                              |
 | Run tests with coverage | `just test-coverage`        | `pnpm test -- --coverage`                                |
 | Watch tests             | `just test-watch <project>` | `pnpm nx test <project> --watch`                         |
@@ -108,11 +107,11 @@ just test
 # or: pnpm test
 
 # Run tests for specific project
-pnpm nx test api-gateway
+pnpm nx test kaggle-data-api
 
 # Watch mode for specific project
-just test-watch api-gateway
-# or: pnpm nx test api-gateway --watch
+just test-watch kaggle-data-api
+# or: pnpm nx test kaggle-data-api --watch
 
 # Run with coverage
 just test-coverage
@@ -173,7 +172,7 @@ just build
 # or: pnpm build
 
 # Build specific project
-pnpm nx build api-gateway
+pnpm nx build kaggle-data-api
 
 # Build for production
 just build-prod
@@ -194,7 +193,7 @@ just lint
 # or: pnpm lint
 
 # Lint specific project
-pnpm nx lint api-gateway
+pnpm nx lint kaggle-data-api
 
 # Format all code
 just format
@@ -213,7 +212,7 @@ For rapid iteration on the main branch:
 
 ```bash
 # 1. Make your changes
-vim src/app/routes/users.ts
+vim services/kaggle-data-api/src/app/routes/example.ts
 
 # 2. Quick commit and push
 ./scripts/quick-commit.sh "feat(api): add user endpoint"
@@ -269,10 +268,10 @@ just merge-to-main-keep feat/user-authentication
 
 ```bash
 # 1. Run tests in watch mode while developing
-just test-watch api-gateway
+just test-watch kaggle-data-api
 
 # 2. Make changes to code
-vim src/app/routes/users.ts
+vim services/kaggle-data-api/src/app/routes/example.ts
 
 # 3. Make changes to tests
 vim tests/routes/users.test.ts
@@ -296,10 +295,10 @@ just graph
 # or: pnpm nx graph
 
 # Show project details
-pnpm nx show project api-gateway
+pnpm nx show project kaggle-data-api
 
 # Show project dependencies
-pnpm nx show project api-gateway --json | jq '.dependencies'
+pnpm nx show project kaggle-data-api --json | jq '.dependencies'
 ```
 
 ### Affected Commands
@@ -330,9 +329,8 @@ Nx determines affected projects by:
 
 **Example**: If you change `libs/shared-util`:
 
-- `api-gateway` is affected (imports `shared-util`)
-- `worker` is affected (imports `shared-util`)
-- Nx tests and builds both services
+- `kaggle-data-api` is affected (imports `shared-util`)
+- Nx tests and builds the affected services
 
 ### Caching
 
@@ -347,7 +345,7 @@ pnpm nx reset
 # or: just clean
 
 # Run task without cache
-pnpm nx test api-gateway --skip-nx-cache
+pnpm nx test kaggle-data-api --skip-nx-cache
 ```
 
 ## Creating New Components
@@ -434,7 +432,7 @@ pnpm nx g @nx/node:application jobs/my-job \
 Create a file in `services/<name>/src/app/routes/`:
 
 ```typescript
-// services/api-gateway/src/app/routes/users.ts
+// services/kaggle-data-api/src/app/routes/example.ts
 import { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {
@@ -464,7 +462,7 @@ AutoLoad automatically registers routes from `src/app/routes/`.
 Create a file in `services/<name>/src/app/plugins/`:
 
 ```typescript
-// services/api-gateway/src/app/plugins/auth.ts
+// services/kaggle-data-api/src/app/plugins/auth.ts
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
@@ -491,7 +489,7 @@ import { myUtil } from '@libs/shared-util';
 import { myUtil } from 'shared-util'; // If alias configured
 
 // ❌ Bad: Import from other services
-import { something } from '@services/api-gateway';
+import { something } from '@services/kaggle-data-api';
 ```
 
 **Rule**: Services can import from `libs/`, but not from other services.
@@ -573,7 +571,7 @@ Create `.vscode/launch.json`:
       "request": "launch",
       "name": "Debug API Gateway",
       "runtimeArgs": ["--loader", "tsx"],
-      "args": ["${workspaceFolder}/services/api-gateway/src/main.ts"],
+      "args": ["${workspaceFolder}/services/kaggle-data-api/src/main.ts"],
       "cwd": "${workspaceFolder}",
       "skipFiles": ["<node_internals>/**"]
     },
@@ -581,7 +579,7 @@ Create `.vscode/launch.json`:
       "type": "node",
       "request": "launch",
       "name": "Debug Tests",
-      "runtimeArgs": ["nx", "test", "api-gateway"],
+      "runtimeArgs": ["nx", "test", "kaggle-data-api"],
       "console": "integratedTerminal"
     }
   ]
@@ -602,10 +600,10 @@ node --inspect-brk node_modules/.bin/vitest run
 
 ```bash
 # Enable Nx verbose output
-NX_VERBOSE_LOGGING=true pnpm nx test api-gateway
+NX_VERBOSE_LOGGING=true pnpm nx test kaggle-data-api
 
 # Enable Vitest verbose output
-pnpm nx test api-gateway -- --reporter=verbose
+pnpm nx test kaggle-data-api -- --reporter=verbose
 
 # Enable Fastify logging
 # In your service main.ts:
@@ -709,7 +707,7 @@ lsof -i :3000
 kill -9 <PID>
 
 # Or use different port
-PORT=3001 pnpm nx serve api-gateway
+PORT=3001 pnpm nx serve kaggle-data-api
 ```
 
 ## Additional Resources

@@ -16,6 +16,16 @@
         "assets": ["libs/shared-util/*.md"]
       }
     },
+    "bundle": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared-util",
+        "main": "libs/shared-util/src/index.ts",
+        "tsConfig": "libs/shared-util/tsconfig.lib.json",
+        "assets": ["libs/shared-util/*.md"]
+      }
+    },
     "test": {
       "executor": "@nx/vite:test",
       "outputs": ["{projectRoot}/coverage"],

@@ -37,6 +37,28 @@
         }
       }
     },
+    "bundle": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/jobs/fetch-kaggle",
+        "format": ["esm"],
+        "bundle": true,
+        "main": "jobs/fetch-kaggle/src/main.ts",
+        "tsConfig": "jobs/fetch-kaggle/tsconfig.app.json",
+        "assets": ["jobs/fetch-kaggle/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": false,
+          "outExtension": {
+            ".js": ".js"
+          },
+          "minify": true
+        }
+      }
+    },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",

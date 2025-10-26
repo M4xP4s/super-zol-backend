@@ -57,8 +57,6 @@ just test               # Run all tests
 just test-watch <name>  # Run tests in watch mode for a specific project
 
 # Development
-just serve-api          # Start API gateway service
-just serve-worker       # Start worker service
 just infra-up           # Start Docker infrastructure
 
 # Code Quality
@@ -113,7 +111,7 @@ This is an **Nx-powered TypeScript monorepo** with strict typing, comprehensive 
 
 ```
 backend/
-├── services/       # Deployable Fastify services (api-gateway, worker)
+├── services/       # Deployable Fastify services (kaggle-data-api)
 ├── libs/          # Shared internal libraries (shared-util)
 ├── jobs/          # Scheduled tasks/batch jobs (fetch-kaggle)
 └── packages/      # Optional publishable packages
@@ -131,7 +129,7 @@ import { something } from '@libs/shared-util';
 import { util } from 'shared-util'; // Also available
 
 // Import from services (for testing/tooling only)
-import { handler } from '@services/api-gateway';
+import { handler } from '@services/kaggle-data-api';
 ```
 
 **Important**: Services should NOT import from other services. Only libs can be shared.
@@ -207,7 +205,7 @@ Then add to `tsconfig.base.json` paths for convenient imports:
 Create a file in `services/<name>/src/app/routes/`:
 
 ```typescript
-// services/api-gateway/src/app/routes/users.ts
+// services/kaggle-data-api/src/app/routes/example.ts
 import { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {
@@ -236,10 +234,10 @@ For more patterns and examples, see [DEVELOPMENT.md](DEVELOPMENT.md#common-patte
 just test
 
 # Single project
-pnpm nx test api-gateway
+pnpm nx test kaggle-data-api
 
 # Watch mode
-just test-watch api-gateway
+just test-watch kaggle-data-api
 
 # Coverage
 just test-coverage

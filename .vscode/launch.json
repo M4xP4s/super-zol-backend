@@ -2,32 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug api-gateway",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["nx", "serve", "api-gateway", "--inspect=9229"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "cwd": "${workspaceFolder}",
-      "envFile": "${workspaceFolder}/.env",
-      "autoAttachChildProcesses": true,
-      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
-    },
-    {
-      "name": "Run api-gateway",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["nx", "serve", "api-gateway"],
-      "noDebug": true,
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "cwd": "${workspaceFolder}",
-      "envFile": "${workspaceFolder}/.env",
-      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
-    },
-    {
       "name": "Debug kaggle-data-api",
       "type": "node",
       "request": "launch",
@@ -46,32 +20,6 @@
       "request": "launch",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["nx", "serve", "kaggle-data-api"],
-      "noDebug": true,
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "cwd": "${workspaceFolder}",
-      "envFile": "${workspaceFolder}/.env",
-      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
-    },
-    {
-      "name": "Debug worker",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["nx", "serve", "worker", "--inspect=9231"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "cwd": "${workspaceFolder}",
-      "envFile": "${workspaceFolder}/.env",
-      "autoAttachChildProcesses": true,
-      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
-    },
-    {
-      "name": "Run worker",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["nx", "serve", "worker"],
       "noDebug": true,
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
@@ -109,7 +57,7 @@
   "compounds": [
     {
       "name": "Debug all services",
-      "configurations": ["Debug api-gateway", "Debug kaggle-data-api", "Debug worker"]
+      "configurations": ["Debug kaggle-data-api"]
     }
   ]
 }

@@ -17,7 +17,7 @@ Comprehensive inventory of technologies, tools, and configurations in this repos
 ## Services & Frameworks
 
 - Fastify 4 (API): `fastify`, `@fastify/autoload`, `@fastify/sensible`, `fastify-plugin`
-- ESM application entrypoints (e.g., `services/api-gateway/src/main.ts`)
+- ESM application entrypoints (e.g., `services/kaggle-data-api/src/main.ts`)
 
 ## Jobs & Data Processing
 
@@ -81,7 +81,7 @@ Comprehensive inventory of technologies, tools, and configurations in this repos
 ## Configuration & Environment
 
 - `pnpm-workspace.yaml`: packages under `services/*`, `libs/*`, `packages/*`, `jobs/*`
-- `.env.example` with API/Worker and Kaggle variables
+- `.env.example` with API and Kaggle variables
 - `eslint.config.mjs` + `eslint.config.js` for TypeScript and Nx rules
 
 ## Observability & Logging
