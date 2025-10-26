@@ -11,7 +11,9 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source and build
 COPY . .
-RUN pnpm nx build kaggle-data-api --configuration=production
+# Reset Nx cache for Docker builds to avoid machine ID issues
+RUN pnpm nx reset
+RUN pnpm nx build kaggle-data-api --configuration=production --skip-nx-cache
 
 # Stage 2: Runtime
 FROM node:22-alpine

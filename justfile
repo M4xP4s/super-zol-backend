@@ -28,6 +28,14 @@ test:
 test-coverage:
     pnpm nx run-many -t test --coverage
 
+# Run integration tests
+test-integration:
+    pnpm exec vitest tests/integration --run
+
+# Run integration tests with watch mode
+test-integration-watch:
+    pnpm exec vitest tests/integration
+
 # Build all projects
 build:
     pnpm nx run-many -t build
@@ -113,10 +121,25 @@ dev-setup: install infra-up
 # CI pipeline
 ci: affected-lint affected-test affected-build
 
-# Bundle a specific service for deployment
+# Bundle a specific service/job with Docker image build
+# Usage: just bundle kaggle-data-api
 bundle service:
+    @./scripts/bundle-docker.sh {{service}}
+
+# Build and compile a service without Docker (esbuild only)
+# Usage: just bundle-esbuild kaggle-data-api
+bundle-esbuild service:
     pnpm nx build {{service}} --configuration=production
-    @echo "Bundle created in dist/services/{{service}}"
+    @echo "✅ Bundle created: dist/services/{{service}}"
+
+# Bundle all services with Docker images
+bundle-all:
+    @for service in api-gateway kaggle-data-api worker; do \
+        echo ""; \
+        ./scripts/bundle-docker.sh $$service; \
+    done
+    @echo ""
+    @echo "✅ All services bundled successfully"
 
 # Run a specific project's tests
 test-project project:

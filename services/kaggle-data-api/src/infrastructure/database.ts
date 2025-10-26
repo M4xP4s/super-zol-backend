@@ -1,4 +1,9 @@
-import { Pool, PoolClient } from 'pg';
+import { Pool, PoolClient, QueryResult } from 'pg';
+
+/**
+ * Singleton pool instance - ensures connection pooling is reused across queries
+ */
+let pool: Pool | null = null;
 
 /**
  * Get PostgreSQL connection URL from environment
@@ -21,6 +26,7 @@ export function getDatabaseUrl(): string {
 
 /**
  * Create and return a PostgreSQL connection pool
+ * This is called once and the pool is reused for all queries
  */
 export function createPool(): Pool {
   const connectionString = getDatabaseUrl();
@@ -32,22 +38,37 @@ export function createPool(): Pool {
 }
 
 /**
- * Execute a query on the pool
+ * Get the singleton pool instance
+ * Creates pool on first use, reuses for all subsequent calls
  */
-export async function query(sql: string, params?: unknown[]): Promise<{ rows: unknown[] }> {
-  const pool = createPool();
-  try {
-    const result = await pool.query(sql, params);
-    return result;
-  } finally {
-    await pool.end();
+export function getPool(): Pool {
+  if (!pool) {
+    pool = createPool();
   }
+  return pool;
+}
+
+/**
+ * Execute a query on the singleton pool
+ * Reuses connections efficiently through pooling
+ */
+export async function query(sql: string, params?: unknown[]): Promise<QueryResult> {
+  return getPool().query(sql, params);
 }
 
 /**
  * Get a single client from the pool for transactions
  */
 export async function getClient(): Promise<PoolClient> {
-  const pool = createPool();
-  return pool.connect();
+  return getPool().connect();
+}
+
+/**
+ * Close the pool connection (for cleanup)
+ */
+export async function closePool(): Promise<void> {
+  if (pool) {
+    await pool.end();
+    pool = null;
+  }
 }

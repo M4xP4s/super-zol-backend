@@ -65,6 +65,8 @@
     "fastify-plugin": "~4.5.0",
     "pg": "^8.16.3",
     "tslib": "^2.3.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "yaml": "^2.8.1",
     "zod": "^4.1.12"
   }
 }

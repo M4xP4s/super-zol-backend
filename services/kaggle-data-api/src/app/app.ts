@@ -1,6 +1,7 @@
 import * as path from 'path';
 import Fastify, { FastifyInstance } from 'fastify';
 import AutoLoad from '@fastify/autoload';
+import { getDirname } from '@libs/shared-util';
 
 /* eslint-disable-next-line */
 export interface AppOptions {}
@@ -9,6 +10,8 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   // Place here your custom code!
 
   // Do not touch the following lines
+
+  const __dirname = getDirname(import.meta.url);
 
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- VS Code run and debug configurations for all services and jobs to streamline local development.
+
 #### Phase 2: Kaggle Data API Service ✅ COMPLETED (2025-10-26)
 
 - **kaggle-data-api Service** - Minimal FastAPI service with PostgreSQL integration

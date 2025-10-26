@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "nx: serve api-gateway",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["nx", "serve", "api-gateway"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Run the api-gateway service in watch mode using Nx."
+    },
+    {
+      "label": "nx: serve kaggle-data-api",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["nx", "serve", "kaggle-data-api"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Run the kaggle-data-api service in watch mode using Nx."
+    },
+    {
+      "label": "nx: serve worker",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["nx", "serve", "worker"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Run the worker service in watch mode using Nx."
+    },
+    {
+      "label": "nx: run fetch-kaggle job",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["nx", "run", "fetch-kaggle:cli"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Execute the fetch-kaggle job via its CLI target."
+    }
+  ]
+}

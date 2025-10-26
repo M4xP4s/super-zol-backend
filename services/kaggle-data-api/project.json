@@ -61,6 +61,50 @@
         "config": "services/kaggle-data-api/vitest.config.ts",
         "passWithNoTests": true
       }
+    },
+    "bundle": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/services/kaggle-data-api",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "services/kaggle-data-api/src/main.ts",
+        "tsConfig": "services/kaggle-data-api/tsconfig.app.json",
+        "assets": ["services/kaggle-data-api/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": false,
+          "outExtension": {
+            ".js": ".js"
+          },
+          "minify": true
+        }
+      },
+      "configurations": {
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            },
+            "minify": true
+          }
+        }
+      }
+    },
+    "docker": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "docker build -f services/kaggle-data-api/Dockerfile -t kaggle-data-api:latest --build-arg NODE_ENV=production ."
+          }
+        ]
+      },
+      "dependsOn": ["bundle"]
     }
   }
 }
