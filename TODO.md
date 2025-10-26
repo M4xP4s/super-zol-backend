@@ -346,11 +346,13 @@ services/
 
 ---
 
-## Phase 2: Kaggle Data API Service
+## Phase 2: Kaggle Data API Service (Simplified)
 
-**Goal:** Implement minimal API service and deploy locally
+**Goal:** Create minimal API service with PostgreSQL integration and docker-compose integration tests
 
-**Duration:** 2-3 days
+**Duration:** 1-2 days
+
+**Why Simplified:** Defer k8s complexity to later phase. Focus on getting working service with integration tests first.
 
 ### Step 2.1: Generate Service Skeleton
 
@@ -360,313 +362,480 @@ services/
 
 - [ ] Run `just gen-service kaggle-data-api`
 - [ ] Add dependencies to `services/kaggle-data-api/package.json`:
-  - [ ] `@fastify/cors`
-  - [ ] `@fastify/helmet`
-  - [ ] `@fastify/swagger`
-  - [ ] `@fastify/swagger-ui`
   - [ ] `pg` (PostgreSQL client)
-  - [ ] `ioredis` (Redis client)
-- [ ] Update tsconfig for service
-- [ ] Create basic directory structure:
-  ```
-  services/kaggle-data-api/
-  ├── src/
-  │   ├── main.ts
-  │   ├── app/
-  │   │   ├── app.ts
-  │   │   ├── plugins/
-  │   │   └── routes/
-  │   └── infrastructure/
-  │       └── config.ts
-  └── tests/
-  ```
+  - [ ] `@types/pg` (for TypeScript)
+- [ ] Verify service compiles and runs
 
 **Testing:**
 
-- [ ] Service compiles successfully
-- [ ] Service starts on port 3000
-- [ ] Basic health check endpoint works
+- [ ] Service compiles successfully: `pnpm nx build kaggle-data-api`
+- [ ] Service starts on port 3000: `pnpm nx serve kaggle-data-api`
+- [ ] Default health check endpoint works
 
 ---
 
-### Step 2.2: Implement Minimal API Routes
+### Step 2.2: Add PostgreSQL Integration
 
 **Status:** [ ] Pending
 
 **Tasks:**
 
-- [ ] Create `src/app/routes/health.ts`:
-  - [ ] GET `/health` - Basic health check
-  - [ ] GET `/health/live` - Liveness probe
-  - [ ] GET `/health/ready` - Readiness probe (checks DB)
-- [ ] Create `src/app/routes/hello.ts`:
-  - [ ] GET `/` - Returns "Hello from Kaggle Data API"
-  - [ ] GET `/v1/info` - Returns API version and status
-- [ ] Add Swagger documentation for all routes
-- [ ] Configure CORS and security headers
+- [ ] Create `src/infrastructure/database.ts`:
+  - [ ] PostgreSQL connection pool setup
+  - [ ] `getDatabaseUrl()` helper (reads from env)
+  - [ ] `createPool()` function with connection config
+  - [ ] `query()` helper function
+- [ ] Create `src/app/routes/datasets.ts`:
+  - [ ] GET `/datasets` - Fetch all datasets from PostgreSQL
+  - [ ] Simple query: `SELECT * FROM datasets ORDER BY name`
+  - [ ] Return JSON array of results
+- [ ] Add DATABASE_URL environment variable support
+- [ ] Add basic error handling
 
 **Deliverables:**
 
 ```typescript
-// Example route
+// Example route implementation
 export default async function (fastify: FastifyInstance) {
-  fastify.get('/', async () => ({
-    message: 'Hello from Kaggle Data API',
-    version: '0.1.0',
-    timestamp: new Date().toISOString(),
-  }));
+  fastify.get('/datasets', async (request, reply) => {
+    try {
+      const result = await query('SELECT * FROM datasets ORDER BY name');
+      return { datasets: result.rows };
+    } catch (error) {
+      reply.code(500);
+      return { error: 'Failed to fetch datasets' };
+    }
+  });
 }
 ```
 
 **Testing:**
 
-- [ ] All routes return expected responses
-- [ ] Swagger UI accessible at `/docs`
-- [ ] Health checks work correctly
+- [ ] Route compiles without errors
+- [ ] Manual test with local PostgreSQL works
 
 ---
 
-### Step 2.3: Create Helm Chart for API Service
+### Step 2.3: Create Docker Compose for Integration Tests
 
 **Status:** [ ] Pending
 
 **Tasks:**
 
-- [ ] Run `scripts/new-service-chart.sh kaggle-data-api`
-- [ ] Customize `helm/kaggle-data-api/values.yaml`:
-  - [ ] Set image repository and tag
-  - [ ] Configure service port (80 -> 3000)
-  - [ ] Set resource limits and requests
-  - [ ] Configure health check endpoints
-  - [ ] Add environment variables:
-    - [ ] DATABASE_URL (from secret)
-    - [ ] REDIS_URL (from secret)
-    - [ ] NODE_ENV
-- [ ] Customize `values-local.yaml`:
-  - [ ] Set replicaCount: 1
-  - [ ] Configure ingress path `/api`
-  - [ ] Use local image or Docker Hub
-  - [ ] Mount kaggle-data-pvc (read-only)
-- [ ] Create `helm/kaggle-data-api/README.md` with:
-  - [ ] Installation instructions
-  - [ ] Configuration options
-  - [ ] Environment-specific values
-
-**Testing:**
-
-- [ ] Helm chart lints successfully
-- [ ] Dry-run installation works
-- [ ] Chart generates valid Kubernetes manifests
-
----
-
-### Step 2.4: Build Docker Image
-
-**Status:** [ ] Pending
-
-**Tasks:**
-
+- [ ] Create `docker-compose.integration.yml` in root:
+  - [ ] PostgreSQL service (postgres:16-alpine)
+    - [ ] Port: 5432
+    - [ ] Database: test_db
+    - [ ] User: test_user
+    - [ ] Password: test_password
+  - [ ] kaggle-data-api service
+    - [ ] Build from services/kaggle-data-api/Dockerfile
+    - [ ] Port: 3000
+    - [ ] DATABASE_URL pointing to postgres service
+    - [ ] Depends on postgres service
+  - [ ] Health checks for both services
 - [ ] Create `services/kaggle-data-api/Dockerfile`:
   - [ ] Multi-stage build (builder + runner)
-  - [ ] Use node:22-alpine base image
-  - [ ] Copy only necessary files
-  - [ ] Run as non-root user
+  - [ ] Use node:22-alpine base
   - [ ] Expose port 3000
-- [ ] Create `.dockerignore` file
-- [ ] Add build script to `project.json`:
-  - [ ] `docker-build` target
-  - [ ] `docker-push` target (optional)
-- [ ] Build and tag image for local use
+- [ ] Create `.dockerignore` in service directory
 
-**Example Dockerfile:**
+**Example docker-compose.integration.yml:**
 
-```dockerfile
-FROM node:22-alpine AS builder
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
-COPY . .
-RUN pnpm nx build kaggle-data-api
+```yaml
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test_user']
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-FROM node:22-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app/dist/services/kaggle-data-api ./
-EXPOSE 3000
-CMD ["node", "main.js"]
+  api:
+    build:
+      context: .
+      dockerfile: services/kaggle-data-api/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgres://test_user:test_password@postgres:5432/test_db
+      NODE_ENV: test
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 5s
+      timeout: 5s
+      retries: 5
 ```
 
 **Testing:**
 
-- [ ] Image builds successfully
-- [ ] Image size is reasonable (<200MB)
-- [ ] Container runs and responds to requests
-- [ ] Health checks work in container
-
----
-
-### Step 2.5: Deploy to Local Kubernetes
-
-**Status:** [ ] Pending
-
-**Tasks:**
-
-- [ ] Load Docker image into kind cluster:
-  - [ ] `kind load docker-image kaggle-data-api:local --name super-zol`
-- [ ] Create namespace: `kubectl create namespace super-zol`
-- [ ] Deploy PostgreSQL:
-  - [ ] `make init-postgres` (from local-env)
-- [ ] Deploy Redis:
-  - [ ] `make init-redis` (from local-env)
-- [ ] Create database secrets:
-  - [ ] Create secret with DATABASE_URL
-  - [ ] Create secret with REDIS_URL
-- [ ] Install kaggle-data-pvc chart
-- [ ] Install kaggle-data-api chart:
-  ```bash
-  helm install kaggle-data-api ./helm/kaggle-data-api \
-    -f helm/kaggle-data-api/values-local.yaml \
-    -n super-zol
-  ```
-- [ ] Verify deployment:
-  - [ ] Pods are running
-  - [ ] Service is created
-  - [ ] Ingress is configured
-
-**Testing:**
-
-- [ ] API accessible via `http://localhost/api`
+- [ ] `docker-compose -f docker-compose.integration.yml up` works
+- [ ] Both services start successfully
 - [ ] Health checks pass
-- [ ] Swagger UI accessible at `http://localhost/api/docs`
-- [ ] Can connect to PostgreSQL
-- [ ] Can connect to Redis
 
 ---
 
-## Phase 3: Integration & Testing
-
-**Goal:** Verify everything works end-to-end
-
-**Duration:** 1 day
-
-### Step 3.1: End-to-End Testing
+### Step 2.4: Create Integration Test
 
 **Status:** [ ] Pending
 
 **Tasks:**
 
-- [ ] Test API endpoints:
-  - [ ] `curl http://localhost/api/health` returns 200
-  - [ ] `curl http://localhost/api/` returns hello message
-  - [ ] `curl http://localhost/api/v1/info` returns API info
-- [ ] Test Swagger UI:
-  - [ ] Open `http://localhost/api/docs` in browser
-  - [ ] Try executing requests from Swagger UI
-- [ ] Test database connection:
-  - [ ] Add test endpoint that queries PostgreSQL
-  - [ ] Verify connection works
-- [ ] Test Redis connection:
-  - [ ] Add test endpoint that uses Redis
-  - [ ] Verify connection works
+- [ ] Create `tests/integration/` directory in root
+- [ ] Create `tests/integration/kaggle-data-api.test.ts`:
+  - [ ] Setup: Start docker-compose services
+  - [ ] Setup: Connect to PostgreSQL and create test table
+  - [ ] Setup: Insert mock data (3-5 sample datasets)
+  - [ ] Test: GET /datasets returns mock data
+  - [ ] Test: Verify data matches what was inserted
+  - [ ] Teardown: Stop docker-compose services
+  - [ ] Teardown: Clean up containers and volumes
+- [ ] Create `tests/integration/setup.ts`:
+  - [ ] Helper functions for docker-compose
+  - [ ] Helper functions for database setup
+  - [ ] Mock data fixtures
+- [ ] Add integration test script to root `package.json`
+- [ ] Create `tests/integration/README.md` documenting test approach
+
+**Example Test Structure:**
+
+```typescript
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { setupDockerCompose, teardownDockerCompose } from './setup.js';
+import { setupDatabase, insertMockData } from './setup.js';
+
+describe('Kaggle Data API Integration Tests', () => {
+  beforeAll(async () => {
+    await setupDockerCompose();
+    await setupDatabase();
+    await insertMockData();
+  });
+
+  afterAll(async () => {
+    await teardownDockerCompose();
+  });
+
+  it('should fetch datasets from database', async () => {
+    const response = await fetch('http://localhost:3000/datasets');
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.datasets).toHaveLength(3);
+    expect(data.datasets[0]).toHaveProperty('name');
+  });
+});
+```
 
 **Testing:**
 
-- [ ] All endpoints respond correctly
-- [ ] No errors in pod logs
-- [ ] Database queries work
-- [ ] Redis operations work
+- [ ] Integration test passes locally
+- [ ] Test is idempotent (can run multiple times)
+- [ ] Cleanup works properly (no orphaned containers)
 
 ---
 
-### Step 3.2: Documentation
+### Step 2.5: Documentation & Verification
 
 **Status:** [ ] Pending
 
 **Tasks:**
 
-- [ ] Create `dev-tools/local-env/README.md` with:
-  - [ ] Prerequisites (Docker, kind, helm, kubectl)
-  - [ ] Quick start guide
-  - [ ] Available make commands
-  - [ ] Accessing services (URLs and ports)
-  - [ ] Troubleshooting section
-- [ ] Update main `README.md` with infrastructure info
-- [ ] Create `helm/README.md` explaining library chart pattern
-- [ ] Document how to add new services using generators
+- [ ] Create `services/kaggle-data-api/README.md`:
+  - [ ] Overview of the service
+  - [ ] Available endpoints
+  - [ ] Environment variables
+  - [ ] Local development instructions
+  - [ ] Running with docker-compose
+- [ ] Update root `README.md` with integration test instructions
+- [ ] Add npm scripts for convenience:
+  - [ ] `test:integration` - Run integration tests
+  - [ ] `docker:integration` - Start integration environment
+  - [ ] `docker:integration:down` - Stop integration environment
+- [ ] Verify end-to-end flow works
+
+**Testing:**
+
+- [ ] Documentation is clear and accurate
+- [ ] New developer can follow instructions
+- [ ] All commands in documentation work
+
+---
+
+## Phase 3: Database Migrations & Basic CRUD
+
+**Goal:** Add proper database schema management and expand API functionality
+
+**Duration:** 1-2 days
+
+### Step 3.1: Add Database Migrations
+
+**Status:** [ ] Pending
+
+**Tasks:**
+
+- [ ] Choose migration tool (node-pg-migrate or kysely migrations)
+- [ ] Add migration dependencies to service
+- [ ] Create `migrations/` directory in service
+- [ ] Create initial migration: `001_create_datasets_table.sql`
+  - [ ] `id` (serial primary key)
+  - [ ] `name` (varchar, not null)
+  - [ ] `description` (text)
+  - [ ] `source_url` (varchar)
+  - [ ] `created_at` (timestamp with time zone, default now())
+- [ ] Add migration scripts to package.json:
+  - [ ] `migrate:up` - Run pending migrations
+  - [ ] `migrate:down` - Rollback last migration
+  - [ ] `migrate:create` - Create new migration
+- [ ] Update docker-compose to run migrations on startup
+- [ ] Document migration workflow
+
+**Testing:**
+
+- [ ] Migrations run successfully on fresh database
+- [ ] Migrations are idempotent
+- [ ] Rollback works correctly
+
+---
+
+### Step 3.2: Expand API with CRUD Operations
+
+**Status:** [ ] Pending
+
+**Tasks:**
+
+- [ ] Add POST `/datasets` - Create new dataset
+  - [ ] Validate input (name required)
+  - [ ] Insert into database
+  - [ ] Return created resource
+- [ ] Add GET `/datasets/:id` - Get single dataset
+  - [ ] Return 404 if not found
+- [ ] Add PUT `/datasets/:id` - Update dataset
+  - [ ] Validate input
+  - [ ] Return 404 if not found
+- [ ] Add DELETE `/datasets/:id` - Delete dataset
+  - [ ] Return 404 if not found
+- [ ] Add proper error handling for all routes
+- [ ] Add input validation
+
+**Testing:**
+
+- [ ] Unit tests for all CRUD operations
+- [ ] Integration tests cover all endpoints
+- [ ] Error cases handled properly
+
+---
+
+### Step 3.3: Update Integration Tests
+
+**Status:** [ ] Pending
+
+**Tasks:**
+
+- [ ] Update integration tests to use migrated schema
+- [ ] Add tests for POST endpoint
+- [ ] Add tests for GET single endpoint
+- [ ] Add tests for PUT endpoint
+- [ ] Add tests for DELETE endpoint
+- [ ] Add tests for error cases (404s, validation errors)
+- [ ] Ensure tests clean up test data properly
+
+**Testing:**
+
+- [ ] All integration tests pass
+- [ ] Tests are idempotent
+- [ ] Coverage includes happy path and error cases
+
+---
+
+## Phase 4: Cloud Architecture & Kubernetes Deployment
+
+**Goal:** Design cloud architecture and implement k8s deployment with proper testing
+
+**Duration:** 3-4 days
+
+### Step 4.1: Cloud Architecture Design
+
+**Status:** [ ] Pending
+
+**Tasks:**
+
+- [ ] Document cloud architecture decisions:
+  - [ ] Cloud provider choice (AWS, GCP, Azure)
+  - [ ] Kubernetes distribution (EKS, GKE, AKS, or managed k8s)
+  - [ ] Database hosting strategy (managed RDS vs in-cluster)
+  - [ ] Storage strategy for Kaggle data (S3, GCS, Azure Blob)
+  - [ ] Ingress strategy (ALB, nginx-ingress, etc.)
+  - [ ] Certificate management (cert-manager, cloud-native)
+  - [ ] Secrets management (External Secrets Operator, cloud-native)
+- [ ] Create architecture diagram
+- [ ] Document deployment environments:
+  - [ ] Development
+  - [ ] Staging
+  - [ ] Production
+- [ ] Document cost estimates and optimization strategies
+- [ ] Create `docs/CLOUD_ARCHITECTURE.md`
 
 **Deliverables:**
 
-- [ ] Complete getting started guide
-- [ ] Architecture diagram showing components
-- [ ] Examples of adding new services
+- [ ] Comprehensive architecture document
+- [ ] Architecture diagrams (infrastructure, networking, data flow)
+- [ ] Decision rationale for each component
+- [ ] Cost analysis
 
 ---
 
-### Step 3.3: Cleanup Scripts
+### Step 4.2: K8s Integration Testing Strategy
 
 **Status:** [ ] Pending
 
 **Tasks:**
 
-- [ ] Add cleanup commands to Makefile:
-  - [ ] `make clean-all` - Delete cluster and volumes
-  - [ ] `make reset-data` - Clear Kaggle data PVC
-  - [ ] `make logs-api` - Tail API logs
-  - [ ] `make logs-postgres` - Tail PostgreSQL logs
-- [ ] Create helper scripts:
-  - [ ] `scripts/port-forward.sh` - Port forward to services
-  - [ ] `scripts/exec-pod.sh` - Exec into running pods
-  - [ ] `scripts/dump-resources.sh` - Export all k8s resources
+- [ ] Research k8s integration testing approaches:
+  - [ ] Kind-based testing (local k8s cluster)
+  - [ ] k3s-based testing (lightweight k8s)
+  - [ ] In-cluster testing vs external testing
+  - [ ] Test isolation strategies
+- [ ] Design integration test workflow:
+  - [ ] How to spin up test k8s cluster
+  - [ ] How to deploy test infrastructure (postgres, redis)
+  - [ ] How to run tests against k8s services
+  - [ ] How to clean up after tests
+- [ ] Evaluate test frameworks and tools:
+  - [ ] Helm test hooks
+  - [ ] Custom test runners
+  - [ ] CI/CD integration
+- [ ] Create `docs/K8S_TESTING_STRATEGY.md`
+
+**Deliverables:**
+
+- [ ] Testing strategy document
+- [ ] Evaluation of testing tools
+- [ ] Proposed test workflow
+- [ ] CI/CD integration plan
+
+---
+
+### Step 4.3: Implement K8s Deployment
+
+**Status:** [ ] Pending
+
+**Tasks:**
+
+- [ ] Create Helm chart for kaggle-data-api (using library charts)
+- [ ] Configure deployment manifests:
+  - [ ] Deployment with proper resource limits
+  - [ ] Service (ClusterIP)
+  - [ ] Ingress rules
+  - [ ] ConfigMaps for configuration
+  - [ ] Secrets for sensitive data
+  - [ ] Health checks (liveness, readiness, startup)
+- [ ] Create values files for each environment:
+  - [ ] values-local.yaml (kind)
+  - [ ] values-dev.yaml
+  - [ ] values-staging.yaml
+  - [ ] values-production.yaml
+- [ ] Test deployment to kind cluster:
+  - [ ] Build and load Docker image
+  - [ ] Deploy PostgreSQL
+  - [ ] Deploy API service
+  - [ ] Verify accessibility via ingress
+- [ ] Document deployment process
 
 **Testing:**
 
-- [ ] All cleanup commands work
-- [ ] Helper scripts function correctly
+- [ ] Helm chart lints successfully
+- [ ] Deployment succeeds in kind cluster
+- [ ] Service is accessible
+- [ ] Health checks pass
+- [ ] Database connectivity works
 
 ---
 
-## Phase 4: Optional Enhancements
+### Step 4.4: K8s Integration Tests Implementation
 
-**Goal:** Add-ons for better developer experience
-
-**Duration:** 1-2 days (optional)
-
-### Step 4.1: Add Monitoring (Optional)
-
-**Status:** [ ] Pending (Optional)
+**Status:** [ ] Pending
 
 **Tasks:**
 
-- [ ] Add `make init-monitoring` to Makefile
-- [ ] Deploy Prometheus + Grafana via Helm
-- [ ] Configure ServiceMonitor for API
-- [ ] Create basic Grafana dashboards
+- [ ] Implement k8s integration test suite:
+  - [ ] Create test cluster setup script
+  - [ ] Deploy infrastructure to test cluster
+  - [ ] Deploy API service to test cluster
+  - [ ] Run API integration tests against k8s deployment
+  - [ ] Clean up test cluster
+- [ ] Create `tests/k8s-integration/` directory
+- [ ] Add k8s integration test scripts
+- [ ] Integrate with CI/CD pipeline
+- [ ] Add GitHub Actions workflow for k8s tests
+- [ ] Document k8s testing workflow
+
+**Example Workflow:**
+
+```bash
+# Setup
+./scripts/k8s-test-setup.sh
+kind create cluster --name test-cluster
+helm install postgres ...
+helm install api ...
+
+# Test
+npm run test:k8s-integration
+
+# Cleanup
+kind delete cluster --name test-cluster
+```
+
+**Testing:**
+
+- [ ] K8s integration tests pass locally
+- [ ] Tests are idempotent
+- [ ] Tests work in CI/CD pipeline
+- [ ] Cleanup is reliable
 
 ---
 
-### Step 4.2: Add Database Migrations (Optional)
+### Step 4.5: Production Readiness
 
-**Status:** [ ] Pending (Optional)
-
-**Tasks:**
-
-- [ ] Choose migration tool (Kysely migrations or node-pg-migrate)
-- [ ] Create initial schema migration
-- [ ] Add migration runner to API service
-- [ ] Run migrations on startup or as init container
-
----
-
-### Step 4.3: Add CI/CD for Helm Charts (Optional)
-
-**Status:** [ ] Pending (Optional)
+**Status:** [ ] Pending
 
 **Tasks:**
 
-- [ ] Create GitHub Actions workflow for Helm charts
-- [ ] Lint all charts on PR
-- [ ] Test chart installation with kind
-- [ ] Package and publish charts to registry
+- [ ] Add monitoring and observability:
+  - [ ] Prometheus metrics endpoint
+  - [ ] Structured logging
+  - [ ] Distributed tracing setup
+- [ ] Add operational runbooks:
+  - [ ] Deployment procedures
+  - [ ] Rollback procedures
+  - [ ] Troubleshooting guide
+  - [ ] Incident response procedures
+- [ ] Security hardening:
+  - [ ] Network policies
+  - [ ] Pod security policies/standards
+  - [ ] RBAC configuration
+  - [ ] Secrets encryption at rest
+- [ ] Performance testing:
+  - [ ] Load testing setup
+  - [ ] Performance benchmarks
+  - [ ] Resource optimization
+- [ ] Create `docs/PRODUCTION_READINESS.md`
+
+**Testing:**
+
+- [ ] Load tests pass with acceptable performance
+- [ ] Security scans show no critical issues
+- [ ] All operational procedures documented and tested
 
 ---
 
@@ -674,87 +843,101 @@ CMD ["node", "main.js"]
 
 ### Per-Phase Gates
 
-- [ ] **Phase 0:** Library charts lint successfully, kind cluster deploys
-- [ ] **Phase 1:** Chart generators create valid charts
-- [ ] **Phase 2:** API service deploys and responds to requests
-- [ ] **Phase 3:** All integration tests pass, documentation complete
+- [x] **Phase 0:** Library charts lint successfully, local-env infrastructure works
+- [x] **Phase 1:** Chart generators create valid charts
+- [ ] **Phase 2:** API service builds, runs, and integration tests pass with docker-compose
+- [ ] **Phase 3:** Database migrations work, CRUD operations tested
+- [ ] **Phase 4:** Cloud architecture documented, k8s deployment successful, k8s integration tests pass
 
-### Final Acceptance Criteria
+### Phase 2 Specific Acceptance Criteria
 
-- [ ] Kind cluster runs with all infrastructure
-- [ ] PostgreSQL and Redis accessible from API
+- [ ] Service compiles and builds successfully
+- [ ] Service runs locally and responds to requests
+- [ ] PostgreSQL integration works
+- [ ] Docker image builds successfully
+- [ ] docker-compose.integration.yml brings up all services
+- [ ] Integration test passes (GET /datasets returns data from PostgreSQL)
+- [ ] Integration test is idempotent (can run multiple times)
+- [ ] No manual setup required (automated via docker-compose)
+
+### Final Acceptance Criteria (After Phase 4)
+
+- [ ] API service deployed to k8s cluster
+- [ ] PostgreSQL accessible from API (managed or in-cluster)
 - [ ] Kaggle Data API deployed and accessible via ingress
-- [ ] Health checks passing
-- [ ] Swagger documentation accessible
+- [ ] Health checks passing in k8s
 - [ ] All Helm charts follow library pattern
 - [ ] Documentation is complete and accurate
 - [ ] Can add new service with generator in <5 minutes
+- [ ] K8s integration tests pass in CI/CD
+- [ ] Production readiness checklist complete
 
 ---
 
-## Project Structure (Final State)
+## Project Structure (Current State After Phase 2)
 
 ```
 backend/
 ├── dev-tools/
-│   └── local-env/
+│   └── local-env/          # Kind cluster setup (from Phase 0)
 │       ├── Makefile
 │       ├── README.md
 │       ├── kind-config.yaml
 │       ├── scripts/
-│       │   ├── init-kind.sh
-│       │   ├── init-nginx.sh
-│       │   ├── init-postgres.sh
-│       │   └── init-redis.sh
 │       └── helm-values/
-│           ├── postgres.yaml
-│           └── redis.yaml
-├── helm/
-│   ├── library-charts/
-│   │   ├── service/
-│   │   │   ├── Chart.yaml
-│   │   │   ├── values.yaml
-│   │   │   └── templates/
-│   │   └── job/
-│   │       ├── Chart.yaml
-│   │       ├── values.yaml
-│   │       └── templates/
-│   ├── infrastructure/
-│   │   └── kaggle-data-pvc/
-│   ├── kaggle-data-api/
-│   │   ├── Chart.yaml (depends on service library)
-│   │   ├── values.yaml
-│   │   ├── values-local.yaml
-│   │   └── templates/
-│   │       └── manifest.yaml (includes library)
-│   └── fetch-kaggle/
-│       ├── Chart.yaml (depends on job library)
-│       ├── values.yaml
-│       └── templates/
-│           └── manifest.yaml
+├── infrastructure/
+│   ├── helm/
+│   │   └── library-charts/ # Reusable Helm templates (from Phase 0)
+│   │       ├── common/
+│   │       ├── service/
+│   │       └── job/
+│   ├── config/             # Version management (from Phase 0)
+│   │   ├── versions.yaml
+│   │   └── load-versions.sh
+│   └── local-env/
+│       ├── Makefile
+│       └── tests/          # Infrastructure tests
+├── jobs/
+│   └── fetch-kaggle/       # CronJob with Helm chart (from Phase 1)
+│       └── helm/
+├── services/
+│   └── kaggle-data-api/    # NEW in Phase 2
+│       ├── src/
+│       │   ├── main.ts
+│       │   ├── app/
+│       │   │   └── routes/
+│       │   │       └── datasets.ts
+│       │   └── infrastructure/
+│       │       └── database.ts
+│       ├── tests/
+│       ├── Dockerfile      # NEW: Multi-stage Docker build
+│       ├── .dockerignore   # NEW
+│       └── project.json
+├── tests/
+│   └── integration/        # NEW in Phase 2
+│       ├── kaggle-data-api.test.ts
+│       ├── setup.ts
+│       └── README.md
 ├── scripts/
-│   ├── new-service-chart.sh
-│   └── new-job-chart.sh
-└── services/
-    └── kaggle-data-api/
-        ├── src/
-        ├── tests/
-        ├── Dockerfile
-        └── project.json
+│   ├── new-service-chart.sh  # From Phase 1
+│   └── new-job-chart.sh      # From Phase 1
+└── docker-compose.integration.yml  # NEW in Phase 2
 ```
 
 ---
 
 ## Timeline Summary
 
-| Phase     | Duration      | Focus                            |
-| --------- | ------------- | -------------------------------- |
-| Phase 0   | 2-3 days      | Library charts + local env setup |
-| Phase 1   | 1-2 days      | Chart generators + templates     |
-| Phase 2   | 2-3 days      | API service + deployment         |
-| Phase 3   | 1 day         | Integration + documentation      |
-| Phase 4   | 1-2 days      | Optional enhancements            |
-| **Total** | **7-11 days** | Full local environment + API     |
+| Phase     | Duration     | Focus                                           | K8s Required |
+| --------- | ------------ | ----------------------------------------------- | ------------ |
+| Phase 0   | ✅ Done      | Library charts + local env setup                | Yes          |
+| Phase 1   | ✅ Done      | Chart generators + templates                    | Yes          |
+| Phase 2   | 1-2 days     | API service + PostgreSQL + docker-compose tests | No           |
+| Phase 3   | 1-2 days     | Database migrations + CRUD operations           | No           |
+| Phase 4   | 3-4 days     | Cloud architecture + k8s deployment + k8s tests | Yes          |
+| **Total** | **5-8 days** | **Working API with integration tests**          | Phase 4 only |
+
+**Key Change:** Phases 2-3 can be completed without k8s complexity. K8s work deferred to Phase 4.
 
 ---
 
@@ -768,6 +951,17 @@ backend/
 
 ---
 
+## Status
+
 **Created:** 2025-10-26
-**Status:** Planning Phase
-**Next Step:** Begin Phase 0 - Infrastructure Foundation
+**Last Updated:** 2025-10-26
+**Current Phase:** Phase 2 - Kaggle Data API Service (Simplified)
+**Next Step:** Step 2.1 - Generate Service Skeleton
+
+**Recent Changes:**
+
+- Simplified Phase 2: Removed k8s deployment, focus on docker-compose integration tests
+- Created new Phase 3: Database Migrations & Basic CRUD
+- Created new Phase 4: Cloud Architecture & Kubernetes Deployment (deferred)
+- Integration tests will use docker-compose (postgres + api service)
+- K8s complexity deferred to Phase 4 where we'll design cloud architecture properly
