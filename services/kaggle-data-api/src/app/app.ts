@@ -1,0 +1,73 @@
+import { join } from 'node:path';
+import Fastify, { FastifyInstance } from 'fastify';
+import AutoLoad from '@fastify/autoload';
+// Use Node.js __dirname since we bundle to CommonJS for container runtime
+const baseDir = join(__dirname, 'app');
+
+/* eslint-disable-next-line */
+export interface AppOptions {}
+
+export async function app(fastify: FastifyInstance, opts: AppOptions) {
+  // Place here your custom code!
+
+  // Do not touch the following lines
+
+  // This loads all plugins defined in plugins
+  // those should be support plugins that are reused
+  // through your application
+  fastify.register(AutoLoad, {
+    dir: join(baseDir, 'plugins'),
+    options: { ...opts },
+  });
+
+  // This loads all plugins defined in routes
+  // define your routes in one of these
+  fastify.register(AutoLoad, {
+    dir: join(baseDir, 'routes'),
+    options: { ...opts },
+  });
+}
+
+/**
+ * Build a Fastify instance for testing purposes
+ * Manually registers plugins and routes to avoid AutoLoad .ts file issues in tests
+ */
+export async function build(opts: AppOptions = {}) {
+  const fastify = Fastify({
+    logger: false, // Disable logging in tests
+  });
+
+  // Manually register plugins
+  const sensiblePlugin = await import('./plugins/sensible.js');
+  await fastify.register(sensiblePlugin.default, opts);
+
+  const corsPlugin = await import('./plugins/cors.js');
+  await fastify.register(corsPlugin.default, opts);
+
+  const helmetPlugin = await import('./plugins/helmet.js');
+  await fastify.register(helmetPlugin.default, opts);
+
+  const rateLimitPlugin = await import('./plugins/rate-limit.js');
+  await fastify.register(rateLimitPlugin.default, opts);
+
+  const swaggerPlugin = await import('./plugins/swagger.js');
+  await fastify.register(swaggerPlugin.default, opts);
+
+  // Register database plugin (will be mocked in tests if needed)
+  const databasePlugin = await import('./plugins/database.js');
+  await fastify.register(databasePlugin.default, opts);
+
+  // Manually register routes
+  const rootRoute = await import('./routes/root.js');
+  await fastify.register(rootRoute.default, opts);
+
+  const healthRoute = await import('./routes/health.js');
+  await fastify.register(healthRoute.default, opts);
+
+  const datasetsRoute = await import('./routes/datasets.js');
+  await fastify.register(datasetsRoute.default, opts);
+
+  await fastify.ready();
+
+  return fastify;
+}

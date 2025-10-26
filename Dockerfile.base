@@ -1,0 +1,35 @@
+# Base Docker image for all backend services
+# This image includes Node.js, pnpm, and common dependencies
+# Use this as a base for service-specific Dockerfiles to reduce duplication
+
+FROM node:22-alpine AS base
+
+# Install common system dependencies
+RUN apk add --no-cache \
+    dumb-init \
+    && corepack enable
+
+# Set working directory
+WORKDIR /app
+
+# Configure npm/pnpm settings for better performance
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Add non-root user for services to use
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 fastify
+
+# Default environment variables (can be overridden)
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
+
+# Health check utilities (can be used by services)
+RUN echo '#!/bin/sh\nwget --no-verbose --tries=1 --spider http://localhost:${PORT:-3000}/health/live || exit 1' > /usr/local/bin/healthcheck.sh && \
+    chmod +x /usr/local/bin/healthcheck.sh
+
+# Labels for metadata
+LABEL maintainer="super-zol-team"
+LABEL description="Base image for Super Zol backend services"
+LABEL org.opencontainers.image.source="https://github.com/M4xP4s/super-zol-backend"

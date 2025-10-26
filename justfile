@@ -20,13 +20,21 @@ lint:
 typecheck:
     pnpm exec tsc --noEmit
 
-# Run all tests
+# Run all unit tests
 test:
     pnpm nx run-many -t test
 
 # Run tests with coverage
 test-coverage:
     pnpm nx run-many -t test --coverage
+
+# Run integration tests (uses docker-compose)
+test-integration:
+    @bash ./scripts/run-integration-tests.sh
+
+# Run integration tests in CI mode
+test-integration-ci:
+    CI=true pnpm vitest run --config vitest.integration.config.ts
 
 # Build all projects
 build:
@@ -49,13 +57,9 @@ clean:
 clean-all: clean
     rm -rf node_modules pnpm-lock.yaml
 
-# Start API gateway service
+# Start API service
 serve-api:
-    pnpm nx serve api-gateway
-
-# Start worker service
-serve-worker:
-    pnpm nx serve worker
+    pnpm nx serve kaggle-data-api
 
 # Start all services
 serve-all:
@@ -93,25 +97,31 @@ gen-lib name:
 gen-job name:
     @./scripts/gen-job.sh {{name}}
 
-# Start local infrastructure (database, redis, etc.)
+# Start local Kubernetes infrastructure
 infra-up:
-    docker compose up -d
+    @echo "Starting local Kubernetes infrastructure..."
+    @echo "Use: cd infrastructure/local-env && make deploy-all"
+    @echo "Or deploy specific services as needed"
 
-# Stop local infrastructure
+# Stop local infrastructure (cleanup Kind cluster)
 infra-down:
-    docker compose down
+    @echo "To stop Kind cluster: kind delete cluster --name super-zol"
 
-# View infrastructure logs
-infra-logs:
-    docker compose logs -f
+# View Kubernetes pod logs
+infra-logs service:
+    kubectl logs -n super-zol -l app={{service}} --tail=100 -f
 
 # Setup development environment
-dev-setup: install infra-up
-    cp .env.example .env
+dev-setup: install
+    @echo "Installing dependencies..."
+    @echo "For Kubernetes setup, see infrastructure/local-env/README.md"
     @echo "Development environment ready!"
 
-# CI pipeline
+# CI pipeline (unit tests only)
 ci: affected-lint affected-test affected-build
+
+# CI pipeline with integration tests
+ci-full: ci test-integration-ci
 
 # Bundle a specific service for deployment
 bundle service:

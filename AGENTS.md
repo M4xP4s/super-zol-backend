@@ -3,14 +3,14 @@
 ## Project Structure & Module Organization
 
 - Monorepo managed by Nx; Node.js 22 + pnpm 10.
-- Services live in `services/` (e.g., `api-gateway`, `worker`); shared code in `libs/`; scheduled tasks in `jobs/`; generators and utilities in `scripts/`; docs in `docs/`.
+- Services live in `services/` (e.g., `kaggle-data-api`); shared code in `libs/`; scheduled tasks in `jobs/`; generators and utilities in `scripts/`; docs in `docs/`.
 - Each project follows: `src/`, `tests/`, `project.json`, `tsconfig.*`, `vitest.config.ts`.
 - Path aliases: `@services/*`, `@libs/*`, `@packages/*` (see `tsconfig.base.json`).
 
 ## Build, Test, and Development Commands
 
 - Setup: `pnpm install` then `cp .env.example .env` and optionally `just infra-up` (or `docker compose up -d`).
-- Run all services: `pnpm dev`; specific: `pnpm nx serve api-gateway` or `pnpm nx serve worker`.
+- Run all services: `pnpm dev`; specific: `pnpm nx serve kaggle-data-api`.
 - Build: `pnpm build` (all) or `pnpm nx build <project>`; prod: `pnpm nx build <project> --configuration=production`.
 - Quality: `pnpm lint`, `pnpm test`, `pnpm format`, affected-only: `pnpm affected:test|build|lint`.
 - Just (optional): `just check`, `just serve-api`, `just test-coverage`, `just graph`.

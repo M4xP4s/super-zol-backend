@@ -16,7 +16,7 @@ kubernetes:
 # Bitnami Helm Charts
 bitnami:
   postgresql:
-    chart_version: 15.5.38 # PostgreSQL 16.x
+    chart_version: 16.2.1 # PostgreSQL 16.x
     description: Production-ready PostgreSQL with replication support
 
   redis:

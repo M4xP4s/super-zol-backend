@@ -9,6 +9,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Integration tests via Docker Compose for `kaggle-data-api`
+  - `docker-compose.integration.yml` orchestrates Postgres + service image
+  - New runner script `scripts/run-integration-tests.sh` (Compose v2 aware, robust health waits)
+  - SQL migrations added for Compose runs: `001-create-datasets-table.sql`, `002-seed-mock-data.sql`
+  - Documentation: `docs/INTEGRATION-TESTS-DOCKER-COMPOSE.md`
+
+### Changed
+
+- Container runtime bundling stabilized (CommonJS target)
+  - Switch service bundle to CJS, adjust app autoload base dir
+  - Disable Swagger UI in bundled runtime; provide `/docs` JSON placeholder
+  - Align service env to `DB_*` and bind `HOST=0.0.0.0`
+  - Update CI workflow to run Compose-based integration tests
+
+#### Phase 2: Kaggle Data API Service (2025-10-26)
+
+Complete Fastify-based RESTful API service for Kaggle dataset access:
+
+- **kaggle-data-api Service** - Production-ready API with comprehensive features
+  - RESTful endpoints for API info and health checks
+  - Fastify 4.x with AutoLoad for plugins and routes
+  - Environment-aware CORS configuration (strict in production, permissive in development)
+  - Rate limiting (100 req/min production, 1000 req/min development)
+  - Security headers via @fastify/helmet (XSS, Frame Options, Content-Type-Options)
+  - OpenAPI/Swagger documentation at `/docs`
+  - Comprehensive health check system:
+    - `/health` - Basic health status
+    - `/health/live` - Liveness probe for Kubernetes
+    - `/health/ready` - Readiness probe with database/redis checks
+
+- **Testing Infrastructure** - Organized, comprehensive test suite
+  - 23 tests across 8 test suites covering all functionality
+  - Modular test organization: routes, plugins, security, errors, swagger
+  - Coverage: 94.67% statements, 81.25% branches, 87.5% functions
+  - Tests for error handling (404s, invalid methods, security headers)
+  - CORS preflight request validation
+  - Rate limit header verification
+
+- **Docker Configuration** - Optimized containerization
+  - Multi-stage Dockerfile with bundling enabled
+  - All dependencies bundled in main.js (no runtime path resolution issues)
+  - Non-root user (UID 1001) for security
+  - Wget-based health check for Kubernetes probes
+  - Minimal Alpine-based image (~200MB)
+
+- **Helm Chart** - Kubernetes deployment ready
+  - Uses library chart pattern from Phase 0
+  - Configured health probes (liveness, readiness, startup)
+  - Resource limits: 500m CPU / 512Mi memory
+  - Autoscaling support (disabled by default)
+  - Environment-specific values files (local, dev, production)
+
+- **Documentation**
+  - `DEPENDENCY_VERSIONS.md` - Explains Fastify 4.x plugin compatibility
+  - Inline code comments documenting configuration choices
+  - README with installation and usage instructions
+
+**Plugin Architecture:**
+
+- `@fastify/cors` (v9.0.1) - Environment-aware CORS with origin restrictions
+- `@fastify/helmet` (v11.1.1) - Security headers (XSS, frame options, etc.)
+- `@fastify/rate-limit` (v9.1.0) - API abuse protection with rate limiting
+- `@fastify/sensible` (v5.2.0) - Useful utilities and error handling
+- `@fastify/swagger` (v8.0.0) - OpenAPI specification generation
+- `@fastify/swagger-ui` (v3.0.0) - Interactive API documentation
+
+**Quality Metrics:**
+
+- 23/23 tests passing
+- 94.67% statement coverage (above 90% threshold)
+- Zero TypeScript errors
+- Helm chart passes `helm lint`
+- Docker image builds successfully
+- All CI checks passing
+
+**Security Features:**
+
+- Environment-aware CORS (production requires explicit origin whitelist)
+- Rate limiting to prevent API abuse
+- Security headers via Helmet (XSS, clickjacking protection)
+- Non-root container user
+- No unused dependencies (removed ioredis, pg)
+
 - Add `TECH_STACK.md` documenting the full repository tech stack
 - Expanded `TECH_STACK.md` with Methodologies & Practices (TDD, Hexagonal architecture, quality gates)
 - Helm chart generator scripts:
@@ -166,3 +249,8 @@ The road ahead includes:
 - Scheduling and job orchestration
 - Monitoring and observability
 - Production deployment configuration
+
+### Removed
+
+- Removed temporary mock services `api-gateway` and `worker`
+- Purged all references from configs, docs, and scripts

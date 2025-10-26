@@ -1,0 +1,6 @@
+{{/* Render standard service resources from library */}}
+{{ include "service.secret" . }}
+{{ include "service.configmap" . }}
+{{ include "service.deployment" . }}
+{{ include "service.service" . }}
+{{ include "service.ingress" . }}

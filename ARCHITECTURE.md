@@ -76,7 +76,7 @@ References workspace projects:
 {
   "extends": "./tsconfig.base.json",
   "files": [],
-  "references": [{ "path": "./services/api-gateway" }, { "path": "./libs/shared-util" }]
+  "references": [{ "path": "./services/kaggle-data-api" }, { "path": "./libs/shared-util" }]
 }
 ```
 
@@ -316,7 +316,7 @@ echo "✅ All pre-push checks passed!"
 **Why affected only?**
 
 - If you changed `libs/shared-util`, Nx tests all projects that depend on it
-- If you changed `services/api-gateway`, Nx only tests that service
+- If you changed `services/kaggle-data-api`, Nx only tests that service
 - Much faster than testing everything every time
 
 ### 3. Commit Message Hook (Conventional Commits)
@@ -354,7 +354,7 @@ fi
 
 ```bash
 ✅ feat(api): add user authentication endpoint
-✅ fix(worker): resolve memory leak in job processor
+✅ fix(kaggle-data-api): resolve memory leak in job processor
 ✅ docs: update README with setup instructions
 ✅ refactor(shared): simplify utility functions
 ✅ test(api): add integration tests for auth flow

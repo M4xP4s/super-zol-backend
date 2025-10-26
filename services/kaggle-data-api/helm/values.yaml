@@ -1,0 +1,81 @@
+# Base values for service chart
+
+replicaCount: 1
+
+image:
+  repository: kaggle-data-api
+  pullPolicy: IfNotPresent
+  tag: 'local'
+
+serviceAccount:
+  create: true
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: service.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+env: []
+envFrom: []
+
+configMap:
+  enabled: false
+  data: {}
+
+secrets:
+  enabled: false
+  data: {}
+
+volumeMounts: []
+volumes: []
+
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /health/live
+    port: 3000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /health/ready
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /health/live
+    port: 3000
+  failureThreshold: 30
+  periodSeconds: 10
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80

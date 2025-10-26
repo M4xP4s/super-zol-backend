@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+*.log
+.nx
+.git
+.github
+.vscode
+.idea
+*.md
+Dockerfile
+.dockerignore
+tests
+vitest.config.ts
+.cache
+tmp
