@@ -15,21 +15,6 @@ jobs:
     name: integration-tests
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,59 +33,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build kaggle-data-api service
-        run: pnpm nx build kaggle-data-api
-
-      - name: Apply database migrations
-        working-directory: services/kaggle-data-api
-        env:
-          PGHOST: localhost
-          PGPORT: 5432
-          PGDATABASE: test_db
-          PGUSER: test_user
-          PGPASSWORD: test_password
-        run: |
-          # Install postgresql-client for psql
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-          # Run migrations
-          for migration in helm/migrations/*.sql; do
-            echo "Running migration: $migration"
-            psql -f "$migration"
-          done
-
-      - name: Start API service in background
-        working-directory: dist/services/kaggle-data-api
-        env:
-          PORT: 3001
-          PGHOST: localhost
-          PGPORT: 5432
-          PGDATABASE: test_db
-          PGUSER: test_user
-          PGPASSWORD: test_password
-          LOG_LEVEL: info
-        run: |
-          node main.js &
-          echo "API_PID=$!" >> $GITHUB_ENV
-
-          # Wait for API to be ready
-          timeout 30 bash -c 'until curl -f http://localhost:3001/health/live; do sleep 1; done'
-
-      - name: Run integration tests
-        env:
-          CI: true
-          API_BASE_URL: http://localhost:3001
-          PGHOST: localhost
-          PGPORT: 5432
-          PGDATABASE: test_db
-          PGUSER: test_user
-          PGPASSWORD: test_password
-        run: just test-integration-ci
-
-      - name: Stop API service
-        if: always()
-        run: |
-          if [ -n "$API_PID" ]; then
-            kill $API_PID || true
-          fi
+      - name: Run Docker Compose integration tests
+        run: ./scripts/run-integration-tests.sh

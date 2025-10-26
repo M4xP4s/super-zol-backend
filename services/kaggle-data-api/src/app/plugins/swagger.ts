@@ -27,15 +27,27 @@ async function swaggerPlugin(fastify: FastifyInstance) {
       ],
     },
   });
-
-  await fastify.register(swaggerUi, {
-    routePrefix: '/docs',
-    uiConfig: {
-      docExpansion: 'list',
-      deepLinking: false,
-    },
-    staticCSP: true,
-  });
+  const disableUi =
+    process.env['DISABLE_SWAGGER_UI'] === 'true' ||
+    process.env['BUNDLE_RUNTIME'] === 'true' ||
+    process.env['NODE_ENV'] === 'production';
+  if (disableUi) {
+    fastify.get('/docs', async () => {
+      return {
+        message: 'Swagger UI disabled in this build',
+        json: '/json',
+      };
+    });
+  } else {
+    await fastify.register(swaggerUi, {
+      routePrefix: '/docs',
+      uiConfig: {
+        docExpansion: 'list',
+        deepLinking: false,
+      },
+      staticCSP: true,
+    });
+  }
 }
 
 export default fastifyPlugin(swaggerPlugin);

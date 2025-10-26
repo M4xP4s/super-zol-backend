@@ -12,7 +12,7 @@
       "options": {
         "platform": "node",
         "outputPath": "dist/services/kaggle-data-api",
-        "format": ["esm"],
+        "format": ["cjs"],
         "bundle": true,
         "thirdParty": true,
         "main": "services/kaggle-data-api/src/main.ts",
@@ -36,7 +36,8 @@
           "sourcemap": true,
           "outExtension": {
             ".js": ".js"
-          }
+          },
+          "target": "node22"
         }
       },
       "configurations": {

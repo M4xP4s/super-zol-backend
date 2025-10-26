@@ -63,6 +63,7 @@ export default async function (fastify: FastifyInstance) {
             type: 'object',
             properties: {
               status: { type: 'string' },
+              database: { type: 'string' },
               checks: {
                 type: 'object',
                 properties: {
@@ -75,6 +76,7 @@ export default async function (fastify: FastifyInstance) {
             type: 'object',
             properties: {
               status: { type: 'string' },
+              database: { type: 'string' },
               checks: {
                 type: 'object',
                 properties: {
@@ -101,6 +103,7 @@ export default async function (fastify: FastifyInstance) {
         fastify.log.warn({ err: error }, 'Database health check failed');
         return reply.code(503).send({
           status: 'not_ready',
+          database: checks.database,
           checks,
           error: 'Database connectivity check failed',
         });
@@ -109,6 +112,7 @@ export default async function (fastify: FastifyInstance) {
       // All checks passed
       return {
         status: 'ready',
+        database: checks.database,
         checks,
       };
     }

@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Integration tests via Docker Compose for `kaggle-data-api`
+  - `docker-compose.integration.yml` orchestrates Postgres + service image
+  - New runner script `scripts/run-integration-tests.sh` (Compose v2 aware, robust health waits)
+  - SQL migrations added for Compose runs: `001-create-datasets-table.sql`, `002-seed-mock-data.sql`
+  - Documentation: `docs/INTEGRATION-TESTS-DOCKER-COMPOSE.md`
+
+### Changed
+
+- Container runtime bundling stabilized (CommonJS target)
+  - Switch service bundle to CJS, adjust app autoload base dir
+  - Disable Swagger UI in bundled runtime; provide `/docs` JSON placeholder
+  - Align service env to `DB_*` and bind `HOST=0.0.0.0`
+  - Update CI workflow to run Compose-based integration tests
+
 #### Phase 2: Kaggle Data API Service (2025-10-26)
 
 Complete Fastify-based RESTful API service for Kaggle dataset access:

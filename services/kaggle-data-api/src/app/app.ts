@@ -1,9 +1,8 @@
 import { join } from 'node:path';
 import Fastify, { FastifyInstance } from 'fastify';
 import AutoLoad from '@fastify/autoload';
-import { getDirname } from '@libs/shared-util';
-
-const __dirname = getDirname(import.meta.url);
+// Use Node.js __dirname since we bundle to CommonJS for container runtime
+const baseDir = join(__dirname, 'app');
 
 /* eslint-disable-next-line */
 export interface AppOptions {}
@@ -17,14 +16,14 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   // those should be support plugins that are reused
   // through your application
   fastify.register(AutoLoad, {
-    dir: join(__dirname, 'plugins'),
+    dir: join(baseDir, 'plugins'),
     options: { ...opts },
   });
 
   // This loads all plugins defined in routes
   // define your routes in one of these
   fastify.register(AutoLoad, {
-    dir: join(__dirname, 'routes'),
+    dir: join(baseDir, 'routes'),
     options: { ...opts },
   });
 }
