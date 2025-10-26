@@ -44,3 +44,10 @@ pids/
 
 # Job data (generated/downloaded)
 jobs/fetch-kaggle/data/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd

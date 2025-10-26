@@ -1,0 +1,14 @@
+apiVersion: v2
+name: kaggle-data-pvc
+description: Persistent Volume Claim for shared Kaggle dataset storage
+type: application
+version: 0.1.0
+appVersion: '1.0'
+keywords:
+  - storage
+  - pvc
+  - kaggle
+  - data
+maintainers:
+  - name: Super Zol Team
+home: https://github.com/yourusername/super-zol

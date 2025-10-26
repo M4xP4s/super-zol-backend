@@ -1,0 +1,33 @@
+# PostgreSQL configuration for local development
+
+auth:
+  username: superzol
+  password: dev-password-change-in-production
+  database: superzol
+
+primary:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: standard
+
+  # Enable access from other services
+  service:
+    type: ClusterIP
+    ports:
+      postgresql: 5432
+
+# Security context
+volumePermissions:
+  enabled: true
+
+metrics:
+  enabled: false # Disable for local dev

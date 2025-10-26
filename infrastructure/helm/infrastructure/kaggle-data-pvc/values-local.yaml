@@ -1,0 +1,22 @@
+# Values for local development (kind cluster)
+
+storage:
+  # Kind uses standard storage class by default
+  storageClassName: standard
+
+  # For local dev, ReadWriteOnce is often sufficient
+  # But we use ReadWriteMany to match production behavior
+  accessMode: ReadWriteMany
+
+  # Smaller size for local development
+  size: 5Gi
+
+# Labels for local environment
+labels:
+  app: kaggle-data
+  component: storage
+  managed-by: helm
+  environment: local
+
+annotations:
+  description: 'Local development storage for Kaggle datasets'

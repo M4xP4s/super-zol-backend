@@ -4,3 +4,4 @@ build
 coverage
 .nx
 pnpm-lock.yaml
+infrastructure/helm/**/templates/**
