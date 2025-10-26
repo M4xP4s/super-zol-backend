@@ -122,6 +122,49 @@ just test-coverage
 pnpm nx affected -t test --base=origin/main
 ```
 
+### Integration Testing Commands
+
+Integration tests run against real services provisioned with docker-compose (PostgreSQL, API service, etc.).
+
+**Recommended approach** - One command that handles setup, test, and cleanup:
+
+```bash
+# Complete integration test cycle (setup → test → teardown)
+just integ-test-full
+```
+
+**Manual workflow** - For iterative development:
+
+```bash
+# Start integration test services (PostgreSQL + kaggle-data-api)
+just integ-setup
+
+# Run tests against running services
+just test-integration
+
+# Or watch mode while developing
+just test-integration-watch
+
+# View service logs
+just integ-logs
+
+# Stop services when done
+just integ-down
+```
+
+**Available integration test commands**:
+
+| Command                       | Purpose                                                      |
+| ----------------------------- | ------------------------------------------------------------ |
+| `just integ-test-full`        | Complete cycle: setup → test → teardown (recommended for CI) |
+| `just integ-setup`            | Start services only (for manual testing)                     |
+| `just integ-down`             | Stop services                                                |
+| `just integ-logs`             | Stream live logs                                             |
+| `just test-integration`       | Run tests (requires services running)                        |
+| `just test-integration-watch` | Run tests in watch mode                                      |
+
+See [tests/integration/README.md](tests/integration/README.md) for detailed integration testing guide.
+
 ### Building
 
 ```bash

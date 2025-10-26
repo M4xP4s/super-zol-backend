@@ -54,6 +54,7 @@
   "dependencies": {
     "@fastify/autoload": "~5.7.1",
     "@fastify/sensible": "~5.2.0",
+    "@types/pg": "^8.15.5",
     "axios": "^1.6.0",
     "chalk": "^5.6.2",
     "commander": "^14.0.1",
@@ -62,7 +63,10 @@
     "execa": "^9.6.0",
     "fastify": "~4.13.0",
     "fastify-plugin": "~4.5.0",
+    "pg": "^8.16.3",
     "tslib": "^2.3.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "yaml": "^2.8.1",
     "zod": "^4.1.12"
   }
 }

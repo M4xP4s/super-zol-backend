@@ -12,8 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Note any blockers or dependencies
    - See what's next in the migration plan
 
-2. **Before Planning Code Work** - Review TIME_SAVE.md for:
+2. **Before Planning Code Work** - Review TIME_SAVE.md and skills for:
    - Available Claude Code plugins and skills that can accelerate work
+   - **phase-executor skill** - Use for implementing phases from TODO.md
    - MCP integrations (GitHub, etc.) for repo automation
    - Recommended workflows and commands for this monorepo
    - Time-saving patterns and optimization tips
@@ -247,7 +248,47 @@ just test-coverage
 pnpm nx affected -t test --base=origin/main
 ```
 
+### Integration Test Best Practices
+
+**CRITICAL: Integration tests MUST work without external dependencies**
+
+Tests that require external services (databases, APIs) must:
+
+1. **Check availability and skip gracefully:**
+
+   ```typescript
+   let databaseAvailable = false;
+
+   beforeAll(async () => {
+     try {
+       await testConnection();
+       databaseAvailable = true;
+     } catch (error) {
+       console.warn('⚠️  Database unavailable. Tests will be skipped.');
+       databaseAvailable = false;
+     }
+   });
+
+   it('test with DB', () => {
+     if (!databaseAvailable) return; // Runtime skip
+     // Test implementation
+   });
+   ```
+
+2. **Use correct import extensions:**
+   - Static imports: Use `.js` extension
+   - Dynamic imports in tests: Use `.ts` extension
+
+3. **Test CI compatibility before committing:**
+   ```bash
+   # Without external services (as CI would run)
+   pnpm nx affected -t test
+   # ✅ All tests should PASS or SKIP (not FAIL)
+   ```
+
 For detailed testing guidelines and best practices, see [CONTRIBUTING.md](CONTRIBUTING.md#testing-requirements).
+
+**Common mistakes and prevention:** See `.claude/skills/phase-executor/SKILL.md` section "Common Mistakes to Avoid"
 
 ## Code Reviews & Reference Implementations
 

@@ -28,6 +28,41 @@ test:
 test-coverage:
     pnpm nx run-many -t test --coverage
 
+# Run integration tests (assumes services are running)
+test-integration:
+    pnpm exec vitest tests/integration --run
+
+# Run integration tests with watch mode
+test-integration-watch:
+    pnpm exec vitest tests/integration
+
+# Start integration test services (PostgreSQL + kaggle-data-api)
+integ-setup:
+    docker-compose -f docker-compose.integration.yml up -d
+    @echo "⏳ Waiting for services to be healthy..."
+    @sleep 2
+    @docker-compose -f docker-compose.integration.yml ps
+
+# Stop integration test services
+integ-down:
+    docker-compose -f docker-compose.integration.yml down
+
+# View integration test service logs
+integ-logs:
+    docker-compose -f docker-compose.integration.yml logs -f
+
+# Run full integration test cycle: setup → test → teardown
+integ-test-full:
+    @echo "🚀 Starting integration test services..."
+    @docker-compose -f docker-compose.integration.yml up -d
+    @echo "⏳ Waiting for services to be healthy..."
+    @sleep 3
+    @echo "🧪 Running integration tests..."
+    @pnpm exec vitest tests/integration --run; TEST_RESULT=$$?
+    @echo "🧹 Cleaning up services..."
+    @docker-compose -f docker-compose.integration.yml down
+    @exit $$TEST_RESULT
+
 # Build all projects
 build:
     pnpm nx run-many -t build
@@ -113,10 +148,25 @@ dev-setup: install infra-up
 # CI pipeline
 ci: affected-lint affected-test affected-build
 
-# Bundle a specific service for deployment
+# Bundle a specific service/job with Docker image build
+# Usage: just bundle kaggle-data-api
 bundle service:
+    @./scripts/bundle-docker.sh {{service}}
+
+# Build and compile a service without Docker (esbuild only)
+# Usage: just bundle-esbuild kaggle-data-api
+bundle-esbuild service:
     pnpm nx build {{service}} --configuration=production
-    @echo "Bundle created in dist/services/{{service}}"
+    @echo "✅ Bundle created: dist/services/{{service}}"
+
+# Bundle all services with Docker images
+bundle-all:
+    @for service in api-gateway kaggle-data-api worker; do \
+        echo ""; \
+        ./scripts/bundle-docker.sh $$service; \
+    done
+    @echo ""
+    @echo "✅ All services bundled successfully"
 
 # Run a specific project's tests
 test-project project:

@@ -1,0 +1,110 @@
+{
+  "name": "kaggle-data-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "services/kaggle-data-api/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/services/kaggle-data-api",
+        "format": ["cjs"],
+        "bundle": false,
+        "main": "services/kaggle-data-api/src/main.ts",
+        "tsConfig": "services/kaggle-data-api/tsconfig.app.json",
+        "assets": ["services/kaggle-data-api/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "kaggle-data-api:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "kaggle-data-api:build:development"
+        },
+        "production": {
+          "buildTarget": "kaggle-data-api:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{projectRoot}/coverage"],
+      "options": {
+        "config": "services/kaggle-data-api/vitest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "bundle": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/services/kaggle-data-api",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "services/kaggle-data-api/src/main.ts",
+        "tsConfig": "services/kaggle-data-api/tsconfig.app.json",
+        "assets": ["services/kaggle-data-api/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": false,
+          "outExtension": {
+            ".js": ".js"
+          },
+          "minify": true
+        }
+      },
+      "configurations": {
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            },
+            "minify": true
+          }
+        }
+      }
+    },
+    "docker": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "docker build -f services/kaggle-data-api/Dockerfile -t kaggle-data-api:latest --build-arg NODE_ENV=production ."
+          }
+        ]
+      },
+      "dependsOn": ["bundle"]
+    }
+  }
+}

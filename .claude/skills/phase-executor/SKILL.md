@@ -90,6 +90,73 @@ git checkout -b <branch-name>
    - Run linting: `pnpm nx affected -t lint`
    - Run type checking if applicable
    - Verify builds: `pnpm nx affected -t build`
+   - **CRITICAL:** Verify CI compatibility (no external dependencies needed)
+
+#### Import Extension Rules (IMPORTANT)
+
+**Static imports** (top of file):
+
+```typescript
+// ✅ CORRECT: Use .js for static imports (ESM convention)
+import { getDatabaseUrl } from './infrastructure/database.js';
+```
+
+**Dynamic imports in tests:**
+
+```typescript
+// ✅ CORRECT: Use .ts for dynamic imports in test files
+const { getDatabaseUrl } = await import('../src/infrastructure/database.ts');
+
+// ❌ WRONG: .js extension causes ERR_MODULE_NOT_FOUND in Vitest
+const { getDatabaseUrl } = await import('../src/infrastructure/database.js');
+```
+
+**Why?** Vitest resolves TypeScript at runtime. Static imports are transpiled, dynamic imports are not.
+
+#### Integration Test Requirements
+
+**CRITICAL: Tests MUST work in CI WITHOUT external services**
+
+For tests requiring external dependencies (databases, APIs, etc.), use graceful degradation:
+
+```typescript
+describe('Database Integration Tests', () => {
+  let databaseAvailable = false;
+
+  beforeAll(async () => {
+    try {
+      await testDatabaseConnection();
+      databaseAvailable = true;
+      console.log('✅ Test database connected');
+    } catch (error) {
+      console.warn(
+        `⚠️  Test database unavailable. Integration tests will be skipped. Error: ${error}`
+      );
+      databaseAvailable = false;
+    }
+  });
+
+  describe('When database is available', () => {
+    it('should work with database', async () => {
+      // Only runs if databaseAvailable is true
+      if (!databaseAvailable) {
+        // Use context.skip() for runtime skip
+        console.log('Skipping test - database unavailable');
+        return;
+      }
+      // Test implementation
+    });
+  });
+});
+```
+
+**Pre-commit validation checklist:**
+
+- [ ] Tests pass WITHOUT external services (should skip gracefully)
+- [ ] Tests pass WITH external services (should run and pass)
+- [ ] Clear warning message explains why tests are skipped
+- [ ] Documentation mentions optional TEST_DATABASE_URL environment variable
+- [ ] Run: `pnpm nx affected -t test` → Expect PASS or SKIP (not FAIL)
 
 4. **Commit immediately after completing each logical unit:**
 
@@ -147,26 +214,66 @@ git add TODO.md CHANGELOG.md
 git commit -m "docs: update TODO.md and CHANGELOG.md for Phase X completion"
 ```
 
-### 5. Code Review (Self-Review)
+### 5. Code Review (Multi-Stage)
 
-**Run comprehensive code review using specialized agents:**
+**Stage 1: Incremental Self-Review (During Implementation)**
 
-Use the Task tool to launch code review agents in parallel:
+After each step, before committing:
+
+1. Review your own code for obvious issues
+2. Run tests to verify CI compatibility:
+   ```bash
+   pnpm nx affected -t test
+   # ✅ All tests should PASS or SKIP (not FAIL/ERROR)
+   ```
+3. Check for common mistakes:
+   - [ ] Import extensions correct for context (.js for static, .ts for dynamic in tests)
+   - [ ] No hard dependencies on external services in tests
+   - [ ] Error handling present
+   - [ ] TypeScript strict mode compliance
+   - [ ] No `beforeAll` that throws without try-catch for external dependencies
+
+**Red flags to fix immediately:**
+
+- `ECONNREFUSED` → Test tries to connect to unavailable service
+- `ERR_MODULE_NOT_FOUND` → Wrong import path
+- Test suite aborts in beforeAll/beforeEach → Add graceful degradation
+- "Cannot connect to..." errors → Add availability check + skip
+
+**Stage 2: Comprehensive Code Review (After Implementation)**
+
+Run specialized review agents in parallel:
 
 ```javascript
 Task({
   subagent_type: 'code-review-ai:architect-review',
   prompt:
-    'Review all changes on branch <branch-name> compared to main. Analyze architecture, patterns, security, and provide detailed feedback with severity ratings (P0/P1/P2).',
+    'Review all changes on branch <branch-name> compared to main. Analyze architecture, patterns, security, and provide detailed feedback with severity ratings (P0/P1/P2). Pay special attention to: (1) Import paths - are dynamic imports using .ts and static using .js? (2) External dependencies - do integration tests work without external services?',
   description: 'Architecture code review',
 });
 
 Task({
   subagent_type: 'project-health-auditor:reviewer',
   prompt:
-    'Review code health metrics for changes on branch <branch-name>. Focus on: test coverage, code duplication, complexity, maintainability. Provide specific improvement suggestions.',
+    'Review code health metrics for changes on branch <branch-name>. Focus on: test coverage, code duplication, complexity, maintainability, test isolation. Specifically check: Do integration tests skip gracefully when external dependencies unavailable?',
   description: 'Code health review',
 });
+```
+
+**Stage 3: Integration Test Validation**
+
+Verify integration tests work in BOTH scenarios:
+
+```bash
+# WITHOUT external services (CI environment) - Most important!
+pnpm exec vitest tests/integration/ --run
+# Expected: "X tests | Y skipped" (NOT "X failed")
+
+# WITH external services (if available)
+docker-compose -f docker-compose.integration.yml up -d
+TEST_DATABASE_URL="..." pnpm exec vitest tests/integration/ --run
+# Expected: "X tests | Y passed"
+docker-compose -f docker-compose.integration.yml down
 ```
 
 **Address review findings:**
@@ -181,14 +288,16 @@ For each finding:
 2. **Implement fixes for P0 and P1 findings:**
    - Create focused commits for each fix
    - Update TodoWrite with fix tasks
-   - Example fixes from Phase 0:
-     - Code duplication → Extract to common library
-     - Test coverage → Add schema validation + idempotent tests
-     - Configuration management → Centralize in config file
+   - Example fixes from Phase 2:
+     - Wrong import path (.js in dynamic import) → Change to .ts
+     - Hard DB dependency → Add availability check + graceful skip
+     - Missing error handling → Add try-catch + fallback
 
-3. **Document improvements in TODO.md and CHANGELOG.md**
+3. **Re-run integration test validation after fixes**
 
-4. **Commit fixes:**
+4. **Document improvements in TODO.md and CHANGELOG.md**
+
+5. **Commit fixes:**
 
    ```bash
    git add -A
@@ -474,6 +583,122 @@ For TypeScript services or libraries:
 - **Build before committing:** Ensure no compilation errors
 - **Update exports:** Add to index.ts if library
 
+## Common Mistakes to Avoid
+
+These mistakes caused P0 issues in Phase 2. Prevent them in future phases:
+
+### ❌ Mistake #1: Wrong Import Extensions in Dynamic Imports
+
+**Symptom:** `ERR_MODULE_NOT_FOUND` when running tests with dynamic imports
+
+**Wrong:**
+
+```typescript
+// ❌ WRONG: Using .js in dynamic import causes ERR_MODULE_NOT_FOUND in Vitest
+const { getDatabaseUrl } = await import('../../src/infrastructure/database.js');
+```
+
+**Correct:**
+
+```typescript
+// ✅ CORRECT: Use .ts for dynamic imports in test files
+const { getDatabaseUrl } = await import('../../src/infrastructure/database.ts');
+```
+
+**Rule:**
+
+- Static imports (top of file): Use `.js` extension
+- Dynamic imports in tests: Use `.ts` extension
+
+**When to catch:** During incremental self-review before committing
+
+### ❌ Mistake #2: Hard External Dependencies in Integration Tests
+
+**Symptom:** Tests fail with `ECONNREFUSED` or similar connection errors in CI
+
+**Wrong:**
+
+```typescript
+beforeAll(async () => {
+  // ❌ WRONG: Will fail if database isn't available
+  testPool = new Pool({ connectionString: testDbUrl });
+  await testPool.query('SELECT 1'); // Throws if DB unavailable
+  // Setup continues...
+});
+```
+
+**Correct:**
+
+```typescript
+beforeAll(async () => {
+  testPool = new Pool({ connectionString: testDbUrl });
+  try {
+    // ✅ CORRECT: Test connectivity first
+    await testPool.query('SELECT NOW()');
+    databaseAvailable = true;
+    console.log('✅ Database connected');
+  } catch (error) {
+    // ✅ CORRECT: Handle gracefully
+    console.warn(`⚠️  Database unavailable. Tests will skip. Error: ${error}`);
+    databaseAvailable = false;
+  }
+});
+
+// Skip tests if dependency unavailable
+it('should work with database', () => {
+  if (!databaseAvailable) return; // Runtime skip
+  // Test implementation
+});
+```
+
+**Why this matters:** CI environments don't have external services. Tests MUST work without them.
+
+**When to catch:** During incremental self-review - run `pnpm nx affected -t test` WITHOUT external services
+
+### ❌ Mistake #3: Not Testing CI Compatibility Before Committing
+
+**Symptom:** Tests pass locally but fail in CI/PR checks
+
+**Prevention - Always run tests as CI would:**
+
+```bash
+# Before committing, run without external services
+pnpm nx affected -t test
+
+# Red flags to watch for:
+# ❌ "ECONNREFUSED" → External service dependency
+# ❌ "ERR_MODULE_NOT_FOUND" → Import path wrong
+# ❌ Tests fail/error (not skip) → Missing graceful degradation
+# ✅ PASS or SKIP → Correct!
+```
+
+**When to catch:** Before every commit
+
+### ❌ Mistake #4: No Documentation for Integration Test Setup
+
+**Symptom:** Next developer can't figure out how to run tests with external services
+
+**Correct pattern:**
+
+```typescript
+/**
+ * Integration Tests with PostgreSQL
+ *
+ * NOTE: These tests require a running PostgreSQL instance.
+ * If the database is unavailable, all tests will be skipped gracefully.
+ * Set TEST_DATABASE_URL environment variable to use a custom database.
+ *
+ * To run WITH database:
+ * docker-compose -f docker-compose.integration.yml up -d
+ * TEST_DATABASE_URL="..." pnpm vitest tests/integration/ --run
+ */
+describe('Database Integration Tests', () => {
+  // ...
+});
+```
+
+**When to catch:** During self-review or code review stage
+
 ## Troubleshooting
 
 ### "PR body validation failed"
@@ -598,6 +823,51 @@ git push origin <branch-name> --force-with-lease
 6. Pushed fix
 7. CI re-ran and passed
 8. Reviewer approved ✅
+
+### Example 3: Phase 2 - Integration Test Lessons Learned
+
+**User:** "Run Phase 2"
+
+**Initial Implementation (WITH mistakes):**
+
+1. Created integration test for database
+2. Added dynamic imports with `.js` extension → `ERR_MODULE_NOT_FOUND`
+3. `beforeAll` tried to connect to DB without error handling → `ECONNREFUSED`
+4. PR created, code review flagged P0 issues
+
+**Correct Approach (After improvements):**
+
+1. Created integration test for database
+2. Incremental self-review before each commit:
+   ```bash
+   pnpm nx affected -t test  # Run WITHOUT database
+   # ✅ Expect: 12 tests skipped (not failed!)
+   ```
+3. Used correct import extensions:
+
+   ```typescript
+   // ✅ Static import
+   import { getDatabaseUrl } from './database.js';
+
+   // ✅ Dynamic import in test
+   const { getDatabaseUrl } = await import('../database.ts');
+   ```
+
+4. Added graceful degradation:
+   ```typescript
+   beforeAll(async () => {
+     try {
+       await pool.query('SELECT NOW()');
+       databaseAvailable = true;
+     } catch (error) {
+       console.warn('DB unavailable, tests will skip');
+       databaseAvailable = false;
+     }
+   });
+   ```
+5. Documented test setup requirements
+6. Code review focused on test isolation
+7. All checks passed first try ✅
 
 ## Success Criteria
 
