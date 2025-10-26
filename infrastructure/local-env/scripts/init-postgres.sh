@@ -6,7 +6,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NAMESPACE="${NAMESPACE:-super-zol}"
 VALUES_FILE="${SCRIPT_DIR}/../helm-values/postgres.yaml"
 
-echo "🐘 Deploying PostgreSQL..."
+# Load centralized version configuration
+source "${SCRIPT_DIR}/../../config/load-versions.sh"
+
+echo "🐘 Deploying PostgreSQL (version ${POSTGRESQL_VERSION})..."
 
 # Create namespace if it doesn't exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
@@ -23,7 +26,7 @@ helm repo update
 # Install or upgrade PostgreSQL
 echo "📦 Installing PostgreSQL with Helm..."
 helm upgrade --install postgresql bitnami/postgresql \
-    --version 15.5.38 \
+    --version "${POSTGRESQL_VERSION}" \
     -f "${VALUES_FILE}" \
     -n "${NAMESPACE}" \
     --wait

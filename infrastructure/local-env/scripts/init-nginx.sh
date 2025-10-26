@@ -2,10 +2,15 @@
 
 set -euo pipefail
 
-echo "🌐 Installing nginx-ingress controller..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Install nginx ingress controller using kubectl
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+# Load centralized version configuration
+source "${SCRIPT_DIR}/../../config/load-versions.sh"
+
+echo "🌐 Installing nginx-ingress controller (version ${INGRESS_NGINX_VERSION})..."
+
+# Install nginx ingress controller using kubectl with pinned version
+kubectl apply -f "${INGRESS_NGINX_MANIFEST}"
 
 # Wait for ingress controller to be ready
 echo "⏳ Waiting for ingress controller to be ready..."

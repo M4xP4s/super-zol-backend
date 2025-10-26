@@ -6,7 +6,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NAMESPACE="${NAMESPACE:-super-zol}"
 VALUES_FILE="${SCRIPT_DIR}/../helm-values/redis.yaml"
 
-echo "📮 Deploying Redis..."
+# Load centralized version configuration
+source "${SCRIPT_DIR}/../../config/load-versions.sh"
+
+echo "📮 Deploying Redis (version ${REDIS_VERSION})..."
 
 # Create namespace if it doesn't exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
@@ -23,7 +26,7 @@ helm repo update
 # Install or upgrade Redis
 echo "📦 Installing Redis with Helm..."
 helm upgrade --install redis bitnami/redis \
-    --version 20.5.0 \
+    --version "${REDIS_VERSION}" \
     -f "${VALUES_FILE}" \
     -n "${NAMESPACE}" \
     --wait
