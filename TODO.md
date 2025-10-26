@@ -572,12 +572,11 @@ describe('Kaggle Data API Integration Tests', () => {
 
 **Critical Issues Fixed:**
 
-Following code review of Phase 2 implementation, resolved two P0 issues:
+Following code review of Phase 2 implementation, resolved three P0/P1 issues:
 
 1. **[P0] Remove hard dependency on live Postgres** (Lines 24-46)
    - [x] Added database availability check in `beforeAll()`
    - [x] Tests now skip gracefully with warning instead of failing with ECONNREFUSED
-   - [x] Uses `describe.skipIf(!databaseAvailable)` for all test suites
    - [x] Non-blocking: Tests can run without PostgreSQL running
 
 2. **[P0] Fix database module import path** (Lines 98-109)
@@ -585,9 +584,17 @@ Following code review of Phase 2 implementation, resolved two P0 issues:
    - [x] Resolved `ERR_MODULE_NOT_FOUND` error
    - [x] All database module validation tests now import correctly
 
+3. **[P1] Fix test gating to allow runtime skipping** (Lines 83, 112, 163, 189, 217)
+   - [x] Removed `describe.skipIf(!databaseAvailable)` which evaluated at parse time
+   - [x] Added `context.skip()` calls at start of each test function
+   - [x] Tests now properly skip at runtime when database is unavailable
+   - [x] All 12 tests properly registered and conditionally skipped
+   - [x] Verified: `pnpm vitest run` shows 12 tests, 12 skipped when DB unavailable
+
 **Result:**
 
-- ✅ All integration tests pass or skip gracefully
+- ✅ All 12 integration tests properly registered and execute when DB available
+- ✅ Tests skip gracefully at runtime when database unavailable
 - ✅ CI/CD pipeline can run without external dependencies
 - ✅ Tests documented to support optional `TEST_DATABASE_URL` environment variable
 - ✅ Pre-commit checks pass (lint, typecheck, test, build)

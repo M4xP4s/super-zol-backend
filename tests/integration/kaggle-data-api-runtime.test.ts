@@ -80,8 +80,11 @@ describe('Kaggle Data API Runtime Integration', () => {
     }
   });
 
-  describe.skipIf(!databaseAvailable)('Database Connection', () => {
-    it('should connect to PostgreSQL successfully', async () => {
+  describe('Database Connection', () => {
+    it('should connect to PostgreSQL successfully', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       try {
         const result = await testPool.query('SELECT NOW()');
         expect(result.rows).toHaveLength(1);
@@ -91,7 +94,10 @@ describe('Kaggle Data API Runtime Integration', () => {
       }
     });
 
-    it('should have datasets table created', async () => {
+    it('should have datasets table created', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       const result = await testPool.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_name = 'datasets'
@@ -100,7 +106,10 @@ describe('Kaggle Data API Runtime Integration', () => {
       expect(result.rows[0].table_name).toBe('datasets');
     });
 
-    it('should have test data inserted', async () => {
+    it('should have test data inserted', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       const result = await testPool.query('SELECT * FROM datasets');
       expect(result.rows).toHaveLength(3);
       expect(result.rows[0].name).toBe('dataset-a');
@@ -109,8 +118,11 @@ describe('Kaggle Data API Runtime Integration', () => {
     });
   });
 
-  describe.skipIf(!databaseAvailable)('Database Module Functionality', () => {
-    it('should validate DATABASE_URL format', async () => {
+  describe('Database Module Functionality', () => {
+    it('should validate DATABASE_URL format', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       const { getDatabaseUrl } = await import(
         '../../services/kaggle-data-api/src/infrastructure/database.ts'
       );
@@ -119,7 +131,10 @@ describe('Kaggle Data API Runtime Integration', () => {
       expect(() => getDatabaseUrl()).not.toThrow();
     });
 
-    it('should validate port number in getDatabaseUrl', async () => {
+    it('should validate port number in getDatabaseUrl', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       const { getDatabaseUrl } = await import(
         '../../services/kaggle-data-api/src/infrastructure/database.ts'
       );
@@ -144,7 +159,10 @@ describe('Kaggle Data API Runtime Integration', () => {
       }
     });
 
-    it('should throw on invalid DATABASE_URL format', async () => {
+    it('should throw on invalid DATABASE_URL format', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       const { getDatabaseUrl } = await import(
         '../../services/kaggle-data-api/src/infrastructure/database.ts'
       );
@@ -160,8 +178,11 @@ describe('Kaggle Data API Runtime Integration', () => {
     });
   });
 
-  describe.skipIf(!databaseAvailable)('Query Functionality', () => {
-    it('should execute parameterized queries safely', async () => {
+  describe('Query Functionality', () => {
+    it('should execute parameterized queries safely', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       // Test that parameterized queries work with the pg library
       const result = await testPool.query(
         'SELECT * FROM datasets ORDER BY name LIMIT $1 OFFSET $2',
@@ -173,7 +194,10 @@ describe('Kaggle Data API Runtime Integration', () => {
       expect(result.rows[1].name).toBe('dataset-b');
     });
 
-    it('should handle SQL with ORDER BY validation', async () => {
+    it('should handle SQL with ORDER BY validation', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       // Verify that ORDER BY needs to be hardcoded, not parameterized
       const validOrder = 'name';
       const result = await testPool.query(`SELECT * FROM datasets ORDER BY ${validOrder}`, []);
@@ -186,8 +210,11 @@ describe('Kaggle Data API Runtime Integration', () => {
     });
   });
 
-  describe.skipIf(!databaseAvailable)('Error Handling', () => {
-    it('should handle invalid SQL gracefully', async () => {
+  describe('Error Handling', () => {
+    it('should handle invalid SQL gracefully', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       try {
         await testPool.query('SELECT * FROM nonexistent_table');
         expect.fail('Should have thrown an error');
@@ -197,7 +224,10 @@ describe('Kaggle Data API Runtime Integration', () => {
       }
     });
 
-    it('should handle connection errors gracefully', async () => {
+    it('should handle connection errors gracefully', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       const badPool = new Pool({
         connectionString: 'postgresql://invalid:password@nonexistent-host:5432/db',
       });
@@ -214,8 +244,11 @@ describe('Kaggle Data API Runtime Integration', () => {
     });
   });
 
-  describe.skipIf(!databaseAvailable)('Connection Pool Management', () => {
-    it('should reuse connections from pool', async () => {
+  describe('Connection Pool Management', () => {
+    it('should reuse connections from pool', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       const results = await Promise.all([
         testPool.query('SELECT 1 as id'),
         testPool.query('SELECT 2 as id'),
@@ -228,7 +261,10 @@ describe('Kaggle Data API Runtime Integration', () => {
       });
     });
 
-    it('should not exceed max connections', async () => {
+    it('should not exceed max connections', async (context) => {
+      if (!databaseAvailable) {
+        context.skip();
+      }
       const smallPool = new Pool({
         connectionString: testDbUrl,
         max: 2,
