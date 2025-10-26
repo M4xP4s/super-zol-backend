@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Helm chart generator scripts:
+  - `scripts/new-service-chart.sh` to scaffold service charts under `services/<name>/helm`
+  - `scripts/new-job-chart.sh` to scaffold job charts under `jobs/<name>/helm` (supports Job and CronJob)
+- New `jobs/fetch-kaggle/helm` chart using the job library with:
+  - Cron schedule at 02:00
+  - `KAGGLE_DATA_ROOT` env var
+  - PVC mount for `kaggle-data-pvc`
+
+### Changed
+
+- Moved service/job-specific Helm charts into their respective project directories (`services/*/helm`, `jobs/*/helm`) instead of `infrastructure/helm/*`.
+- Library charts: fixed `common.chart` helper and checksum annotations to hash values directly (works when used as dependency).
+
+### Added
+
 #### Phase 0: Infrastructure Foundation ✅ COMPLETED
 
 Infrastructure setup for production-ready Kubernetes deployment with reusable Helm library charts:
