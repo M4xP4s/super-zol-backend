@@ -18,8 +18,9 @@ const run = async () => {
     // Force non-watch CI mode so tests exit deterministically
     const env = { ...process.env, CI: '1', VITEST_WATCH: 'false' };
     const args = ['nx', 'run-many', '-t', 'test'];
-    // Forward any other non-watch flags to Nx (e.g., --skip-nx-cache)
-    if (filtered.length) args.push('--', ...filtered);
+    // Forward non-watch flags directly to Nx (no '--' sentinel),
+    // so options like --skip-nx-cache are parsed by Nx CLI.
+    if (filtered.length) args.push(...filtered);
 
     const subprocess = execa('pnpm', args, {
       stdio: 'inherit',
@@ -35,4 +36,3 @@ const run = async () => {
 };
 
 run();
-
