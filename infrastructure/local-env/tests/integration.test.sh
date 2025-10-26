@@ -20,6 +20,15 @@ TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
 
+# Cleanup function
+cleanup_test_resources() {
+    log_info "Cleaning up test resources..."
+    kubectl delete pod -n "${NAMESPACE}" dns-test --ignore-not-found=true --wait=false --timeout=10s >/dev/null 2>&1 || true
+}
+
+# Trap to ensure cleanup on exit
+trap cleanup_test_resources EXIT
+
 # Helper functions
 log_info() {
     echo -e "${YELLOW}[INFO]${NC} $1"
@@ -227,15 +236,30 @@ test_redis_connectable() {
 test_service_dns() {
     log_info "Testing: Service DNS resolution"
 
-    # Create a test pod for DNS checks
-    kubectl run -n "${NAMESPACE}" dns-test --image=busybox --restart=Never --rm -it -- \
-        nslookup postgresql.${NAMESPACE}.svc.cluster.local >/dev/null 2>&1 || true
+    # Clean up any existing test pod from previous runs
+    kubectl delete pod -n "${NAMESPACE}" dns-test --ignore-not-found=true --wait=true --timeout=30s >/dev/null 2>&1 || true
 
-    # Clean up
-    kubectl delete pod -n "${NAMESPACE}" dns-test --ignore-not-found=true >/dev/null 2>&1 || true
+    # Wait a moment for cleanup to complete
+    sleep 2
 
-    log_success "Service DNS resolution works"
-    return 0
+    # Create a test pod for DNS checks (without --rm -it for better cleanup control)
+    if kubectl run -n "${NAMESPACE}" dns-test --image=busybox:1.36 --restart=Never \
+        --command -- sh -c "nslookup postgresql.${NAMESPACE}.svc.cluster.local && exit 0" >/dev/null 2>&1; then
+
+        # Wait for pod to complete
+        kubectl wait --for=condition=Ready pod/dns-test -n "${NAMESPACE}" --timeout=30s >/dev/null 2>&1 || true
+
+        # Clean up immediately
+        kubectl delete pod -n "${NAMESPACE}" dns-test --ignore-not-found=true --wait=true --timeout=30s >/dev/null 2>&1 || true
+
+        log_success "Service DNS resolution works"
+        return 0
+    else
+        # Clean up on failure too
+        kubectl delete pod -n "${NAMESPACE}" dns-test --ignore-not-found=true --wait=true --timeout=30s >/dev/null 2>&1 || true
+        log_error "Service DNS resolution failed"
+        return 1
+    fi
 }
 
 # Test: Helm charts are linted
@@ -275,6 +299,9 @@ main() {
     echo "Cluster: ${CLUSTER_NAME}"
     echo "Namespace: ${NAMESPACE}"
     echo ""
+
+    # Clean up any leftover test resources from previous runs
+    cleanup_test_resources
 
     # Run tests
     test_required_tools
