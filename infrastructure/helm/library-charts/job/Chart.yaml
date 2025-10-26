@@ -12,3 +12,7 @@ keywords:
 maintainers:
   - name: Super Zol Team
 home: https://github.com/yourusername/super-zol
+dependencies:
+  - name: common
+    version: 0.1.0
+    repository: file://../common
