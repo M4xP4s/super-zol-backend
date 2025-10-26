@@ -20,6 +20,13 @@ FROM node:22-alpine
 
 WORKDIR /app
 ENV NODE_ENV=production
+RUN corepack enable
+
+# Copy package.json and lock file for dependency installation
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy built application
 COPY --from=builder /app/dist/services/kaggle-data-api ./
@@ -32,6 +39,10 @@ RUN addgroup --system --gid 1001 nodejs && \
 USER fastify
 
 EXPOSE 3000
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
 # Start the application
 CMD ["node", "main.js"]

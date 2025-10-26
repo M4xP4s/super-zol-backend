@@ -66,6 +66,10 @@ backend/
 
 Each major component has its own README with detailed information:
 
+- **[services/kaggle-data-api](services/kaggle-data-api/README.md)** - Phase 2 API service with PostgreSQL integration
+  - [Security Analysis](SECURITY_ANALYSIS.md) - Security enhancements and testing
+  - Docker-based deployment with health checks
+  - REST API for dataset queries
 - **[jobs/fetch-kaggle](jobs/fetch-kaggle/README.md)** - Kaggle dataset pipeline architecture and usage
   - [Architecture Overview](jobs/fetch-kaggle/ARCHITECTURE.md) - Hexagonal architecture deep-dive
   - [Testing Guide](jobs/fetch-kaggle/TESTING.md) - Test strategy and TDD approach
@@ -76,11 +80,12 @@ Each major component has its own README with detailed information:
 
 ### For Developers
 
-| Document                               | Purpose                                                           | Audience                       |
-| -------------------------------------- | ----------------------------------------------------------------- | ------------------------------ |
-| **[DEVELOPMENT.md](DEVELOPMENT.md)**   | Complete command reference, workflows, and debugging tips         | Developers (read this first!)  |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Git workflow, commit conventions, PR process                      | Contributors                   |
-| **[ARCHITECTURE.md](ARCHITECTURE.md)** | Technical deep-dive: TypeScript configs, testing setup, git hooks | Architects & senior developers |
+| Document                                         | Purpose                                                           | Audience                       |
+| ------------------------------------------------ | ----------------------------------------------------------------- | ------------------------------ |
+| **[DEVELOPMENT.md](DEVELOPMENT.md)**             | Complete command reference, workflows, and debugging tips         | Developers (read this first!)  |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)**           | Git workflow, commit conventions, PR process                      | Contributors                   |
+| **[ARCHITECTURE.md](ARCHITECTURE.md)**           | Technical deep-dive: TypeScript configs, testing setup, git hooks | Architects & senior developers |
+| **[SECURITY_ANALYSIS.md](SECURITY_ANALYSIS.md)** | Security enhancements, testing, and best practices                | Security-conscious developers  |
 
 ### For Project Management
 

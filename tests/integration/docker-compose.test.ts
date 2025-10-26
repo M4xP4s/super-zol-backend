@@ -65,12 +65,26 @@ describe('Docker Compose Integration', () => {
     expect(content).toContain('FROM node:22-alpine AS builder');
     expect(content).toContain('FROM node:22-alpine');
 
+    // Verify pnpm is enabled in runtime stage
+    expect(content).toContain('RUN corepack enable');
+
+    // Verify production dependencies are installed in runtime stage
+    expect(content).toContain('pnpm install --frozen-lockfile --prod');
+
+    // Verify package.json and lock file are copied to runtime stage
+    expect(content).toContain('COPY --from=builder /app/package.json');
+    expect(content).toContain('pnpm-lock.yaml');
+
     // Verify non-root user for security
     expect(content).toContain('adduser --system --uid 1001 fastify');
     expect(content).toContain('USER fastify');
 
     // Verify port exposure
     expect(content).toContain('EXPOSE 3000');
+
+    // Verify health check is configured
+    expect(content).toContain('HEALTHCHECK');
+    expect(content).toContain('localhost:3000/health');
 
     // Verify proper startup command
     expect(content).toContain('CMD ["node", "main.js"]');

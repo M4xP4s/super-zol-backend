@@ -7,10 +7,25 @@ let pool: Pool | null = null;
 
 /**
  * Get PostgreSQL connection URL from environment
+ *
+ * Environment Variable Precedence:
+ * 1. DATABASE_URL - Takes precedence if set
+ * 2. Individual vars (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+ *    - DB_HOST: defaults to 'localhost'
+ *    - DB_PORT: defaults to '5432'
+ *    - DB_USER: defaults to 'postgres'
+ *    - DB_PASSWORD: defaults to 'postgres'
+ *    - DB_NAME: defaults to 'postgres'
+ *
+ * @throws Error if environment is misconfigured (missing required vars in production)
+ * @returns PostgreSQL connection URL
  */
 export function getDatabaseUrl(): string {
   const url = process.env['DATABASE_URL'];
   if (url) {
+    if (!url.startsWith('postgresql://') && !url.startsWith('postgres://')) {
+      throw new Error('Invalid DATABASE_URL: Must start with postgresql:// or postgres://');
+    }
     return url;
   }
 
@@ -20,6 +35,12 @@ export function getDatabaseUrl(): string {
   const user = process.env['DB_USER'] || 'postgres';
   const password = process.env['DB_PASSWORD'] || 'postgres';
   const database = process.env['DB_NAME'] || 'postgres';
+
+  // Validate that port is numeric
+  const portNum = parseInt(port, 10);
+  if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+    throw new Error(`Invalid DB_PORT: Must be a number between 1 and 65535, got "${port}"`);
+  }
 
   return `postgresql://${user}:${password}@${host}:${port}/${database}`;
 }

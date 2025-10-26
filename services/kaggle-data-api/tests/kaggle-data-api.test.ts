@@ -123,6 +123,47 @@ describe('Kaggle Data API Service', () => {
         process.env = originalEnv;
       }
     });
+
+    it('getDatabaseUrl should validate DATABASE_URL format', async () => {
+      const db = await import('../src/infrastructure/database.js');
+      const originalEnv = { ...process.env };
+
+      try {
+        process.env['DATABASE_URL'] = 'mysql://user:pass@host/db';
+        expect(() => db.getDatabaseUrl()).toThrow(
+          'Invalid DATABASE_URL: Must start with postgresql:// or postgres://'
+        );
+      } finally {
+        process.env = originalEnv;
+      }
+    });
+
+    it('getDatabaseUrl should validate port number', async () => {
+      const db = await import('../src/infrastructure/database.js');
+      const originalEnv = { ...process.env };
+
+      try {
+        delete process.env['DATABASE_URL'];
+
+        // Invalid port
+        process.env['DB_PORT'] = 'not-a-number';
+        expect(() => db.getDatabaseUrl()).toThrow('Invalid DB_PORT');
+
+        // Port out of range (too high)
+        process.env['DB_PORT'] = '99999';
+        expect(() => db.getDatabaseUrl()).toThrow('Invalid DB_PORT');
+
+        // Port out of range (too low)
+        process.env['DB_PORT'] = '0';
+        expect(() => db.getDatabaseUrl()).toThrow('Invalid DB_PORT');
+
+        // Valid port
+        process.env['DB_PORT'] = '5432';
+        expect(() => db.getDatabaseUrl()).not.toThrow();
+      } finally {
+        process.env = originalEnv;
+      }
+    });
   });
 
   describe('Sensible Plugin', () => {
