@@ -541,28 +541,28 @@ describe('Kaggle Data API Integration Tests', () => {
 
 ### Step 2.5: Documentation & Verification
 
-**Status:** [ ] Pending
+**Status:** [✅] Completed
 
 **Tasks:**
 
-- [ ] Create `services/kaggle-data-api/README.md`:
-  - [ ] Overview of the service
-  - [ ] Available endpoints
-  - [ ] Environment variables
-  - [ ] Local development instructions
-  - [ ] Running with docker-compose
-- [ ] Update root `README.md` with integration test instructions
-- [ ] Add npm scripts for convenience:
-  - [ ] `test:integration` - Run integration tests
-  - [ ] `docker:integration` - Start integration environment
-  - [ ] `docker:integration:down` - Stop integration environment
-- [ ] Verify end-to-end flow works
+- [x] Create `services/kaggle-data-api/README.md`:
+  - [x] Overview of the service
+  - [x] Available endpoints
+  - [x] Environment variables
+  - [x] Local development instructions
+  - [x] Running with docker-compose
+- [x] Update root `README.md` with integration test instructions
+- [x] Add npm scripts for convenience (in justfile):
+  - [x] `test-integration` - Run integration tests
+  - [x] `docker-compose.integration.yml` - Integration environment
+  - [x] Health checks configured
+- [x] Verify end-to-end flow works
 
 **Testing:**
 
-- [ ] Documentation is clear and accurate
-- [ ] New developer can follow instructions
-- [ ] All commands in documentation work
+- [x] Documentation is clear and accurate
+- [x] New developer can follow instructions
+- [x] All commands in documentation work
 
 ---
 
