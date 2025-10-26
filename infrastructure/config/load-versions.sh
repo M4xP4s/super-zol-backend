@@ -6,8 +6,10 @@
 # Usage:
 #   source "$(dirname "$0")/../../config/load-versions.sh"
 #   echo "PostgreSQL version: $POSTGRESQL_VERSION"
-
-set -euo pipefail
+#
+# IMPORTANT: This file is designed to be sourced, not executed.
+# It does NOT set shell options (caller's responsibility) and returns
+# errors instead of exiting to preserve the caller's shell session.
 
 VERSIONS_FILE="${VERSIONS_FILE:-$(dirname "${BASH_SOURCE[0]}")/versions.yaml}"
 
@@ -46,7 +48,7 @@ fi
 # Validate that required versions were loaded
 if [ -z "$POSTGRESQL_VERSION" ] || [ -z "$REDIS_VERSION" ]; then
     echo "Error: Failed to load versions from $VERSIONS_FILE" >&2
-    exit 1
+    return 1
 fi
 
 # Export a flag to indicate versions are loaded

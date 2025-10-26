@@ -58,9 +58,11 @@ Shell script helper to load versions from `versions.yaml` into environment varia
 ```bash
 #!/usr/bin/env bash
 
+set -euo pipefail  # IMPORTANT: Set error handling in your script
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Load versions
+# Load versions (will return 1 on error, not exit)
 source "${SCRIPT_DIR}/../../config/load-versions.sh"
 
 # Use version variables
@@ -69,6 +71,42 @@ helm upgrade --install postgresql bitnami/postgresql \
     --version "${POSTGRESQL_VERSION}" \
     ...
 ```
+
+**Error Handling:**
+
+The `load-versions.sh` file is designed to be sourced and will:
+
+- ✅ Return errors (not exit) to preserve the caller's shell session
+- ✅ Not mutate the caller's shell options (no `set -euo pipefail`)
+- ✅ Print error messages to stderr before returning 1
+
+Your calling script should:
+
+- Set its own error handling (`set -euo pipefail`)
+- With `set -e`, the script will automatically exit if sourcing fails
+
+### In Interactive Shells
+
+Safe to source in interactive shells (won't close your terminal):
+
+```bash
+# Load versions interactively
+source infrastructure/config/load-versions.sh
+
+# Check if loading succeeded
+if [ $? -eq 0 ]; then
+    echo "PostgreSQL version: $POSTGRESQL_VERSION"
+    echo "Redis version: $REDIS_VERSION"
+else
+    echo "Failed to load versions"
+fi
+```
+
+**Why it's safe:**
+
+- Does not set `set -euo pipefail` (won't change your shell options)
+- Returns errors instead of calling `exit` (won't close your terminal)
+- Safe to source multiple times (idempotent)
 
 ### In Makefiles
 
