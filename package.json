@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "nx run-many -t serve",
     "build": "nx run-many -t build",
-    "test": "nx run-many -t test",
+    "test": "node scripts/run-tests.mjs",
     "lint": "nx run-many -t lint",
     "format": "nx format:write",
     "affected:test": "nx affected -t test",

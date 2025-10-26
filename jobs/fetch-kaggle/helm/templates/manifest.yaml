@@ -1,0 +1,5 @@
+{{/* Render standard job resources from library */}}
+{{ include "job.secret" . }}
+{{ include "job.configmap" . }}
+{{ include "job.job" . }}
+{{ include "job.cronjob" . }}

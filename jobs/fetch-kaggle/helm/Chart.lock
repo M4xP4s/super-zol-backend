@@ -1,0 +1,6 @@
+dependencies:
+- name: job
+  repository: file://../../../infrastructure/helm/library-charts/job
+  version: 0.1.0
+digest: sha256:baa80d9a6b35159db929b1ff5dda37246dc9742dcf7f0ca09e88fe39dcc00aa7
+generated: "2025-10-26T10:54:32.814848+02:00"

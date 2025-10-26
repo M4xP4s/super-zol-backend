@@ -2,12 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "Job Library Chart Values Schema",
-  "required": ["mode", "image"],
+  "required": ["type", "image"],
   "properties": {
-    "mode": {
+    "type": {
       "type": "string",
       "enum": ["job", "cronjob"],
-      "description": "Execution mode: job or cronjob"
+      "description": "Workload type: job or cronjob"
     },
     "image": {
       "type": "object",

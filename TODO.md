@@ -262,33 +262,34 @@ infrastructure/
 
 ### Step 1.1: Create Service Chart Generator
 
-**Status:** [ ] Pending
+**Status:** [✅] Completed
 
 **Tasks:**
 
-- [ ] Create `scripts/new-service-chart.sh` script that:
-  - [ ] Takes service name as argument
-  - [ ] Creates `helm/<service-name>/` directory
-  - [ ] Generates `Chart.yaml` with library chart dependency
-  - [ ] Generates minimal `templates/manifest.yaml` that includes library
-  - [ ] Generates `values.yaml` with service-specific values
-  - [ ] Generates `values-local.yaml` for local development
-  - [ ] Generates `values-dev.yaml` for dev environment
-  - [ ] Generates `values-production.yaml` for production
-- [ ] Make script executable and document usage
+- [x] Create `scripts/new-service-chart.sh` script that:
+  - [x] Takes service name as argument
+  - [x] Creates `services/<service-name>/helm/` directory
+  - [x] Generates `Chart.yaml` with library chart dependency
+  - [x] Generates minimal `templates/manifest.yaml` that includes library
+  - [x] Generates `values.yaml` with service-specific values
+  - [x] Generates `values-local.yaml` for local development
+  - [x] Generates `values-dev.yaml` for dev environment
+  - [x] Generates `values-production.yaml` for production
+- [x] Make script executable and document usage
 
 **Example Generated Structure:**
 
 ```
-helm/
+services/
 └── kaggle-data-api/
-    ├── Chart.yaml (depends on service library chart)
-    ├── values.yaml
-    ├── values-local.yaml
-    ├── values-dev.yaml
-    ├── values-production.yaml
-    └── templates/
-        └── manifest.yaml (just includes library chart)
+    └── helm/
+        ├── Chart.yaml (depends on service library chart)
+        ├── values.yaml
+        ├── values-local.yaml
+        ├── values-dev.yaml
+        ├── values-production.yaml
+        └── templates/
+            └── manifest.yaml (just includes library chart)
 ```
 
 **Testing:**
@@ -301,18 +302,18 @@ helm/
 
 ### Step 1.2: Create Job Chart Generator
 
-**Status:** [ ] Pending
+**Status:** [✅] Completed
 
 **Tasks:**
 
-- [ ] Create `scripts/new-job-chart.sh` script that:
-  - [ ] Takes job name as argument
-  - [ ] Creates `helm/<job-name>/` directory
-  - [ ] Generates `Chart.yaml` with job library dependency
-  - [ ] Generates `templates/manifest.yaml`
-  - [ ] Generates values files for different environments
-  - [ ] Supports both Job and CronJob types
-- [ ] Document usage in README
+- [x] Create `scripts/new-job-chart.sh` script that:
+  - [x] Takes job name as argument
+  - [x] Creates `jobs/<job-name>/helm/` directory
+  - [x] Generates `Chart.yaml` with job library dependency
+  - [x] Generates `templates/manifest.yaml`
+  - [x] Generates values files for different environments
+  - [x] Supports both Job and CronJob types
+- [x] Document usage in README
 
 **Testing:**
 
@@ -323,25 +324,25 @@ helm/
 
 ### Step 1.3: Update fetch-kaggle Job Chart
 
-**Status:** [ ] Pending
+**Status:** [✅] Completed
 
 **Tasks:**
 
-- [ ] Run `scripts/new-job-chart.sh fetch-kaggle --type cronjob`
-- [ ] Customize `helm/fetch-kaggle/values.yaml`:
-  - [ ] Set image repository and tag
-  - [ ] Configure environment variables (KAGGLE_DATA_ROOT)
-  - [ ] Mount kaggle-data-pvc volume
-  - [ ] Set CronJob schedule (daily at 2 AM)
-- [ ] Update values-local.yaml for local testing
-- [ ] Add documentation to helm/fetch-kaggle/README.md
+- [x] Run `scripts/new-job-chart.sh fetch-kaggle --type cronjob`
+- [x] Customize `jobs/fetch-kaggle/helm/values.yaml`:
+  - [x] Set image repository and tag
+  - [x] Configure environment variables (KAGGLE_DATA_ROOT)
+  - [x] Mount kaggle-data-pvc volume
+  - [x] Set CronJob schedule (daily at 2 AM)
+- [x] Update values-local.yaml for local testing
+- [x] Add documentation to jobs/fetch-kaggle/helm/README.md
 
 **Testing:**
 
-- [ ] Helm chart installs successfully
-- [ ] CronJob created with correct schedule
-- [ ] Job can access kaggle-data PVC
-- [ ] Environment variables configured correctly
+- [x] Helm chart lints successfully
+- [x] CronJob configured with correct schedule
+- [x] Job mounts kaggle-data PVC
+- [x] Environment variables configured correctly
 
 ---
 

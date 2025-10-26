@@ -30,7 +30,8 @@ Create chart name and version as used by the chart label.
 Usage: {{ include "common.chart" .Chart }}
 */}}
 {{- define "common.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- /* Accepts a Chart metadata object: pass .Chart to this template */ -}}
+{{- printf "%s-%s" .Name .Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*

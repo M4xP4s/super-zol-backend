@@ -1,0 +1,58 @@
+# Base values for job chart
+
+type: cronjob
+
+image:
+  repository: ghcr.io/M4xP4s/super-zol-backend/fetch-kaggle
+  pullPolicy: IfNotPresent
+  tag: 'latest'
+
+serviceAccount:
+  create: true
+
+job:
+  backoffLimit: 3
+  activeDeadlineSeconds: 3600
+  completions: 1
+  parallelism: 1
+
+cronJob:
+  schedule: '0 2 * * *'
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  startingDeadlineSeconds: 300
+  suspend: false
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+restartPolicy: OnFailure
+
+envFrom: []
+
+configMap:
+  enabled: false
+  data: {}
+
+secrets:
+  enabled: false
+  data: {}
+
+env:
+  - name: KAGGLE_DATA_ROOT
+    value: '/data/kaggle'
+
+volumeMounts:
+  - name: kaggle-data
+    mountPath: /data/kaggle
+
+volumes:
+  - name: kaggle-data
+    persistentVolumeClaim:
+      claimName: kaggle-data-pvc
