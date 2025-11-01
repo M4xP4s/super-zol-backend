@@ -4,7 +4,6 @@
   "sourceRoot": "libs/shared-util/src",
   "projectType": "library",
   "tags": [],
-  "// targets": "to see all targets run: nx show project shared-util --web",
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
