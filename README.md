@@ -2,9 +2,9 @@
 
 > A production-ready TypeScript monorepo for data pipeline operations, built with Nx, Fastify, and Vitest.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-22-green)](https://nodejs.org/)
-[![Nx](https://img.shields.io/badge/Nx-19.8-purple)](https://nx.dev)
+[![Nx](https://img.shields.io/badge/Nx-22.0.2-purple)](https://nx.dev)
 [![Vitest](https://img.shields.io/badge/Vitest-Latest-yellow)](https://vitest.dev/)
 
 ## What is Super Zol?
@@ -141,16 +141,16 @@ just merge-to-main                             # Automated PR workflow
 
 For the complete stack inventory and methodologies, see [TECH_STACK.md](TECH_STACK.md).
 
-| Category            | Technology     | Why?                                  |
-| ------------------- | -------------- | ------------------------------------- |
-| **Runtime**         | Node.js 22     | Latest LTS with modern features       |
-| **Package Manager** | pnpm 10        | Fast, efficient, strict               |
-| **Build System**    | Nx 19.8        | Monorepo management, smart caching    |
-| **Language**        | TypeScript 5.6 | Type safety, latest features          |
-| **API Framework**   | Fastify 4      | Fast, low overhead, extensive plugins |
-| **Testing**         | Vitest         | Native ESM, fast, modern              |
-| **Linting**         | ESLint 9       | Code quality enforcement              |
-| **Formatting**      | Prettier       | Consistent code style                 |
+| Category            | Technology     | Why?                                    |
+| ------------------- | -------------- | --------------------------------------- |
+| **Runtime**         | Node.js 22     | Latest LTS with modern features         |
+| **Package Manager** | pnpm 10        | Fast, efficient, strict                 |
+| **Build System**    | Nx 22.0.2      | Monorepo management, smart caching, MCP |
+| **Language**        | TypeScript 5.9 | Type safety, latest features            |
+| **API Framework**   | Fastify 5      | Fast, low overhead, extensive plugins   |
+| **Testing**         | Vitest         | Native ESM, fast, modern                |
+| **Linting**         | ESLint 9       | Code quality enforcement                |
+| **Formatting**      | Prettier       | Consistent code style                   |
 
 ## Key Features
 

@@ -1,8 +1,15 @@
 # Repository Guidelines
 
+## MCP Server & AI Integration
+
+- **Nx MCP Server**: Nx 22.0.2 includes native MCP (Model Context Protocol) server via `npx nx mcp`
+- **Configuration**: `.mcp.json` enables the MCP server for Claude Code and other AI tools
+- **Capabilities**: Provides deep workspace context: project relationships, file mappings, runnable tasks, tech stacks, and Nx documentation
+- **Setup**: The workspace is pre-configured; Claude Code will automatically connect via MCP
+
 ## Project Structure & Module Organization
 
-- Monorepo managed by Nx; Node.js 22 + pnpm 10.
+- Monorepo managed by Nx 22.0.2; Node.js 22 + pnpm 10.
 - Services live in `services/` (e.g., `kaggle-data-api`); shared code in `libs/`; scheduled tasks in `jobs/`; generators and utilities in `scripts/`; docs in `docs/`.
 - Each project follows: `src/`, `tests/`, `project.json`, `tsconfig.*`, `vitest.config.ts`.
 - Path aliases: `@services/*`, `@libs/*`, `@packages/*` (see `tsconfig.base.json`).

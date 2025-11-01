@@ -5,18 +5,18 @@ Comprehensive inventory of technologies, tools, and configurations in this repos
 ## Runtime & Language
 
 - Node.js 22 (enforced via `.nvmrc`, `.node-version`, `package.json.engines`)
-- TypeScript 5.6, strict, pure ESM across projects
+- TypeScript 5.9, strict, pure ESM across projects
 
 ## Monorepo & Build System
 
-- Nx 19.8 for monorepo orchestration, caching, and generators
+- Nx 22.0.2 for monorepo orchestration, caching, and generators (with native MCP server support)
 - pnpm 10 as package manager
 - Path aliases: `@services/*`, `@libs/*`, `@packages/*` (`tsconfig.base.json`)
 - Per‑project `project.json` targets (`build`, `serve`, `test`, etc.)
 
 ## Services & Frameworks
 
-- Fastify 4 (API): `fastify`, `@fastify/autoload`, `@fastify/sensible`, `fastify-plugin`
+- Fastify 5 (API): `fastify`, `@fastify/autoload`, `@fastify/sensible`, `fastify-plugin`
 - ESM application entrypoints (e.g., `services/kaggle-data-api/src/main.ts`)
 
 ## Jobs & Data Processing

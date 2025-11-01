@@ -450,12 +450,12 @@ The project's coding standards are the same regardless of which tool you use - `
 
 - **Runtime**: Node.js 22 (enforced via .nvmrc and .node-version)
 - **Package Manager**: pnpm 10 (enforced via packageManager field)
-- **Build System**: Nx 19.8 with esbuild (services) and tsc (libs)
-- **Language**: TypeScript 5.6 with strict mode + noUncheckedIndexedAccess
+- **Build System**: Nx 22.0.2 with esbuild (services) and tsc (libs), includes native MCP server support
+- **Language**: TypeScript 5.9 with strict mode + noUncheckedIndexedAccess
 - **Testing**: Vitest with 90% coverage requirement
 - **Linting**: ESLint 9 (flat config) + TypeScript ESLint
 - **Formatting**: Prettier
-- **API Framework**: Fastify 4 with autoload, sensible defaults
+- **API Framework**: Fastify 5 with autoload, sensible defaults
 
 ## CI/CD
 
