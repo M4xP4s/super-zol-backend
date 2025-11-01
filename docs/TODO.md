@@ -4,6 +4,14 @@
 
 Granular task breakdown for implementing 3 production-ready grocery intelligence projects aligned with AI Engineer Syllabus.
 
+Reference points:
+
+- Strategic context & personas: `docs/BRAINSTORM.md`
+- Milestones & metrics: `docs/PLAN.md`
+- ADR log index: `docs/architecture/README.md`
+
+> Role tags such as `@data-eng` or `@platform` indicate which hat to wear for a task. As a solo developer, treat them as context rather than separate people.
+
 **Legend**:
 
 - [ ] = Not Started
@@ -13,86 +21,146 @@ Granular task breakdown for implementing 3 production-ready grocery intelligence
 
 ---
 
+## Status Dashboard (update every Monday)
+
+| Metric                         | Current | Target                 | Notes                                     |
+| ------------------------------ | ------- | ---------------------- | ----------------------------------------- |
+| P0 tasks completed             | 0       | See milestone cards    | Update via `pnpm nx graph --focus` review |
+| In-progress tasks              | 0       | Track < 7 concurrently | Limit WIP to keep flow                    |
+| Blockers                       | 0       | 0                      | Escalate in daily standup                 |
+| Test coverage (critical paths) | _TBD_   | ≥90%                   | Pull from Vitest coverage report          |
+| Avg API latency (Project 1)    | _TBD_   | <200 ms p95            | Measured with k6/Locust baseline          |
+
+> Maintain this snapshot during weekly demo to give stakeholders instant visibility.
+
+---
+
 ## Project 1: Smart Grocery Intelligence Platform (Weeks 1-8)
 
 ### Phase 1: Data Foundation (Weeks 1-2)
 
+**Milestone Card**
+
+- **Window**: Weeks 1–2
+- **Goal**: Stand up ingestion platform that reliably processes 3 chains end-to-end and exposes validated data via internal APIs.
+- **Dependencies**: Kaggle dataset access, Docker runtime, persona-aligned requirements in `docs/BRAINSTORM.md`.
+- **Definition of Done**:
+  - Daily ingestion completes in <45 minutes for sample feeds
+  - Schemas versioned and covered by ≥95% unit tests
+  - `pnpm nx test data-pipeline` and `pnpm nx lint data-pipeline` both green in CI
+- **Key Metrics**: Ingestion throughput, validation error rate, API latency baseline
+
 #### 1.1.1 Environment Setup
 
-- [ ] Create project structure under `services/data-pipeline/`
-- [ ] Set up Python 3.11+ virtual environment with Poetry/pip
-- [ ] Configure TypeScript/Nx for service scaffolding
-- [ ] Initialize PostgreSQL + pgvector Docker containers
-- [ ] Set up Redis cache container
-- [ ] Create `.env` template with required variables
-- [ ] Write docker-compose.yml for local development
-- [ ] Configure ESLint, Prettier, and pre-commit hooks
+- [ ] (P0 · @data-eng) Create project structure under `services/data-pipeline/`
+- [ ] (P0 · @data-eng) Set up Python 3.11+ virtual environment with Poetry/pip
+- [ ] (P0 · @platform) Configure TypeScript/Nx for service scaffolding
+- [ ] (P0 · @infra) Initialize PostgreSQL + pgvector Docker containers
+- [ ] (P1 · @infra) Set up Redis cache container
+- [ ] (P0 · @platform) Create `.env` template with required variables
+- [ ] (P0 · @infra) Write `docker-compose.yml` for local development
+- [ ] (P1 · @platform) Configure ESLint, Prettier, and pre-commit hooks
+
+**Validation Hooks**:
+
+- Run `just check` smoke step after scaffolding
+- Confirm Docker services via `docker compose ps`
+- Capture environment setup ADR entry
 
 #### 1.1.2 Schema Design & Models
 
-- [ ] Define Zod/Pydantic schemas for `Product` entity
-  - [ ] Add fields: id, name_hebrew, name_english, barcode, brand, category
-  - [ ] Add validation rules for required fields
-  - [ ] Add unit normalization logic (kg/liter/unit)
-- [ ] Define schema for `Store` entity
-  - [ ] Add fields: id, chain, branch, city, address, coordinates
-  - [ ] Add geocoding validation
-- [ ] Define schema for `PriceRecord` entity
-  - [ ] Add fields: product_id, store_id, price, timestamp, currency
-  - [ ] Add price validation (positive, reasonable bounds)
-- [ ] Define schema for `Promotion` entity
-  - [ ] Add fields: id, product_id, store_id, discount_type, value, valid_until
-  - [ ] Add date validation logic
-- [ ] Create PostgreSQL migration scripts
-- [ ] Write schema validation unit tests (>95% coverage)
+- [ ] (P0 · @data-eng) Define Zod/Pydantic schemas for `Product` entity
+  - [ ] (P0) Add fields: id, name_hebrew, name_english, barcode, brand, category
+  - [ ] (P0) Add validation rules for required fields
+  - [ ] (P0) Add unit normalization logic (kg/liter/unit)
+- [ ] (P0 · @data-eng) Define schema for `Store` entity
+  - [ ] (P0) Add fields: id, chain, branch, city, address, coordinates
+  - [ ] (P1) Add geocoding validation
+- [ ] (P0 · @data-eng) Define schema for `PriceRecord` entity
+  - [ ] (P0) Add fields: product_id, store_id, price, timestamp, currency
+  - [ ] (P0) Add price validation (positive, reasonable bounds)
+- [ ] (P1 · @data-eng) Define schema for `Promotion` entity
+  - [ ] (P1) Add fields: id, product_id, store_id, discount_type, value, valid_until
+  - [ ] (P1) Add date validation logic
+- [ ] (P0 · @infra) Create PostgreSQL migration scripts
+- [ ] (P0 · @qa) Write schema validation unit tests (>95% coverage)
+
+**Validation Hooks**:
+
+- Auto-generate ERD snapshot and attach to `docs/PLAN.md`
+- Run `pnpm nx test data-pipeline --testFile=schemas.test.ts`
+- Perform peer review on schema names vs. AI syllabus requirements
 
 #### 1.1.3 ETL Pipeline Core
 
-- [ ] Implement CSV parser with encoding detection
-  - [ ] Handle UTF-8 encoding
-  - [ ] Handle Windows-1255 fallback
-  - [ ] Add error recovery for malformed rows
-- [ ] Build chain-specific parsers (40+ formats)
-  - [ ] Shufersal parser with tests
-  - [ ] Victory parser with tests
-  - [ ] Rami Levy parser with tests
-  - [ ] Generic fallback parser
-- [ ] Implement streaming ingestion (chunked reading)
-  - [ ] Process files >1GB without memory issues
-  - [ ] Add progress tracking
-  - [ ] Implement checkpoint/resume capability
-- [ ] Create data validation pipeline
-  - [ ] Schema validation per record
-  - [ ] Duplicate detection
-  - [ ] Anomaly detection (z-score for prices)
-  - [ ] Data quality metrics collection
-- [ ] Build batch processing orchestrator
-  - [ ] Parallel file processing
-  - [ ] Error aggregation and reporting
-  - [ ] Transaction management
+- [ ] (P0 · @data-eng) Implement CSV parser with encoding detection
+  - [ ] (P0) Handle UTF-8 encoding
+  - [ ] (P0) Handle Windows-1255 fallback
+  - [ ] (P0) Add error recovery for malformed rows
+- [ ] (P0 · @data-eng) Build chain-specific parsers (40+ formats)
+  - [ ] (P0) Shufersal parser with tests
+  - [ ] (P0) Victory parser with tests
+  - [ ] (P0) Rami Levy parser with tests
+  - [ ] (P1) Generic fallback parser
+- [ ] (P0 · @platform) Implement streaming ingestion (chunked reading)
+  - [ ] (P0) Process files >1GB without memory issues
+  - [ ] (P1) Add progress tracking
+  - [ ] (P1) Implement checkpoint/resume capability
+- [ ] (P0 · @data-eng) Create data validation pipeline
+  - [ ] (P0) Schema validation per record
+  - [ ] (P0) Duplicate detection
+  - [ ] (P0) Anomaly detection (z-score for prices)
+  - [ ] (P1) Data quality metrics collection
+- [ ] (P0 · @platform) Build batch processing orchestrator
+  - [ ] (P0) Parallel file processing
+  - [ ] (P0) Error aggregation and reporting
+  - [ ] (P0) Transaction management
+
+**Validation Hooks**:
+
+- Benchmark throughput with 1 GB fixture (`scripts/bench/ingest.sh`)
+- Capture anomaly detection precision on labeled anomalies (target ≥0.8)
+- Log ingestion observability metrics into Grafana board draft
 
 #### 1.1.4 API Layer
 
-- [ ] Set up FastAPI application structure
-- [ ] Implement `/products` endpoints
-  - [ ] GET /products (paginated, filtered)
-  - [ ] GET /products/{id}
-  - [ ] GET /products/search (text search)
-- [ ] Implement `/stores` endpoints
-  - [ ] GET /stores (with geo queries)
-  - [ ] GET /stores/{id}
-  - [ ] GET /stores/nearby (latitude/longitude)
-- [ ] Implement `/prices` endpoints
-  - [ ] GET /prices/current
-  - [ ] GET /prices/history
-  - [ ] GET /prices/compare
-- [ ] Add request validation middleware
-- [ ] Implement response caching with Redis
-- [ ] Add rate limiting
-- [ ] Write OpenAPI documentation
-- [ ] Create Postman/Insomnia collection
+- [ ] (P0 · @platform) Set up FastAPI application structure
+- [ ] (P0 · @platform) Implement `/products` endpoints
+  - [ ] (P0) GET /products (paginated, filtered)
+  - [ ] (P0) GET /products/{id}
+  - [ ] (P1) GET /products/search (text search)
+- [ ] (P0 · @platform) Implement `/stores` endpoints
+  - [ ] (P0) GET /stores (with geo queries)
+  - [ ] (P0) GET /stores/{id}
+  - [ ] (P1) GET /stores/nearby (latitude/longitude)
+- [ ] (P0 · @platform) Implement `/prices` endpoints
+  - [ ] (P0) GET /prices/current
+  - [ ] (P0) GET /prices/history
+  - [ ] (P0) GET /prices/compare
+- [ ] (P0 · @platform) Add request validation middleware
+- [ ] (P1 · @platform) Implement response caching with Redis
+- [ ] (P1 · @platform) Add rate limiting
+- [ ] (P0 · @platform) Write OpenAPI documentation
+- [ ] (P1 · @platform) Create Postman/Insomnia collection
+
+**Validation Hooks**:
+
+- Contract tests in Vitest hitting local FastAPI instance
+- k6 smoke test for `/prices` endpoints with target latency <200 ms p95
+- Publish OpenAPI spec preview link in weekly demo deck
 
 ### Phase 2: ML & Intelligence Layer (Weeks 3-4)
+
+**Milestone Card**
+
+- **Window**: Weeks 3–4
+- **Goal**: Stand up similarity, classification, and pricing intelligence services powering downstream assistants.
+- **Dependencies**: Phase 1 exit, labeled similarity pairs, taxonomy draft, forecast features defined.
+- **Definition of Done**:
+  - Embedding + classification pipelines deployed with monitoring
+  - Forecasting models delivering MAPE <4%
+  - Evaluation suite automated in CI nightly job
+- **Key Metrics**: Similarity precision/recall, classification macro F1, price forecast MAPE
 
 #### 1.2.1 Product Similarity Engine
 
@@ -113,6 +181,12 @@ Granular task breakdown for implementing 3 production-ready grocery intelligence
   - [ ] Curate test set (1000 pairs)
   - [ ] Calculate precision/recall metrics
   - [ ] Set up A/B testing infrastructure
+
+**Validation Hooks**:
+
+- Run offline evaluation script (`nx run data-pipeline:evaluate-similarity`)
+- Document top failure cases in shared Confluence/Notion page
+- Capture A/B testing toggles via feature flags repo
 
 #### 1.2.2 Product Classification
 
@@ -135,6 +209,12 @@ Granular task breakdown for implementing 3 production-ready grocery intelligence
   - [ ] A/B testing framework
   - [ ] Performance monitoring
 
+**Validation Hooks**:
+
+- Nightly drift report capturing macro F1 trend
+- Post training, archive confusion matrix snapshot in `docs/reports/`
+- Integration test hitting inference endpoint with fixture payloads
+
 #### 1.2.3 Price Intelligence
 
 - [ ] Build price aggregation engine
@@ -156,7 +236,24 @@ Granular task breakdown for implementing 3 production-ready grocery intelligence
   - [ ] Sudden price change alerts
   - [ ] Supply shortage indicators
 
+**Validation Hooks**:
+
+- Backtest forecasting models on previous quarter data
+- Alert simulation to confirm Slack/Webhook integrations fire <2 minutes
+- Dashboard tile refreshing from Redis/warehouse every hour
+
 ### Phase 3: Testing & Deployment (Weeks 5-6)
+
+**Milestone Card**
+
+- **Window**: Weeks 5–6
+- **Goal**: Harden services with automated testing, packaging, and observability to prepare for Project 2.
+- **Dependencies**: Phase 2 exit, CI environment, staging infrastructure budget.
+- **Definition of Done**:
+  - Test pyramid coverage targets achieved
+  - Container images published, vulnerability-scanned, and deployed to staging
+  - Monitoring + alerting dashboards active with runbooks
+- **Key Metrics**: Test pass rate, deployment success rate, MTTR baseline
 
 #### 1.3.1 Testing Suite
 
@@ -180,6 +277,12 @@ Granular task breakdown for implementing 3 production-ready grocery intelligence
   - [ ] Completeness checks
   - [ ] Accuracy validation against samples
 
+**Validation Hooks**:
+
+- CI pipeline gating on `just test-coverage`
+- Weekly quality review of data drift alerts
+- Synthetic monitoring hitting staging endpoints hourly
+
 #### 1.3.2 Infrastructure & Monitoring
 
 - [ ] Containerization
@@ -198,6 +301,12 @@ Granular task breakdown for implementing 3 production-ready grocery intelligence
 - [ ] Logging infrastructure
   - [ ] Structured logging setup
   - [ ] Log aggregation (ELK/Loki)
+
+**Validation Hooks**:
+
+- Image scan report archived in `docs/compliance/`
+- Load test report attached to release notes
+- Runbook reviewed + signed off by on-call rotation
   - [ ] Error tracking (Sentry)
   - [ ] Audit trail for data changes
 
@@ -673,6 +782,27 @@ Granular task breakdown for implementing 3 production-ready grocery intelligence
 - [ ] LLM response <2 seconds
 - [ ] System availability >99.5%
 - [ ] Error rate <1%
+
+---
+
+## Week-by-Week Operating Plan (first 12 weeks)
+
+| Week | Focus                        | Key Deliverables                          | Primary Nx Commands                                                                           |
+| ---- | ---------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 0    | Environment prep             | Docker infra, `.env`, service scaffolding | `pnpm nx graph`, `pnpm exec just infra-up`                                                    |
+| 1    | ETL MVP                      | Parser for 3 chains, schema tests         | `pnpm nx test data-pipeline`, `pnpm nx lint data-pipeline`                                    |
+| 2    | Streaming & validation       | Throughput benchmark, anomaly alerts      | `pnpm nx run data-pipeline:benchmark`, `pnpm nx run data-pipeline:e2e`                        |
+| 3    | Embeddings & similarity      | SBERT pipeline, evaluation report         | `pnpm nx run data-pipeline:train-similarity`, `pnpm nx run data-pipeline:evaluate-similarity` |
+| 4    | Classification + forecasting | Taxonomy refined, forecast baseline       | `pnpm nx run data-pipeline:train-classifier`, `pnpm nx run data-pipeline:forecast`            |
+| 5    | Testing & packaging          | Coverage ≥90%, Docker images scanned      | `just test-coverage`, `pnpm nx run data-pipeline:docker-build`                                |
+| 6    | Conversational MVP           | RAG prototype, tool-calling eval          | `pnpm nx run shopping-assistant:serve`, `pnpm nx run shopping-assistant:test`                 |
+| 7    | Multimodal ingestion         | OCR pipeline benchmark, dataset split     | `pnpm nx run shopping-assistant:ocr-benchmark`, `pnpm nx test shopping-assistant`             |
+| 8    | Agent orchestration          | Multi-store optimizer agent               | `pnpm nx run shopping-assistant:agents`, `pnpm nx run shopping-assistant:e2e`                 |
+| 9    | Automation setup             | n8n workflows, scheduler                  | `pnpm nx run budget-optimizer:workflow`, `pnpm nx run budget-optimizer:test`                  |
+| 10   | Monitoring & governance      | Grafana dashboards, policy-as-code        | `pnpm nx run budget-optimizer:deploy-monitoring`, `pnpm nx run budget-optimizer:opa-check`    |
+| 11   | Hardening & retro            | Load tests, privacy review, ADR updates   | `pnpm nx run-many --target=lint --projects=*`, `just check`                                   |
+
+> Update this rolling plan during retros; shift or split weeks as new insights arrive.
 
 ---
 

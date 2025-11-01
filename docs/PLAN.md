@@ -10,6 +10,14 @@ This plan consolidates the Claude and Cursor roadmaps into **3 comprehensive pro
 
 **Outcome**: Production-ready AI system saving households 15-25% on groceries while providing retail intelligence and automation.
 
+## Planning Canvas
+
+- **Scope**: Three production-grade workstreams (data foundation, conversational intelligence, automation/governance) mapped directly to AI Engineering syllabus competencies.
+- **Out of Scope**: Payment processing, loyalty integrations, on-prem retailer deployments, and features lacking data backing (until validated via `docs/BRAINSTORM.md`).
+- **Assumptions**: Dedicated squad of 3–4 AI engineers, cloud budget for prototyping, access to Kaggle dataset updates every 24 hours, approval to process pseudonymized receipt data.
+- **Constraints**: Coverage targets (≥90% test coverage, <200 ms latency), bilingual support, adherence to privacy guardrails, and weekly stakeholder demos.
+- **Guardrails**: Follow Nx project boundaries, update CHANGELOG + ADRs per milestone, keep WIP <7 tasks (see `docs/TODO.md` dashboard).
+
 ## Project Overview
 
 ### Project 1: Smart Grocery Intelligence Platform
@@ -17,15 +25,51 @@ This plan consolidates the Claude and Cursor roadmaps into **3 comprehensive pro
 **Duration**: 6-8 weeks
 **Purpose**: Build the data foundation and ML/NLP intelligence layer that powers all downstream services.
 
+#### Timeline at a Glance
+
+| Week | Milestone                                      | Dependencies                     |
+| ---- | ---------------------------------------------- | -------------------------------- |
+| 0    | Environment + access finalized                 | Kaggle credentials, infra budget |
+| 1    | ETL MVP for 3 chains                           | Dockerized stack, schema draft   |
+| 2    | Streaming + validation complete                | Parser fixtures                  |
+| 3    | Similarity + classification pipelines deployed | Labeled pairs, taxonomy          |
+| 4    | Price intelligence APIs live                   | Forecast features, Redis cache   |
+| 5    | Test/infra hardening, monitoring baseline      | CI runners, Grafana              |
+| 6    | Project review + handoff to Project 2          | Documentation, metrics snapshot  |
+
 ### Project 2: Conversational Shopping Assistant
 
 **Duration**: 6-8 weeks
 **Purpose**: Create multimodal, conversational AI experiences for consumers with RAG and agent capabilities.
 
+#### Timeline at a Glance
+
+| Week | Milestone                                      | Dependencies                       |
+| ---- | ---------------------------------------------- | ---------------------------------- |
+| 6    | Handoff from Project 1 + vector store snapshot | Stable APIs, embeddings            |
+| 7    | RAG core + retrieval evaluation                | Vector store, price data           |
+| 8    | OCR receipt ingestion benchmarked              | Receipt dataset, OCR vendor access |
+| 9    | Voice interface alpha with WER measurements    | ASR model selection                |
+| 10   | Agent orchestration, tool-calling stable       | RAG endpoints, price compare APIs  |
+| 11   | User testing loop + telemetry baseline         | Beta user cohort                   |
+| 12   | Production readiness review                    | Runbooks, alerts                   |
+
 ### Project 3: Automated Budget Optimizer
 
 **Duration**: 6-8 weeks
 **Purpose**: Deploy production automation, monitoring, and ethical governance for scalable operations.
+
+#### Timeline at a Glance
+
+| Week | Milestone                                 | Dependencies                   |
+| ---- | ----------------------------------------- | ------------------------------ |
+| 12   | Project 2 handoff + ops backlog grooming  | Assistant telemetry, alerts    |
+| 13   | n8n workflow scaffolding + scheduler      | Infra cluster, credentials     |
+| 14   | Monitoring stack live with SLOs           | Prometheus/Grafana infra       |
+| 15   | Budget assistant memory + personalization | Secure storage, consent model  |
+| 16   | Ethics & governance tooling integrated    | Policy templates, legal review |
+| 17   | Load/chaos testing + failover drills      | Staging cluster                |
+| 18   | Production cutover & playbook sign-off    | All QA gates, compliance       |
 
 ## Syllabus Coverage Matrix
 
@@ -93,6 +137,16 @@ This plan consolidates the Claude and Cursor roadmaps into **3 comprehensive pro
 - Price forecast MAPE <4%
 - System availability ≥99.5%
 
+**Measurement Plan**
+
+| Metric             | Owner            | Data Source                    | Review Cadence     |
+| ------------------ | ---------------- | ------------------------------ | ------------------ |
+| Ingestion duration | Data Engineering | Airflow/n8n run logs           | Weekly demo        |
+| API latency p95    | Platform         | Grafana dashboard (Prometheus) | Daily standup      |
+| Classification F1  | ML/NLP           | Evaluation pipeline artifact   | Sprint review      |
+| Price MAPE         | Data Science     | Forecast backtest report       | Sprint review      |
+| Availability       | Platform         | Uptime robot / SLO dashboard   | Monthly ops review |
+
 ---
 
 ## Project 2: Conversational Shopping Assistant
@@ -152,6 +206,16 @@ This plan consolidates the Claude and Cursor roadmaps into **3 comprehensive pro
 - User satisfaction ≥85%
 - OCR accuracy ≥95%
 - Agent task success ≥90%
+
+**Measurement Plan**
+
+| Metric                 | Owner    | Data Source               | Review Cadence |
+| ---------------------- | -------- | ------------------------- | -------------- |
+| LLM latency            | Platform | OpenTelemetry traces      | Weekly         |
+| Schema validation rate | Platform | API validation logs       | Daily          |
+| User satisfaction      | Product  | Beta feedback surveys     | Sprint review  |
+| OCR accuracy           | ML/NLP   | Validation dataset report | Sprint review  |
+| Agent success          | ML/NLP   | Autonomy harness metrics  | Weekly demo    |
 
 ---
 
@@ -213,6 +277,16 @@ This plan consolidates the Claude and Cursor roadmaps into **3 comprehensive pro
 - Zero compliance incidents
 - PII detection coverage 100%
 
+**Measurement Plan**
+
+| Metric                  | Owner        | Data Source            | Review Cadence      |
+| ----------------------- | ------------ | ---------------------- | ------------------- |
+| Workflow success        | Automation   | n8n run history        | Weekly              |
+| MTTR                    | Platform     | Incident tracker       | Incident postmortem |
+| Budget adherence uplift | Data Science | Cohort analysis report | Monthly             |
+| Compliance incidents    | Compliance   | Audit log review       | Quarterly           |
+| PII detection coverage  | Compliance   | DLP scan reports       | Sprint review       |
+
 ---
 
 ## Implementation Strategy
@@ -237,13 +311,25 @@ This plan consolidates the Claude and Cursor roadmaps into **3 comprehensive pro
 - Implement monitoring
 - Ensure compliance
 
-### Risk Mitigation
+### Execution Cadence (Solo Rhythm)
 
-1. **Data Quality**: Implement schema validation, outlier detection, manual review queues
-2. **LLM Reliability**: Use fallback heuristics, confidence thresholds, human-in-loop
-3. **Scalability**: Design for horizontal scaling, implement caching, use async processing
-4. **Privacy**: Encrypt PII, implement retention policies, maintain audit trails
-5. **Ethics**: Establish review board, document decisions, monitor for bias
+| Ritual             | Focus             | Agenda                                                       | Cadence  |
+| ------------------ | ----------------- | ------------------------------------------------------------ | -------- |
+| Daily Log          | Personal progress | Capture wins, blockers, risk changes in `logs/daily.md`      | Daily    |
+| Weekly Review      | Demo & metrics    | Run key Nx tasks, update status dashboard, adjust priorities | Weekly   |
+| Backlog Refinement | Grooming          | Promote/retire TODO.md items, size upcoming work             | Biweekly |
+| Architecture Hour  | Deep thinking     | Update ADRs, review cross-cutting decisions                  | Biweekly |
+| Ops Retro          | Reliability       | Inspect incidents, update runbooks, revisit guardrails       | Monthly  |
+
+### Risk Register
+
+| ID  | Risk                                        | Probability | Impact | Mitigation                                               | Contingency                                                |
+| --- | ------------------------------------------- | ----------- | ------ | -------------------------------------------------------- | ---------------------------------------------------------- |
+| R1  | Data quality regressions across chains      | Medium      | High   | Schema validation, anomaly alerts, manual QA queue       | Rollback to last green dataset, trigger incident review    |
+| R2  | LLM tool-calling instability in Hebrew      | High        | Medium | Evaluate multiple providers, implement confidence gating | Fall back to template-based responses with escalation      |
+| R3  | Scaling bottlenecks in ingestion            | Medium      | High   | Stress-test with Polars, horizontal workers, caching     | Enable backlog processing mode, pause non-critical jobs    |
+| R4  | Privacy/compliance breach from receipt data | Low         | High   | Default PII redaction, consent tracking, access audits   | Suspend data processing, notify compliance/legal, run RCAs |
+| R5  | Ops fatigue due to manual monitoring        | Medium      | Medium | Automate alerts, rotate on-call, maintain runbooks       | Engage backup rotation, defer feature work for tooling     |
 
 ### Success Criteria
 
@@ -294,6 +380,12 @@ This plan consolidates the Claude and Cursor roadmaps into **3 comprehensive pro
 3. Begin Project 1 Phase 1 (Data Foundation)
 4. Establish weekly progress reviews
 5. Create project documentation structure
+
+**Living Links**:
+
+- Execution backlog: `docs/TODO.md`
+- Strategic context & personas: `docs/BRAINSTORM.md`
+- ADR index & architecture decisions: `docs/architecture/README.md`
 
 ---
 

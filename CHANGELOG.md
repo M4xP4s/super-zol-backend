@@ -6,6 +6,12 @@ Semantic Versioning where applicable.
 
 ## [Unreleased]
 
+### Changed
+
+- Refined AI grocery brainstorm with personas, risk table, solo-friendly cadence, and sprint outlook.
+- Restructured TODO roadmap into milestone cards, validation hooks, and week-by-week plan tailored for solo execution.
+- Enhanced master plan with planning canvas, detailed timelines, measurement ownership, and solo execution rhythm.
+
 ### Added
 
 - Consolidated Claude roadmap docs with new executive summary, reusable validation suite,
