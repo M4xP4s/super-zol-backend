@@ -1,197 +1,161 @@
-Awesome — I’ll start generating **`BRAINSTORM_1.md`** in rich Markdown format:
+# AI Engineer x Grocery Optimization Roadmap (Part 1: Projects 1-2)
 
-- Fully structured, repo-ready (you can drop it under `/docs/roadmap/BRAINSTORM_1.md`).
-- Includes:
-  1. Intro (dataset + purpose)
-  2. Mapping table of AI Engineer syllabus → dataset opportunities
-  3. **Project #1 — Data Normalization & Pipeline**
-  4. **Project #2 — Similar-Product Finder (Embedding-based)**
-
-If it grows near 1000 lines, I’ll stop and continue in `BRAINSTORM_2.md`.
-Here’s the start:
-
----
-
-# 🧠 BRAINSTORM.md — AI Engineer × Grocery Optimization Roadmap (Part 1)
+This document deep-dives the first two projects in the Personalized Smart Grocery
+Optimizer program, aligning hands-on deliverables with the _AI Engineer Syllabus_ to build
+momentum toward production-ready AI services.
 
 ## 0. Overview
 
-**Goal:** learn every major skill in the _AI Engineer Syllabus_ while building a real-world, revenue-ready grocery optimization engine that helps Israeli consumers find the cheapest basket and substitutes across chains like **Rami Levi**, **Shufersal**, **Osher Ad**, etc.
+- **Objective:** unlock reliable grocery intelligence while exercising Python, ML, NLP, and
+  infrastructure skills.
+- **Scope:** Projects 1-2 in detail; Part 2 covers Projects 3-7.
+- **Dataset:** Israeli Supermarkets 2024 (~200 price/promo/store files, daily refresh).
+- **Dependencies:** Kaggle export + repo scaffolding under `services/` and `jobs/`.
 
-### 📊 Dataset Summary (from Kaggle)
+## 1. Syllabus Alignment
 
-- **Name:** Israeli Supermarkets 2024 Dataset ([source](https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024/data))
-- **Scope:** ≈ 200 files, 6.7 GB+, raw price/promo/store data scraped every 4 hours from all major chains.
-- **Files per chain:**
-  - `price_file_[chain].csv` — incremental price updates
-  - `price_full_file_[chain].csv` — daily full snapshots
-  - `promo_file_[chain].csv` / `promo_full_file_[chain].csv` — promotions
-  - `stores_[chain].csv` — store metadata (name, address, geo)
-  - `[chain].json` — scraper metadata (status, timestamps)
-
-- **Update frequency:** Daily
-- **Licensing:** MIT
-- **Languages:** Hebrew & English
-- **Tags:** Tabular · Text · Time Series · Hebrew
-
-### 🧭 Why It’s Perfect for AI Engineering
-
-It combines **structured (tabular)** + **unstructured (textual)** + **temporal (time-series)** data — perfect to learn everything from ETL to embeddings, RAG, agents, and deployment.
+| Syllabus Module (AI_Engineer_Syllabus.pdf p.10-13) | Project Leverage | Practical Outcome                                  |
+| -------------------------------------------------- | ---------------- | -------------------------------------------------- |
+| **Python Essentials**                              | 1                | Deterministic CSV ingestion & schema validation    |
+| **ML Foundations**                                 | 1                | Feature-ready datasets + anomaly detection         |
+| **Infrastructure & Deployment**                    | 1                | Dockerized FastAPI ETL with monitoring             |
+| **NLP + RAG**                                      | 2                | Tokenization + embeddings for multilingual catalog |
+| **Prompt Engineering**                             | 2                | LLM-based validation of semantic matches           |
 
 ---
 
-## 1. Mapping Syllabus → Dataset Opportunities
+## 2. Project #1 -- Data Normalization & Pipeline Service
 
-| Syllabus Topic                         | Grocery Use Case                               | Example Feature                                        |
-| -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------ |
-| **Python Essentials**                  | Data parsing & schema validation across chains | Normalize product feeds with tests and FastAPI ETL     |
-| **ML Foundations**                     | Price trend analysis / cheapest store ranking  | Regression & classification for basket cost prediction |
-| **NLP + RAG**                          | Product name matching across brands            | “Tnuva Milk 1 L 3%” ≈ “Tara Milk 3% 1 L”               |
-| **Advanced LLMs / Prompt Engineering** | Conversational shopping assistant              | “Find me 5 breakfast items under 50 ₪”                 |
-| **Applied LLM Engineering**            | Cart optimization via structured MCP API       | Generate optimized baskets from text                   |
-| **Automation / n8n**                   | Daily price alerts + data pipeline refresh     | n8n flows for ETL + notifications                      |
-| **AI Agents**                          | Multi-store optimizer agent                    | Combine price & substitute APIs → best cart            |
-| **Infra & Deployment**                 | Containerized stack with monitoring            | Docker + Prometheus + Grafana                          |
-| **Reasoning & Ethics**                 | Transparent cart optimization                  | Explainable AI for “why this store is cheaper”         |
+### Topics Covered
 
----
+- Python Essentials, ML Foundations, Infrastructure & Deployment,
+  Spec/TDD discipline (_AI_Engineer_Syllabus.pdf p.10-12_).
 
-## 2. Project #1 — 🧱 Data Normalization & Pipeline Service
+### Dependencies
 
-### 🎓 Topics Covered
+- Access to raw Kaggle dumps
+- Repository FastAPI scaffolding (or create within project)
 
-- Python Essentials (virtual envs, I/O, OOP, exceptions)
-- ML Foundations (data pre-processing, validation)
-- Infrastructure and Deployment (Docker, FastAPI)
-- TDD / Spec-Driven Development (CI basics)
+### Success Criteria
 
-### 💡 Concrete Value
+- Schema validation suite passes for every chain (>99% row acceptance).
+- Daily ETL (full + incremental) completes <45 minutes on commodity hardware.
+- REST endpoints (`/products`, `/stores`, `/prices`) respond <200 ms p95.
 
-Creates a single unified **API and database** that every other component (LLM, agent, ML) can depend on.
-Without this layer, nothing downstream is reliable.
+### Risks & Mitigations
 
-### 🧩 Phases & TODOs
+- **Encoding variance (UTF-8 vs Windows-1255):** enforce decoding strategy + regression
+  tests with fixture files.
+- **Schema drift from chains:** contract test per chain file; alert on new columns.
+- **Large file spikes:** stream ingestion with chunked readers to avoid memory blow-ups.
 
-#### **Phase 1 — Foundation Build**
+### Phases & Key TODOs
 
-- **Spec:** Define canonical schemas for `Product`, `Store`, `PriceRecord`, `Promo`.
-- **TDD setup:**
+#### Phase 1 -- Foundation Build
 
-  ```bash
-  pytest tests/test_schema_validation.py
-  ```
+- Spec canonical models for `Product`, `Store`, `PriceRecord`, `Promo`.
+- Implement parsers with dataclass validation + pytest fixtures per chain.
+- Normalize units (grams <-> liters) with explicit conversion table.
+- Establish Optuna-based anomaly detection for price spikes (flag >4sigma).
 
-- **TODOs**
-  - [ ] Write dataclasses for core entities
-  - [ ] Implement CSV parsers per chain
-  - [ ] Add unit tests for column presence & types
-  - [ ] Handle encoding (UTF-8 / Hebrew)
-  - [ ] Normalize units (grams, liters)
-  - [ ] Dockerfile + Poetry for reproducibility
+#### Phase 2 -- Integration Layer
 
-#### **Phase 2 — Integration Layer**
+- FastAPI endpoints with pagination/filters (`chain`, `city`, `category`).
+- Async ingestion job triggered via CLI + `nx run` scheduler.
+- PostgreSQL + pgvector-ready schema (anticipates Project 2).
+- Contract tests using `httpx.AsyncClient` + snapshot assertions.
 
-- **Spec:** Expose API (`/products`, `/stores`, `/prices`) via FastAPI.
-- **TODOs**
-  - [ ] Write contract tests for GET/POST endpoints
-  - [ ] Add pagination and filters (`?chain=rami_levy&city=tel_aviv`)
-  - [ ] Integrate SQLite or Postgres
-  - [ ] Implement CI job to ingest new daily dump
+#### Phase 3 -- Production Deployment
 
-#### **Phase 3 — Production Deployment**
+- Dockerfile + docker-compose profile `grocery-data`.
+- Observability: Prometheus metrics (`ingestion_lag_seconds`, `records_ingested_total`),
+  structured logging, Grafana dashboard.
+- CI workflow `.github/workflows/validate_data.yml` covering linters, tests, and schema
+  diff check.
 
-- **Spec:** Containerized ETL + API stack.
-- **TODOs**
-  - [ ] Add logging (JSON + Prometheus metrics)
-  - [ ] Deploy via Docker Compose or Kubernetes namespace `grocery-data`
-  - [ ] Add basic Grafana dashboard for ingestion stats
-  - [ ] Document API with OpenAPI spec in repo
+### Deliverables
 
-### 📦 Deliverables
+- `services/data-pipeline/src/` with ingestion + API modules.
+- `tests/services/data-pipeline/` covering schema + API contracts.
+- Grafana dashboard screenshot and runbook (`docs/ops/data-pipeline.md`).
 
-- `backend/data_pipeline/` module
-- CI workflow (`.github/workflows/validate_data.yml`)
-- API docs at `/docs`
-- Portfolio screenshot of Grafana dashboard
+### Learning Outcomes
 
-### 🧠 Learning Outcomes
+- Practice strict typing, modular ETL design, observability-first deployments.
+- Gain familiarity with CI, Docker, and Nx automation for data services.
 
-- Build production-ready ETL with tests
-- Use containerization and monitoring from day 1
-- Gain foundation for all AI projects ahead
+### Metrics & Instrumentation
+
+- Track `ingestion_duration_seconds`, `records_rejected_total`, `api_latency_ms`.
+- Alert when rejection rate >1% or ingestion exceeds SLA window.
 
 ---
 
-## 3. Project #2 — 🔍 Similar-Product Finder (Embedding-Based)
+## 3. Project #2 -- Similar-Product Finder (Embedding-Based)
 
-### 🎓 Topics Covered
+### Topics Covered
 
-- NLP Basics (tokenization, lemmatization)
-- Word/Sentence Embeddings (SBERT / FastText / USE)
-- RAG architecture (document retrieval)
-- Vector databases (pgvector / FAISS)
-- Prompt Engineering for validation
+- NLP fundamentals, embeddings, RAG architecture, prompt-assisted evaluation
+  (_AI_Engineer_Syllabus.pdf p.11-12_).
 
-### 💡 Concrete Value
+### Dependencies
 
-Allows the system to suggest cheaper alternatives across brands.
-Example: “Tara חלב 3% 1 ליטר” ≈ “Tnuva Milk 3% 1 L”.
-This becomes the semantic bridge between store catalogs.
+- Clean catalog tables and product IDs from Project 1.
+- Vector-friendly database (pgvector) or FAISS index container.
 
-### 🧩 Phases & TODOs
+### Success Criteria
 
-#### **Phase 1 — Foundation (Offline Model)**
+- Cosine similarity >=0.90 for validated equivalent pairs, <=0.40 for negatives.
+- Batch inference handles >=100 k products in <30 minutes.
+- Manual evaluation pool reports >=90% "acceptable" substitutions.
 
-- **Spec:** Build corpus of unique product names across chains.
-- **TODOs**
-  - [ ] Deduplicate products by `chain, product_name`
-  - [ ] Normalize text (remove punctuation, Hebrew vowels)
-  - [ ] Tokenize & lemmatize (both Hebrew and English)
-  - [ ] Train/test FastText model or use SBERT multilingual
-  - [ ] Evaluate cosine similarity thresholds → manual validation
+### Risks & Mitigations
 
-#### **Phase 2 — Vector Service**
+- **Multilingual/abbreviated names:** normalization pipeline with transliteration,
+  stop-word removal, and brand whitelist tests.
+- **Embedding drift:** nightly evaluation job + model registry for version tracking.
+- **LLM validation cost:** use cached, batched judge prompts; fall back to heuristic
+  thresholds for bulk operations.
 
-- **Spec:** Serve similarity queries via REST + vector index.
-- **TODOs**
-  - [ ] Setup pgvector extension (Postgres 15+)
-  - [ ] Implement API `/similar?query=tnuva+milk`
-  - [ ] Write unit tests for top-k retrieval
-  - [ ] Cache embeddings with Redis + expiry
-  - [ ] Add integration tests to check consistency with baseline
+### Phases & Key TODOs
 
-#### **Phase 3 — Evaluation + Prompt Tuning**
+#### Phase 1 -- Foundation (Offline Model)
 
-- **Spec:** Validate results using LLM judgment (e.g., Claude/OpenAI).
-- **TODOs**
-  - [ ] Create prompt template for “Are these two products equivalent?”
-  - [ ] Evaluate LLM agreement vs. human labels
-  - [ ] Tune embedding model or threshold until > 90% precision
+- Build unique product corpus with dedupe heuristics; persist to parquet.
+- Train/test multilingual SBERT or USE; compare against FastText baseline.
+- Benchmark similarity thresholds using curated positive/negative sets.
 
-### 📦 Deliverables
+#### Phase 2 -- Vector Service
 
-- `services/similarity_api/` microservice
-- Jupyter notebook for embedding evaluation
-- REST endpoint demo (`curl localhost:8001/similar?query=milk`)
-- Portfolio visual showing clusters of similar products
+- Stand up pgvector-backed endpoint `/similar`.
+- Implement caching (Redis) with TTL tuned to data refresh cadence.
+- Ensure API returns structured metadata (product ID, chain, price delta).
+- Add load tests (`k6` or `autocannon`) to guarantee <150 ms p95.
 
-### 🧠 Learning Outcomes
+#### Phase 3 -- Evaluation & Prompt Tuning
 
-- Master practical NLP for product matching
-- Understand embedding pipelines & vector databases
-- Prepare for RAG integration and cart optimization
+- Create Claude/OpenAI prompt for semantic equivalence judgement.
+- Store evaluation artefacts in `reports/similarity/`.
+- Automate weekly QA run via Nx target + CI badge.
 
----
+### Deliverables
 
-**Next Up → Part 2 (`BRAINSTORM_2.md`)**
-Will cover:
+- `services/similarity-api/src/` with vector index + FastAPI routes.
+- Evaluation notebooks + scorecards under `docs/research/similarity/`.
+- Demo script `scripts/demo-similar.sh` (curl-based showcase).
 
-3️⃣ Price Intelligence Engine
-4️⃣ Smart Cart Optimizer (LLM + RAG)
-5️⃣ Multi-Store Agent
-6️⃣ Promo Watcher
-7️⃣ Deployment & Ethics
+### Learning Outcomes
+
+- Build and deploy multilingual embedding search.
+- Blend deterministic heuristics with LLM-based evaluation safely.
+- Prepare ground truth datasets for future agent reasoning steps.
+
+### Metrics & Instrumentation
+
+- Export `similarity_requests_total`, `cache_hit_ratio`, `llm_judge_latency_ms`.
+- Alert on precision drop (>5 pp) or cache miss spikes.
 
 ---
 
-Would you like me to continue immediately with **Part 2 (`BRAINSTORM_2.md`)** containing the remaining projects?
+Continue with `CURSOR_BRAINSOTRM_2.md` for Projects 3-7 (price intelligence, cart
+optimization, agents, automation, and ethics).

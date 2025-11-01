@@ -1,111 +1,133 @@
-Perfect — that’s an excellent applied-AI direction.
-You’re basically describing a **“Personalized Smart Grocery Optimizer”**, which fits _every layer_ of the AI Engineer syllabus while also creating real economic value.
+# Cursor Roadmap Overview -- AI Engineer x Grocery Optimization
 
-Here’s what I’ll include in the `BRAINSTORM.md`:
+This document frames the **Personalized Smart Grocery Optimizer** journey so the work
+tracks directly to the _AI Engineer Syllabus_ while staying outcome-driven for Israeli
+shoppers and retail partners.
+
+## Dataset Snapshot
+
+- **Source:** Israeli Supermarkets 2024 Kaggle dataset (~200 CSV/JSON assets, 6.7 GB+)
+- **Refresh cadence:** Daily (4-hour scrapes per chain)
+- **Modalities:** Tabular prices, promotions, store metadata, multilingual product text
+- **Why it matters:** Combines structured, temporal, and text data--perfect coverage for
+  ETL -> embeddings -> LLMs -> agents -> observability.
+
+## Syllabus Coverage Map
+
+| AI Engineer Module (AI_Engineer_Syllabus.pdf p.10-13) | Grocery Optimizer Opportunity | Anchor Project |
+| ----------------------------------------------------- | ----------------------------- | -------------- |
+| **Python Essentials**                                 | Robust ingestion & validation | 1              |
+| **ML Foundations**                                    | Basket scoring & trend models | 1 - 3          |
+| **NLP + RAG**                                         | Cross-brand product matching  | 2 - 4          |
+| **Applied LLM Engineering**                           | Structured cart responses     | 4 - 5          |
+| **Prompt Engineering**                                | Cart reasoning flows          | 4              |
+| **Automation / n8n**                                  | Scheduled refresh + alerts    | 3 - 6          |
+| **AI Agents**                                         | Multi-store negotiation agent | 5              |
+| **Infrastructure & Deployment**                       | Containerized services + SLOs | 1 - 6 - 7      |
+| **Reasoning & Ethics**                                | Transparent savings insights  | 5 - 7          |
+
+## Delivery Sequencing (Recommended)
+
+1. **Project 1** -- make the data reliable; unlocks everything else.
+2. **Project 2** -- deliver semantic context for RAG and agent skills.
+3. **Project 3** -- convert normalized data into price intelligence outputs.
+4. **Project 4** -- layer natural-language cart optimization on top of 1-3.
+5. **Project 5** -- orchestrate multi-step agents over the API suite.
+6. **Project 6** -- automate refresh, alerts, and retention loops.
+7. **Project 7** -- harden for production and ship compliance guardrails.
+
+## Cross-Project Success Metrics
+
+- **ETL health:** ingest daily drops <45 min with >99% schema validation pass rate.
+- **Similarity quality:** multilingual product match precision >=90% @ top-3.
+- **Basket intelligence:** store ranking MAE <=3 NIS compared to ground truth receipts.
+- **Assistant UX:** <2 s median LLM response, >=80% "useful" rating in user testing.
+- **Ops readiness:** 95th percentile workflow latency <10 s, critical alerts routed in
+  <5 min, zero PII leaks in logged payloads.
+
+## Project Capsules
+
+### 1. Data Foundation & Normalization Service
+
+- **Syllabus focus:** Python Essentials, Infrastructure & Deployment (AI_Engineer_Syllabus.pdf p.10-13)
+- **Dependencies:** Kaggle raw dumps; no internal blockers.
+- **Success criteria:** deterministic schemas for `Product`, `Store`, `PriceRecord`, `Promo`;
+  daily ETL succeeds automatically; FastAPI endpoints hit <200 ms p95.
+- **Risks & mitigations:** encoding variance -> enforce UTF-8 read with fallback tests;
+  file-size spikes -> chunked ingestion + streaming validators.
+- **Launch readiness:** CI schema checks, Docker image published, observability dashboards
+  (`ingestion_lag`, `records_ingested`) alive before promoting to staging.
+
+### 2. Similar-Product Finder (Embedding-Based)
+
+- **Syllabus focus:** NLP + RAG, Prompt Engineering (AI_Engineer_Syllabus.pdf p.11-12)
+- **Dependencies:** Clean product catalog and identifiers from Project 1.
+- **Success criteria:** cosine similarity >0.9 for curated positive pairs, <0.4 for
+  negatives; 500 k inference/sec sustained using pgvector or FAISS; human spot-check OKRs
+  met weekly.
+- **Risks & mitigations:** Hebrew diacritics + transliteration noise -> shared tokenizer +
+  normalization unit tests; embedding drift -> scheduled evaluation set refresh.
+- **Launch readiness:** `/similar` endpoint contract-tested, cache hit-rate >70%, LLM
+  validator prompts stored in version control.
+
+### 3. Price Intelligence Engine
+
+- **Syllabus focus:** ML Foundations, Model Reasoning, Automation/n8n (AI_Engineer_Syllabus.pdf p.10-12)
+- **Dependencies:** Projects 1-2 for trustworthy catalog and substitution graph.
+- **Success criteria:** basket comparison latency <500 ms, leaderboard accuracy within 3 NIS,
+  n8n daily leaderboard workflow success rate >=98%.
+- **Risks & mitigations:** price anomalies -> z-score outlier detection prior to scoring;
+  holiday-season volatility -> temporal features with decay windows.
+- **Launch readiness:** regression tests for aggregation math, forecasting notebooks with
+  clear retraining triggers, notifications wired to Slack/Telegram sandbox.
+
+### 4. Smart Cart Optimizer (LLM + RAG)
+
+- **Syllabus focus:** Applied LLM Engineering, Prompt Engineering (AI_Engineer_Syllabus.pdf p.11-12)
+- **Dependencies:** Projects 1-3; relies on vector search and price APIs.
+- **Success criteria:** 80%+ of eval prompts produce budget-compliant carts; structured MCP
+  payloads validate against JSON Schema; hallucination rate <5% on adversarial prompts.
+- **Risks & mitigations:** token overruns -> streaming summaries + tool-call limits;
+  context staleness -> prompt guardrail referencing catalog version IDs.
+- **Launch readiness:** prompt library in source control, replayable test harness (Vitest or
+  Playwright API) covering primary intents, latency graph publicly visible.
+
+### 5. Multi-Store Optimizer Agent
+
+- **Syllabus focus:** AI Agents, Applied LLM Engineering, Model Reasoning (AI_Engineer_Syllabus.pdf p.11-12)
+- **Dependencies:** Projects 1-4; optional enhancements from 6 for alerting.
+- **Success criteria:** agent completes >=90% of scripted multi-hop tasks without human
+  intervention; savings recommendations verified against baseline baskets; tool call error
+  rate <3%.
+- **Risks & mitigations:** infinite loops -> goal/task cap + heartbeat watchdog; partial data
+  availability -> fallback strategies defined per chain.
+- **Launch readiness:** conversation traces logged with PII scrubbers, contingency playbook
+  for upstream outages, alignment review (ethics rubric) signed off.
+
+### 6. Promo Watcher & Notifier
+
+- **Syllabus focus:** Automation/n8n, Infrastructure & Deployment (AI_Engineer_Syllabus.pdf p.12-13)
+- **Dependencies:** Projects 1 & 3 for reliable price deltas; optional connection to 4-5 for
+  message personalization.
+- **Success criteria:** cron-driven workflows dispatch within +/-2 min of schedule; alert
+  precision >=85% (price drop threshold validation); opt-out latency <1 minute end-to-end.
+- **Risks & mitigations:** notification fatigue -> user preference center with caps; n8n
+  node failures -> automatic retry + dead-letter queue.
+- **Launch readiness:** synthetic alerts tested in staging, Prometheus alerts on webhook
+  errors, GDPR-compliant consent tracking documented.
+
+### 7. Ethics & Production Deployment
+
+- **Syllabus focus:** Infrastructure & Deployment, Reasoning & Ethics (AI_Engineer_Syllabus.pdf p.12-13)
+- **Dependencies:** All previous projects must expose health checks and structured logging.
+- **Success criteria:** SOC-style audit trail retained 90 days, privacy filters flag 100% of
+  PII payloads, SLO doc approved (availability >=99.5%, response p95 <1 s for public APIs).
+- **Risks & mitigations:** config drift -> IaC with policy-as-code checks; compliance gaps ->
+  quarterly ethics review schedule.
+- **Launch readiness:** security scan + dependency review pipeline enforced, incident
+  response runbook published, data retention matrix stored in repo.
 
 ---
 
-### 🧠 Overview (short intro)
-
-Summarize the Kaggle dataset’s structure (chains, prices, promos, stores, frequency).
-Explain why it’s a goldmine for building an AI stack — ETL → Embeddings → LLMs → Agents → Production.
-
----
-
-### 🚀 Projects (each 2–4 pages)
-
-#### **1. Data Foundation & Normalization Service**
-
-**Topics:** Python Essentials + ML Foundations + Infrastructure
-**Goal:** unify all supermarket feeds into a single normalized schema (products, chains, timestamps).
-**Value:** provides a reliable base for analytics & price comparison.
-**Phases (Spec + TDD):**
-
-- Spec model for `Product`, `Store`, `PriceRecord`
-- Write parsing & validation tests for each chain file
-- Build ETL pipeline (FastAPI + Docker)
-- CI for schema tests
-
----
-
-#### **2. Similar-Product Finder (Embedding-Based)**
-
-**Topics:** NLP + RAG + Vector Search
-**Goal:** cluster products with slightly different names (“Tnuva 1 L milk 3%” ≈ “Tara milk 3% 1L”).
-**Value:** enables cross-brand substitution suggestions.
-**Phases:**
-
-- Spec: text-normalization, Hebrew ↔ English handling
-- Tests for tokenization & similarity thresholds
-- Train SBERT / USE embeddings → store in pgvector or FAISS
-- Expose REST API for “find similar products”
-
----
-
-#### **3. Price Intelligence Engine**
-
-**Topics:** ML Foundations + Model Reasoning
-**Goal:** compute cheapest store for a given basket & forecast near-term changes.
-**Value:** dynamic “Best Store Today” map.
-**Phases:**
-
-- Spec: basket schema & comparison formula
-- Write unit tests for aggregation logic
-- Train regression model for price trends
-- Generate chain-level leaderboard daily via n8n workflow
-
----
-
-#### **4. Smart Cart Optimizer (LLM + RAG)**
-
-**Topics:** LLM Integration + Prompt Engineering + Applied LLM Engineering
-**Goal:** natural-language query → optimized cart (“Find me 5 breakfast items under 50 ₪”).
-**Value:** user-facing chat assistant combining retrieval + reasoning.
-**Phases:**
-
-- Spec prompt templates (“optimize my cart for X ₪ limit”)
-- TDD mock responses → validate LLM reasoning steps
-- Connect LangChain/LlamaIndex to price vector DB
-- Implement MCP client/server for structured cart responses
-
----
-
-#### **5. Multi-Store Optimizer Agent**
-
-**Topics:** AI Agents + Automation (n8n) + LLM Reasoning
-**Goal:** combine 1 & 2 → “If you buy Tnuva instead of Tara, your cart at Rami Levi is 12% cheaper.”
-**Value:** fully automated decision assistant for households or apps like “SuperSmart.”
-**Phases:**
-
-- Spec: agent goals (cheapest store / max discount)
-- Unit tests for decision logic and API calls
-- Integrate price and embedding APIs into n8n agent workflow
-- Deploy FastAPI backend + LangChain agent container
-
----
-
-#### **6. Promo Watcher & Notifier**
-
-**Topics:** Workflow Automation + n8n + Infra Deployment
-**Goal:** track daily price and promo dumps → notify users on Telegram/Email when basket drops > X%.
-**Value:** retention + real-time value.
-**Phases:**
-
-- Spec webhook events and user prefs
-- Tests for cron triggers and price thresholds
-- n8n HTTP trigger → Python service → LLM summary
-- Dockerize and monitor with Prometheus + Grafana
-
----
-
-#### **7. Ethics & Production Deployment**
-
-**Topics:** From Code to Production + CI/CD + Observability
-**Goal:** make the whole ecosystem deployable as microservices with safe AI usage.
-**Value:** portfolio-ready project that demonstrates professional AI engineering.
-**Phases:**
-
-- Spec CI stages (ETL → Inference → Agent)
-- GitHub Actions tests for Docker images
-- Logging & W&B tracking
-- Add privacy filters for user queries
+Refer to `CURSOR_BRAINSOTRM_1.md` and `CURSOR_BRAINSOTRM_2.md` for deep-dive specs, TDD
+checklists, and per-phase execution details.
