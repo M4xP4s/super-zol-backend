@@ -368,6 +368,84 @@ Each completed phase should have a comprehensive code review document in the `re
 
 - **[AGENTS.md](AGENTS.md)** - Concise guidelines for AI agents working with this codebase
 
+## Using with Cursor IDE
+
+Cursor IDE automatically reads `.cursorrules` at the workspace root for real-time coding assistance. This section explains how Cursor integrates with this project's workflows.
+
+### How `.cursorrules` and `CLAUDE.md` Work Together
+
+- **`.cursorrules`** (workspace root): Concise, actionable rules automatically read by Cursor's AI assistant during coding. Focuses on "what to do" when suggesting code.
+
+- **`CLAUDE.md`** (this file): Comprehensive workflow documentation with context, history, best practices, and detailed explanations. Provides "why" and "how" for deeper understanding.
+
+**Complementary Relationship**:
+
+- `.cursorrules` = Quick reference guide for AI during real-time assistance
+- `CLAUDE.md` = Complete handbook with workflows, patterns, and project context
+
+### Workflow Mapping: Claude Code → Cursor
+
+| Claude Code (claude.ai/code)             | Cursor IDE                                         |
+| ---------------------------------------- | -------------------------------------------------- |
+| `/research_codebase`                     | Use chat (Cmd+L) to ask about codebase structure   |
+| `/create_plan`                           | Use Composer (Cmd+I) to draft implementation plans |
+| `/implement_plan`                        | Use Composer or inline chat to write code          |
+| `/validate_plan`                         | Use chat to verify tests and run quality checks    |
+| Skills in `.claude/skills/`              | Referenced in `CLAUDE.md`, usable via chat context |
+| Hooks in `.claude/claude-code-workflow/` | Claude Code-specific (not used by Cursor)          |
+
+### Using Both Tools
+
+You can use **both Cursor and Claude Code** in your workflow:
+
+- **Cursor IDE**: Day-to-day coding with real-time AI assistance
+  - Fast inline suggestions and chat
+  - Composer for multi-file changes
+  - Automatic `.cursorrules` integration
+  - Best for: Quick iterations, debugging, refactoring
+
+- **Claude Code**: Structured workflow with plugins
+  - Four-phase workflow (research → plan → implement → validate)
+  - Custom skills and agents in `.claude/` directory
+  - Context management and checkpoints
+  - Best for: Large features, systematic refactoring, documentation
+
+### Cursor-Specific Features
+
+**Chat (Cmd+L)**: Ask questions about the codebase, get explanations, or request code changes.
+
+**Composer (Cmd+I)**: Create multi-file changes, implement features, or refactor code across the monorepo.
+
+**Quick Commands in Chat**:
+
+- "Create a new service using `just gen-service` pattern"
+- "Add a route to kaggle-data-api following Fastify AutoLoad pattern"
+- "Write tests for this function in the `tests/` directory"
+- "Check if this follows our ESM import conventions"
+
+**Key Differences from Claude Code**:
+
+- No slash commands (`/research`, `/plan`) - use natural language in chat
+- `.claude/` directory plugins work only in Claude Code web interface
+- Cursor reads `.cursorrules` automatically (no setup needed)
+- Both tools can read `CLAUDE.md` for context, but Cursor primarily uses `.cursorrules`
+
+### Before Coding in Cursor
+
+1. Cursor automatically reads `.cursorrules` - you're already set up!
+2. When you need detailed context, reference `CLAUDE.md` in chat
+3. Check `TODO.md` for current project state (same as Claude Code workflow)
+4. Use path aliases (`@libs/*`, `@services/*`) - Cursor will suggest these automatically
+
+### Best Practices
+
+- **For quick changes**: Use Cursor's inline chat and suggestions
+- **For large features**: Consider using Claude Code's structured workflow
+- **For documentation**: Reference `CLAUDE.md` sections in Cursor chat
+- **For consistency**: Both tools follow the same conventions (ESM, path aliases, test structure)
+
+The project's coding standards are the same regardless of which tool you use - `.cursorrules` ensures Cursor follows them automatically.
+
 ## Stack & Tools
 
 - **Runtime**: Node.js 22 (enforced via .nvmrc and .node-version)
@@ -392,3 +470,17 @@ pnpm nx affected -t build --base=origin/main
 ```
 
 For complete CI/CD setup and troubleshooting, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+<!-- nx configuration start-->
+<!-- Leave the start & end comments to automatically receive updates. -->
+
+# General Guidelines for working with Nx
+
+- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
+- You have access to the Nx MCP server and its tools, use them to help the user
+- When answering questions about the repository, use the `nx_workspace` tool first to gain an understanding of the workspace architecture where applicable.
+- When working in individual projects, use the `nx_project_details` mcp tool to analyze and understand the specific project structure and dependencies
+- For questions around nx configuration, best practices or if you're unsure, use the `nx_docs` tool to get relevant, up-to-date docs. Always use this instead of assuming things about nx configuration
+- If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
+
+<!-- nx configuration end-->
